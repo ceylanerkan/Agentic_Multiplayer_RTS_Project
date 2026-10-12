@@ -31,9 +31,10 @@ UnityRTS/sysinfo.txt
 # ParrelSync clones (second editor instance)
 UnityRTS_clone*/
 
-# Photon App ID lives in PhotonAppSettings.asset - keep the real ID out of git
-# (see docs/setup.md). Uncomment if you want to fully ignore it:
-# UnityRTS/Assets/Photon/Fusion/Resources/PhotonAppSettings.asset
+# Photon App ID lives in PhotonAppSettings.asset - never commit it (public repo).
+# Each clone re-enters its App ID in the Fusion Hub (see docs/setup.md).
+UnityRTS/Assets/Photon/Fusion/Resources/PhotonAppSettings.asset
+UnityRTS/Assets/Photon/Fusion/Resources/PhotonAppSettings.asset.meta
 
 # ---------- Python (ai/, evaluation/) ----------
 __pycache__/

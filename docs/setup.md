@@ -15,8 +15,8 @@
 2. Download the Fusion 2 SDK (`.unitypackage`) from
    https://doc.photonengine.com/fusion/current/getting-started/sdk-download and import it into `UnityRTS`.
 3. The Fusion Hub opens automatically (otherwise *Tools → Fusion → Fusion Hub*). Paste the App ID.
-   It is stored in `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset`. Do **not** push a public repo with
-   the real App ID; reset it to empty before submission or keep the repo private.
+   It is stored in `Assets/Photon/Fusion/Resources/PhotonAppSettings.asset`, which is git-ignored so the
+   App ID never reaches the (public) repository. After cloning, paste your own App ID in the Fusion Hub.
 
 ## 3. Two instances on one machine
 - ParrelSync → *Clones Manager* → *Add new clone* → open the clone. One editor uses **Host**, the other **Join**.
