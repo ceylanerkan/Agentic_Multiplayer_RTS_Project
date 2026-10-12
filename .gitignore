@@ -1,0 +1,69 @@
+# ---------- Unity (UnityRTS/) ----------
+UnityRTS/[Ll]ibrary/
+UnityRTS/[Tt]emp/
+UnityRTS/[Oo]bj/
+UnityRTS/[Bb]uild/
+UnityRTS/[Bb]uilds/
+UnityRTS/[Ll]ogs/
+UnityRTS/[Uu]ser[Ss]ettings/
+UnityRTS/[Mm]emoryCaptures/
+UnityRTS/[Rr]ecordings/
+UnityRTS/*.csproj
+UnityRTS/*.sln
+UnityRTS/*.suo
+UnityRTS/*.user
+UnityRTS/*.pidb
+UnityRTS/*.booproj
+UnityRTS/*.svd
+UnityRTS/*.pdb
+UnityRTS/*.mdb
+UnityRTS/*.opendb
+UnityRTS/*.VC.db
+UnityRTS/.vs/
+UnityRTS/.vscode/
+UnityRTS/.idea/
+UnityRTS/crashlytics-buildid.txt
+UnityRTS/sysinfo.txt
+*.apk
+*.aab
+*.unitypackage
+
+# ParrelSync clones (second editor instance)
+UnityRTS_clone*/
+
+# Photon App ID lives in PhotonAppSettings.asset - keep the real ID out of git
+# (see docs/setup.md). Uncomment if you want to fully ignore it:
+# UnityRTS/Assets/Photon/Fusion/Resources/PhotonAppSettings.asset
+
+# ---------- Python (ai/, evaluation/) ----------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Built RAG index (reproducible via ai/rag/build_index.py)
+ai/rag/index/*
+!ai/rag/index/.gitkeep
+
+# Runtime data / logs
+ai/gateway/data/
+ai/logs/
+*.sqlite
+*.db
+
+# ---------- Secrets ----------
+.env
+.env.*
+!.env.example
+
+# ---------- OS / editors ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Course assignment PDF (not part of the project)
+CSE-377_*.pdf

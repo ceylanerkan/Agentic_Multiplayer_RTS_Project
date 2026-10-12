@@ -1,0 +1,50 @@
+[
+  {
+    "id": "tech_age_2_v1",
+    "type": "technology",
+    "key": "age_2",
+    "name": "Age II",
+    "cost": {"food": 400, "gold": 100},
+    "research_time_s": 40,
+    "researched_at": "town_center",
+    "requires": ["barracks"],
+    "effect": "Advances the player to Age II. Unlocks the Stable building, the Cavalry unit and the Fletching technology.",
+    "description": "Age progression. Requires a completed Barracks. While the Town Center researches Age II it cannot train Villagers."
+  },
+  {
+    "id": "tech_iron_weapons_v1",
+    "type": "technology",
+    "key": "iron_weapons",
+    "name": "Iron Weapons",
+    "cost": {"food": 100, "gold": 50},
+    "research_time_s": 30,
+    "researched_at": "blacksmith",
+    "requires": ["blacksmith"],
+    "effect": "+2 attack for Spearman, Archer and Cavalry (applies to existing and future units).",
+    "description": "Military damage upgrade. Strongest value when you already have a large army."
+  },
+  {
+    "id": "tech_fletching_v1",
+    "type": "technology",
+    "key": "fletching",
+    "name": "Fletching",
+    "cost": {"food": 60, "wood": 60},
+    "research_time_s": 25,
+    "researched_at": "blacksmith",
+    "requires": ["blacksmith", "age_2"],
+    "effect": "+1 range and +1 line of sight for Archers.",
+    "description": "Archer upgrade available in Age II. Helps Archers kite Spearmen."
+  },
+  {
+    "id": "tech_horse_collar_v1",
+    "type": "technology",
+    "key": "horse_collar",
+    "name": "Horse Collar",
+    "cost": {"food": 75, "wood": 75},
+    "research_time_s": 25,
+    "researched_at": "town_center",
+    "requires": [],
+    "effect": "+20% food gathering rate for Villagers.",
+    "description": "Economic upgrade. Pays for itself after roughly two minutes of food gathering with 4+ food Villagers."
+  }
+]

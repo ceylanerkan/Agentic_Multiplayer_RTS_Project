@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cse377-rts.local/schemas/safe_snapshot.schema.json",
+  "title": "AiSafeSnapshot",
+  "description": "Visibility-filtered game state that Unity sends to the AI gateway. Built by VisibilityService.FilterFor(player). additionalProperties=false everywhere so that hidden fields (opponent economy, hidden positions) are rejected by the gateway even if Unity accidentally sends them.",
+  "type": "object",
+  "required": ["match_id", "game_time_s", "age", "resources", "population", "own_army", "own_buildings", "visible_enemies", "researched_tech", "recent_events"],
+  "additionalProperties": false,
+  "properties": {
+    "match_id": {"type": "string", "maxLength": 64},
+    "game_time_s": {"type": "number", "minimum": 0},
+    "age": {"type": "integer", "minimum": 1, "maximum": 2},
+    "resources": {
+      "type": "object",
+      "required": ["wood", "food", "gold"],
+      "additionalProperties": false,
+      "properties": {
+        "wood": {"type": "integer", "minimum": 0},
+        "food": {"type": "integer", "minimum": 0},
+        "gold": {"type": "integer", "minimum": 0}
+      }
+    },
+    "population": {
+      "type": "object",
+      "required": ["used", "capacity"],
+      "additionalProperties": false,
+      "properties": {
+        "used": {"type": "integer", "minimum": 0},
+        "capacity": {"type": "integer", "minimum": 0, "maximum": 50}
+      }
+    },
+    "own_army": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "required": ["type", "count", "zone"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry"]},
+          "count": {"type": "integer", "minimum": 0},
+          "zone": {"type": "string", "maxLength": 32},
+          "idle": {"type": "integer", "minimum": 0},
+          "avg_hp_pct": {"type": "number", "minimum": 0, "maximum": 100}
+        }
+      }
+    },
+    "own_buildings": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "required": ["type", "count"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"enum": ["town_center", "house", "barracks", "stable", "blacksmith"]},
+          "count": {"type": "integer", "minimum": 0},
+          "under_construction": {"type": "integer", "minimum": 0},
+          "busy": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "visible_enemies": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "required": ["type", "count", "zone"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "town_center", "house", "barracks", "stable", "blacksmith"]},
+          "count": {"type": "integer", "minimum": 1},
+          "zone": {"type": "string", "maxLength": 32}
+        }
+      }
+    },
+    "researched_tech": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {"enum": ["age_2", "iron_weapons", "fletching", "horse_collar"]}
+    },
+    "researching": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {"enum": ["age_2", "iron_weapons", "fletching", "horse_collar"]}
+    },
+    "recent_events": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["type", "seconds_ago"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {"enum": ["UNDER_ATTACK", "UNIT_LOST", "UNIT_TRAINED", "BUILDING_COMPLETED", "BUILDING_LOST", "TECH_RESEARCHED", "ENEMY_SIGHTED", "RESOURCE_DEPLETED"]},
+          "zone": {"type": "string", "maxLength": 32},
+          "detail": {"type": "string", "maxLength": 80},
+          "seconds_ago": {"type": "number", "minimum": 0}
+        }
+      }
+    }
+  }
+}

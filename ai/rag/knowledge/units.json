@@ -1,0 +1,62 @@
+[
+  {
+    "id": "unit_villager_v1",
+    "type": "unit",
+    "key": "villager",
+    "name": "Villager",
+    "cost": {"food": 50},
+    "population": 1,
+    "train_time_s": 12,
+    "trained_at": "town_center",
+    "requires": [],
+    "stats": {"hp": 25, "attack": 3, "armor": 0, "range": 0.8, "speed": 3.5, "line_of_sight": 7},
+    "strengths": [],
+    "weaknesses": ["spearman", "archer", "cavalry"],
+    "description": "Economic unit. Gathers wood, food and gold (carries 10 per trip) and constructs buildings. Must return resources to a Town Center to deposit them. Very weak in combat."
+  },
+  {
+    "id": "unit_spearman_v1",
+    "type": "unit",
+    "key": "spearman",
+    "name": "Spearman",
+    "cost": {"food": 50, "wood": 30},
+    "population": 1,
+    "train_time_s": 14,
+    "trained_at": "barracks",
+    "requires": ["barracks"],
+    "stats": {"hp": 50, "attack": 5, "armor": 1, "range": 1.0, "speed": 3.2, "line_of_sight": 7},
+    "strengths": ["cavalry"],
+    "weaknesses": ["archer"],
+    "description": "Cheap anti-cavalry infantry. Deals 1.5x damage to Cavalry. Slow and vulnerable to massed Archers, which deal 1.5x damage to it. Needs no gold, so it is the best defensive answer when gold is scarce."
+  },
+  {
+    "id": "unit_archer_v1",
+    "type": "unit",
+    "key": "archer",
+    "name": "Archer",
+    "cost": {"wood": 35, "gold": 35},
+    "population": 1,
+    "train_time_s": 16,
+    "trained_at": "barracks",
+    "requires": ["barracks"],
+    "stats": {"hp": 30, "attack": 5, "armor": 0, "range": 6.0, "speed": 3.4, "line_of_sight": 9},
+    "strengths": ["spearman"],
+    "weaknesses": ["cavalry"],
+    "description": "Ranged infantry. Deals 1.5x damage to Spearmen and can attack from 6 units away. Fragile; Cavalry close the distance quickly and deal 1.5x damage to Archers."
+  },
+  {
+    "id": "unit_cavalry_v1",
+    "type": "unit",
+    "key": "cavalry",
+    "name": "Cavalry",
+    "cost": {"food": 70, "gold": 60},
+    "population": 1,
+    "train_time_s": 20,
+    "trained_at": "stable",
+    "requires": ["stable", "age_2"],
+    "stats": {"hp": 100, "attack": 8, "armor": 2, "range": 1.0, "speed": 5.5, "line_of_sight": 9},
+    "strengths": ["archer", "villager"],
+    "weaknesses": ["spearman"],
+    "description": "Fast, durable mounted unit. Deals 1.5x damage to Archers and is ideal for raiding villagers. Takes 1.5x damage from Spearmen. Requires Age II and a Stable."
+  }
+]
