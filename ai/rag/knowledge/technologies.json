@@ -8,7 +8,7 @@
     "research_time_s": 40,
     "researched_at": "town_center",
     "requires": ["barracks"],
-    "effect": "Advances the player to Age II. Unlocks the Stable building, the Cavalry unit and the Fletching technology.",
+    "effect": "Advances the player to Age II. Unlocks the Stable building, the Cavalry, Catapult and Warship units, and the Fletching technology.",
     "description": "Age progression. Requires a completed Barracks. While the Town Center researches Age II it cannot train Villagers."
   },
   {

@@ -9,13 +9,13 @@ Each player starts with 1 Town Center, 3 Villagers, 200 wood, 200 food and 100 g
 Every unit costs 1 population. Population capacity is the sum of 5 from the Town Center and 5 from each completed House, up to a hard maximum of 50. A unit cannot be queued for training if it would exceed the current capacity.
 
 ## [rule_resources_v1] Resources and gathering
-There are three resources: wood (from trees), food (from berry bushes and farms) and gold (from gold mines). A Villager gathers 0.6 resource per second, carries at most 10, and must walk back to a Town Center to deposit. Resources are only added to the player's stockpile when deposited. Resource nodes are finite and disappear when empty.
+There are three resources: wood (from trees), food (from berry bushes) and gold (from gold mines). A Villager gathers 0.6 resource per second, carries at most 10, and must walk back to a Town Center to deposit. Resources are only added to the player's stockpile when deposited. Resource nodes are finite and disappear when empty.
 
 ## [rule_building_prereqs_v1] Building and training prerequisites
-Barracks and Blacksmith have no prerequisites. Stable requires Age II. Spearman and Archer are trained at the Barracks. Cavalry is trained at the Stable. Villagers are trained at the Town Center. Age II requires a completed Barracks. Fletching requires a Blacksmith and Age II. A building must be fully constructed before it can train or research.
+Barracks, Blacksmith and Dock have no prerequisites. Stable requires Age II. Villagers are trained at the Town Center. Spearman, Archer and Scout are trained at the Barracks. Cavalry is trained at the Stable. Catapults are built at the Blacksmith and require Age II. Raider Boats are trained at the Dock; Warships are trained at the Dock and require Age II. Age II requires a completed Barracks. Fletching requires a Blacksmith and Age II. A building must be fully constructed before it can train or research.
 
 ## [rule_combat_counters_v1] Combat and counters
-Damage per hit = max(1, attack x multiplier - target armor). The multiplier is 1.5 when the attacker counters the target and 0.75 when the target counters the attacker; otherwise 1.0. The counter triangle is: Spearman beats Cavalry, Cavalry beats Archer, Archer beats Spearman. Cavalry also deal 1.5x damage to Villagers. Units automatically attack enemies that come into range while idle.
+Damage per hit = max(1, attack x multiplier - target armor). The multiplier is 1.5 when the attacker counters the target and 0.75 when the target counters the attacker; otherwise 1.0. The land counter triangle is: Spearman beats Cavalry, Cavalry beats Archer, Archer beats Spearman. The naval loop is: Raider Boat beats Warship, Warship beats Archer, Archer beats Raider Boat. Cavalry beats Catapult and Catapult beats Warship. Cavalry also deal 1.5x damage to Villagers, and Warships deal 1.5x damage to Villagers. Catapults deal 3x damage to buildings. Scouts have no counter bonus. Units automatically attack enemies that come into range while idle.
 
 ## [rule_win_condition_v1] Win condition
 A player wins when the opponent's Town Center is destroyed. The Town Center cannot be rebuilt. There is no other victory condition.
@@ -24,7 +24,10 @@ A player wins when the opponent's Town Center is destroyed. The Town Center cann
 Each player only sees the area within the line of sight of their own units and buildings. Enemy units and buildings outside that area are hidden. The AI Strategic Commander only receives what the player can currently see; it cannot know the opponent's resources, hidden army or unexplored base.
 
 ## [rule_map_zones_v1] Map zones
-The map is divided into named zones used for commands and reports: P1Base, P2Base, NorthGate, SouthField, EastForest, WestMine and Center. NorthGate and SouthField are the main paths between the two bases. EastForest has most of the wood; WestMine has most of the gold; SouthField has berry bushes.
+The map is divided into named zones used for commands and reports. Land zones: P1Base, P2Base, NorthGate, SouthField, EastForest, WestMine and Center. Water zones: P1Harbor, P2Harbor and OpenSea, a sea along the north edge of the map. NorthGate and SouthField are the main land paths between the two bases. EastForest has most of the wood; WestMine has most of the gold; SouthField has berry bushes. P1Harbor and P2Harbor lie next to each player's base; OpenSea lies between them and borders the NorthGate path.
+
+## [rule_naval_v1] Land, water and naval combat
+Every unit belongs to either land (Villager, Spearman, Archer, Cavalry, Scout, Catapult) or water (Raider Boat, Warship). Land units cannot enter water zones and ships cannot enter land zones. Melee units (range 1 or less) can only attack targets in their own domain; ranged units (Archer, Catapult, Warship) can shoot across the shoreline at any target within range. A Dock stands on the coast and can be attacked from both land and water. Ships are trained at a Dock, which must be built on a coastal build slot of the player's own base.
 
 ## [strategy_early_economy_v1] Early economy strategy
 In the first minutes, keep the Town Center training Villagers and build a House before reaching the population cap. A balanced opening puts about half of the Villagers on food, a third on wood and the rest on gold. Build a Barracks early; it is needed both for defence and for Age II.
@@ -34,6 +37,12 @@ Spearmen are the most cost-efficient answer to Cavalry and cost no gold, so trai
 
 ## [strategy_defend_archers_v1] Defending against archers
 Archers beat Spearmen. Answer massed Archers with Cavalry (requires Age II and a Stable) or with your own Archers. Avoid sending Spearmen alone against Archers.
+
+## [strategy_scouting_v1] Scouting
+Under fog of war you only know what your units can see. Before committing to an attack or an expensive technology, send a Scout to NorthGate, Center or the enemy side to see the opponent's army. When little or no enemy information is visible, plans should be cautious, and scouting is usually the best first step.
+
+## [strategy_naval_v1] Using the sea
+Warships in OpenSea can shoot units on the NorthGate path and buildings near the coast, so a player who controls the sea can make NorthGate dangerous to cross. Answer enemy Warships with Raider Boats, which board and beat them, or with Catapults on the shore. Answer enemy Raider Boats with Archers on the shore. A Dock is cheap, but ships cost wood and gold that would otherwise go to the land army.
 
 ## [strategy_tech_timing_v1] When to research technology
 Research Iron Weapons when you have, or are about to have, at least 6 military units; with a tiny army it is poor value. Advance to Age II when your economy can spare 400 food and 100 gold without leaving you defenceless. Horse Collar is worth researching early if 4 or more Villagers gather food.

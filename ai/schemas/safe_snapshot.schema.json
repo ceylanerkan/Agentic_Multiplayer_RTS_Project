@@ -37,9 +37,9 @@
         "required": ["type", "count", "zone"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["villager", "spearman", "archer", "cavalry"]},
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship"]},
           "count": {"type": "integer", "minimum": 0},
-          "zone": {"type": "string", "maxLength": 32},
+          "zone": {"$ref": "#/$defs/zone"},
           "idle": {"type": "integer", "minimum": 0},
           "avg_hp_pct": {"type": "number", "minimum": 0, "maximum": 100}
         }
@@ -53,7 +53,7 @@
         "required": ["type", "count"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["town_center", "house", "barracks", "stable", "blacksmith"]},
+          "type": {"enum": ["town_center", "house", "barracks", "stable", "blacksmith", "dock"]},
           "count": {"type": "integer", "minimum": 0},
           "under_construction": {"type": "integer", "minimum": 0},
           "busy": {"type": "integer", "minimum": 0}
@@ -68,9 +68,9 @@
         "required": ["type", "count", "zone"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "town_center", "house", "barracks", "stable", "blacksmith"]},
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "town_center", "house", "barracks", "stable", "blacksmith", "dock"]},
           "count": {"type": "integer", "minimum": 1},
-          "zone": {"type": "string", "maxLength": 32}
+          "zone": {"$ref": "#/$defs/zone"}
         }
       }
     },
@@ -93,11 +93,17 @@
         "additionalProperties": false,
         "properties": {
           "type": {"enum": ["UNDER_ATTACK", "UNIT_LOST", "UNIT_TRAINED", "BUILDING_COMPLETED", "BUILDING_LOST", "TECH_RESEARCHED", "ENEMY_SIGHTED", "RESOURCE_DEPLETED"]},
-          "zone": {"type": "string", "maxLength": 32},
+          "zone": {"$ref": "#/$defs/zone"},
           "detail": {"type": "string", "maxLength": 80},
           "seconds_ago": {"type": "number", "minimum": 0}
         }
       }
+    }
+  },
+  "$defs": {
+    "zone": {
+      "description": "Named map zone. Same values as action_plan.schema.json; every point on the map (land or water) belongs to one of them.",
+      "enum": ["P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center", "P1Harbor", "P2Harbor", "OpenSea"]
     }
   }
 }

@@ -43,9 +43,9 @@
     "population_provided": 0,
     "line_of_sight": 6,
     "requires": [],
-    "trains": ["spearman", "archer"],
+    "trains": ["spearman", "archer", "scout"],
     "researches": [],
-    "description": "Military building that trains Spearmen and Archers. A Barracks is required before you can research Age II."
+    "description": "Military building that trains Spearmen, Archers and Scouts. A Barracks is required before you can research Age II."
   },
   {
     "id": "building_stable_v1",
@@ -75,8 +75,24 @@
     "population_provided": 0,
     "line_of_sight": 6,
     "requires": [],
-    "trains": [],
+    "trains": ["catapult"],
     "researches": ["iron_weapons", "fletching"],
-    "description": "Research building for military upgrades: Iron Weapons and Fletching."
+    "description": "Research building for military upgrades (Iron Weapons and Fletching). In Age II it also builds Catapults."
+  },
+  {
+    "id": "building_dock_v1",
+    "type": "building",
+    "key": "dock",
+    "name": "Dock",
+    "cost": {"wood": 120},
+    "buildable": true,
+    "build_time_s": 25,
+    "hp": 900,
+    "population_provided": 0,
+    "line_of_sight": 8,
+    "requires": [],
+    "trains": ["raider_boat", "warship"],
+    "researches": [],
+    "description": "Naval building. Must be placed on a coastal build slot of your own base, next to your harbor (P1Harbor or P2Harbor). Trains Raider Boats, and Warships after Age II. Can be attacked from land and from water."
   }
 ]

@@ -22,11 +22,17 @@
     }
   },
   "$defs": {
-    "unit_type": {"enum": ["villager", "spearman", "archer", "cavalry"]},
-    "building_type": {"enum": ["house", "barracks", "stable", "blacksmith"]},
+    "unit_type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship"]},
+    "building_type": {"enum": ["house", "barracks", "stable", "blacksmith", "dock"]},
     "tech_type": {"enum": ["age_2", "iron_weapons", "fletching", "horse_collar"]},
-    "zone": {"enum": ["P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center"]},
-    "unit_group": {"enum": ["all_military", "spearman", "archer", "cavalry", "idle_villagers"]},
+    "zone": {
+      "description": "Land zones: P1Base, P2Base, NorthGate, SouthField, EastForest, WestMine, Center. Water zones: P1Harbor, P2Harbor, OpenSea. Land units may only be sent to land zones and ships only to water zones (checked by GameActionValidator).",
+      "enum": ["P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center", "P1Harbor", "P2Harbor", "OpenSea"]
+    },
+    "unit_group": {
+      "description": "all_military = every land military unit; all_ships = every ship.",
+      "enum": ["all_military", "all_ships", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "idle_villagers"]
+    },
     "action": {
       "type": "object",
       "required": ["action_type", "reason"],
