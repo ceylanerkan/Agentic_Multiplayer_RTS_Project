@@ -1,11 +1,20 @@
-# Unity feedback
+# Geri bildirim
 
-Paste Unity Console errors, bugs or notes for the daily autopilot agent below, then commit and push to `main`.
-The agent fixes these first on its next run and removes the fixed entries. Instructions:
-[docs/autopilot.md](docs/autopilot.md).
+Bu dosya senin. Gece çalışan ajan her gece bunu okur ama hiç değiştirmez. Yazdıktan sonra main'e commit ve
+push yap; ajan bir sonraki gece önce bunları işler. Ajanın sana yazdıkları `MORNING.md` dosyasında.
 
-<!-- Example:
+Her seferinde tarihli bir başlık aç ve altına şunları yazabilirsin:
+- Unity Console hataları (olduğu gibi yapıştır)
+- Bulduğun hatalar ("Villager'lar ilk turdan sonra duruyor")
+- Ajanın sorularına cevaplar (`Q-1114-1: B`)
+- Test sonuçları (`Test 2 tamam`, `Test 3 olmadı: ...`)
+
+Ajan işlediği başlıkları `docs/progress-log.md`'ye yazar. İşlenmiş başlıkları istediğin zaman silebilirsin.
+Ajanın talimatları: [docs/autopilot.md](docs/autopilot.md).
+
+<!-- Örnek:
 ## 2026-11-14
 - Assets/Scripts/Networking/CommandRelay.cs(42,17): error CS0246: The type or namespace name 'Foo' could not be found
-- Villagers stop gathering after the first trip.
+- Q-1113-1: A
+- Test 2 tamam, Test 3 olmadı: Villager'lar ilk turdan sonra duruyor.
 -->
