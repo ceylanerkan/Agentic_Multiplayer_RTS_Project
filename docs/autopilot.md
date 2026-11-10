@@ -32,24 +32,29 @@ project before the deadline on **2026-11-30**. The agent runs once a day at abou
    - Errors and bugs: fix them.
    - Answers to your questions (by id, for example `Q-1114-1: B`): apply them.
    - Test results for **[You]** tasks: remove passed tasks from `TODO.md`; turn failures into fixes.
-2. Then take the next open items from `TODO.md` that can be done in code, following this calendar. If an
-   earlier phase still has open code items, finish those first.
+2. Then work through the open items of `TODO.md` that can be done in code, in this order, and get as far as
+   you can. There is no daily quota: never stop early because "today's part" is done.
+   1. Unity project hygiene: script folders, asmdef + `AssembliesToWeave`, ScriptableObject definitions loaded
+      from `ai/rag/knowledge/*.json`.
+   2. M2 C# scripts.
+   3. M4 Python: `ai/requirements.txt`, RAG index + retriever, MCP server with the 7 tools, gateway + agent loop
+      + logs.
+   4. M3 C# scripts (combat, tech, fog of war, `VisibilityService`, event log, win condition, Scout), then
+      siege and naval.
+   5. M5: Unity AI integration scripts (snapshot builder, gateway client, `AiCommanderPanel`,
+      `GameActionValidator`, approval flow) and the security tests.
+   6. M6 evaluation: fixtures, `evaluation/prompts.jsonl`, eval runner (mock mode + real Gemini mode),
+      `evaluation/security-tests.md`.
+   7. Docs: `docs/architecture.md`, MCP tool documentation, IEEE report draft in `docs/report/report.md`, demo
+      script for the 9 required scenarios, final consistency pass.
 
-   | Dates (UTC) | Phase |
-   |---|---|
-   | Nov 11–15 | Unity project hygiene (script folders, asmdef + `AssembliesToWeave`, ScriptableObject definitions loaded from `ai/rag/knowledge/*.json`), then M2 C# scripts |
-   | Nov 16–18 | M4 Python: `ai/requirements.txt`, RAG index + retriever, MCP server with the 7 tools, gateway + agent loop + logs |
-   | Nov 19–21 | M3 C# scripts (combat, tech, fog of war, `VisibilityService`, event log, win condition, Scout), then siege and naval |
-   | Nov 22–24 | M5: Unity AI integration scripts (snapshot builder, gateway client, `AiCommanderPanel`, `GameActionValidator`, approval flow) and the security tests |
-   | Nov 25–27 | M6 evaluation: fixtures, `evaluation/prompts.jsonl`, eval runner (mock mode + real Gemini mode), `evaluation/security-tests.md` |
-   | Nov 28–29 | Docs: `docs/architecture.md`, MCP tool documentation, IEEE report draft in `docs/report/report.md`, demo script for the 9 required scenarios, final consistency pass |
-
-3. Work for about 2 hours. Run `date -u` at the start and between chunks.
+   If no code items are left, review and improve the existing code and tests, and make the **[You]** steps
+   clearer.
+3. Use the full ~2 hours. Run `date -u` at the start and between chunks.
    - Work in chunks: one coherent piece that is finished and tested, not many half-done items.
    - After each chunk, update `TODO.md`, `docs/progress-log.md` and `MORNING.md`, then commit and push
      (section 7). That way nothing is lost if a usage limit cuts the run off.
    - Do not start a new chunk after about 1 hour 45 minutes.
-4. If today's phase has no open code items left, continue with the next phase.
 
 ## 3. How to write the code
 **General**
