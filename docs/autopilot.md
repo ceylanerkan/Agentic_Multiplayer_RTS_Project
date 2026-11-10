@@ -44,8 +44,12 @@ project before the deadline on **2026-11-30**. The agent runs once a day at abou
    | Nov 25–27 | M6 evaluation: fixtures, `evaluation/prompts.jsonl`, eval runner (mock mode + real Gemini mode), `evaluation/security-tests.md` |
    | Nov 28–29 | Docs: `docs/architecture.md`, MCP tool documentation, IEEE report draft in `docs/report/report.md`, demo script for the 9 required scenarios, final consistency pass |
 
-3. Do about 30–45 minutes of focused work: one coherent chunk that is finished and tested, rather than many
-   half-done items.
+3. Work for about 2 hours. Run `date -u` at the start and between chunks.
+   - Work in chunks: one coherent piece that is finished and tested, not many half-done items.
+   - After each chunk, update `TODO.md`, `docs/progress-log.md` and `MORNING.md`, then commit and push
+     (section 7). That way nothing is lost if a usage limit cuts the run off.
+   - Do not start a new chunk after about 1 hour 45 minutes.
+4. If today's phase has no open code items left, continue with the next phase.
 
 ## 3. How to write the code
 **General**
@@ -92,12 +96,12 @@ project before the deadline on **2026-11-30**. The agent runs once a day at abou
   and which field values.
 - Video, slides, the Windows build, MCP Inspector screenshots and the live Gemini evaluation run are always
   **[You]** tasks.
-- Add an entry at the top of `docs/progress-log.md` (create the file if missing): the date, what you did, the
-  tests you ran and their results, the `UNITY_FEEDBACK.md` headings you handled, open question ids, and known
-  risks.
+- Keep one entry per run at the top of `docs/progress-log.md` (create the file if missing) and update it after
+  each chunk: the date, what you did, the tests you ran and their results, the `UNITY_FEEDBACK.md` headings you
+  handled, open question ids, and known risks.
 
 ## 6. Write `MORNING.md`
-Rewrite it completely on every run. Write it in Turkish (keep code, file and API names in English), short and
+Rewrite it completely on every run, and update it after each chunk. Write it in Turkish (keep code, file and API names in English), short and
 concrete, with exactly these sections:
 
 ```markdown
@@ -129,8 +133,9 @@ UNITY_FEEDBACK.md dosyasına bugünün tarihiyle bir başlık aç, cevapları ya
 `Test 2 tamam`, Console hataları) ve main'e push'la. Bir sonraki gece önce bunları işlerim.
 ```
 
-## 7. Finish
+## 7. Push after every chunk
 1. Commit with clear messages and push `autopilot`.
-2. If no open pull request from `autopilot` to `main` exists, open one titled "Autopilot: daily progress" (with
-   `gh pr create` or whatever GitHub tool is available). Otherwise add a comment to it that summarises today's
-   run. If you cannot open a pull request, say so in `MORNING.md`.
+2. After the first push of the run: if no open pull request from `autopilot` to `main` exists, open one titled
+   "Autopilot: daily progress" (with `gh pr create` or whatever GitHub tool is available). If you cannot open a
+   pull request, say so in `MORNING.md`.
+3. At the end of the run, add a comment to the pull request that summarises the run.
