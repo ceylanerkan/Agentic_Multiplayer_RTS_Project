@@ -50,11 +50,14 @@ project before the deadline on **2026-11-30**. The agent runs once a day at abou
 
    If no code items are left, review and improve the existing code and tests, and make the **[You]** steps
    clearer.
-3. Use the full ~2 hours. Run `date -u` at the start and between chunks.
+3. Work for about 1 hour (the student is on the Pro plan, so usage is limited). Run `date -u` at the start and
+   between chunks.
    - Work in chunks: one coherent piece that is finished and tested, not many half-done items.
    - After each chunk, update `TODO.md`, `docs/progress-log.md` and `MORNING.md`, then commit and push
      (section 7). That way nothing is lost if a usage limit cuts the run off.
-   - Do not start a new chunk after about 1 hour 45 minutes.
+   - Do not start a new chunk after about 45 minutes.
+   - Save usage: read only the files you need, read large files in parts, and keep command output short (for
+     example `pytest -q`, `| tail -n 40`).
 
 ## 3. How to write the code
 **General**
