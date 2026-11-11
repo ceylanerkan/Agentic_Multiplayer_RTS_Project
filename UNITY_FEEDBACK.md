@@ -18,3 +18,5 @@ Ajanın talimatları: [docs/autopilot.md](docs/autopilot.md).
 - Q-1113-1: A
 - Test 2 tamam, Test 3 olmadı: Villager'lar ilk turdan sonra duruyor.
 -->
+11/11/2026
+build_index + pytest tamam (35 passed)
