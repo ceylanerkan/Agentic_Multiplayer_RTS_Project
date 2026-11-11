@@ -1,0 +1,30 @@
+{
+ "match_id": "fx",
+ "game_time_s": 120,
+ "age": 1,
+ "resources": {
+  "wood": 300,
+  "food": 250,
+  "gold": 120
+ },
+ "population": {
+  "used": 5,
+  "capacity": 5
+ },
+ "own_army": [
+  {
+   "type": "villager",
+   "count": 5,
+   "zone": "P1Base"
+  }
+ ],
+ "own_buildings": [
+  {
+   "type": "town_center",
+   "count": 1
+  }
+ ],
+ "visible_enemies": [],
+ "researched_tech": [],
+ "recent_events": []
+}

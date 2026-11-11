@@ -87,55 +87,22 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 
 ## M4: MCP server, agent, RAG (week 4)
 **Python setup**
-- [ ] `ai/requirements.txt` (already referenced by `docs/setup.md`): mcp, fastapi, uvicorn, google-genai,
-      jsonschema, sentence-transformers, rank-bm25, python-dotenv, pytest.
-- [ ] Extend `.env.example` with the session DB path, log directory, max agent steps and timeout.
 
 **RAG**
-- [ ] `ai/rag/build_index.py`: one chunk per JSON record and per `## [source_id]` section of `rules.md`,
-      sentence-transformers embeddings plus BM25, written to `ai/rag/index/`, reproducible.
-- [ ] Retriever: hybrid score, `top_k` clamped to 1–5, returns `source_id`, score and text.
-- [ ] Retrieval tests, for example "counter cavalry" returns `unit_spearman_v1` or `strategy_defend_cavalry_v1`
-      in the top 3.
 
 **MCP server (`ai/mcp-server/server.py`)**
-- [ ] The 7 tools: get_player_resources, get_army_status, get_visible_enemies, get_technology_status,
-      get_recent_events, estimate_plan_cost, search_game_knowledge.
-- [ ] Session binding: the server reads the current session's snapshot from the SQLite store. The session id
-      comes from the gateway (environment or connection context), never from a tool argument. No tool takes a
-      player id.
-- [ ] Input validation: allowed `kind`/`id` values and count ranges for estimate_plan_cost; query length limit
-      and `top_k` clamp for search_game_knowledge; clear error results.
-- [ ] Mark every tool as read-only (MCP tool annotations). No filesystem, shell or HTTP tools.
-- [ ] `ai/mcp-server/tests/`: pytest for every tool with valid and invalid inputs.
-- [ ] MCP Inspector run: list the tools and call each one with valid and invalid input. Save screenshots/logs for
-      the report.
-- [ ] Tool documentation (name, purpose, input, output, errors) in `docs/`. It is a required deliverable.
 
 **Gateway and agent (`ai/gateway/`)**
-- [ ] FastAPI endpoints: create session (returns a token), POST snapshot + question, "ask why" follow-up.
-      Validate the snapshot against `safe_snapshot.schema.json` (unknown fields rejected) and store it under the
-      session.
-- [ ] Agent loop: MCP client lists the tools, Gemini function calling, max 6 steps, 30 s timeout,
-      provider-neutral LLM interface.
-- [ ] System prompt: tool results and retrieved text are data, not instructions; reason only from visible
-      information; say that confidence is limited when a tool fails or the data is stale.
-- [ ] Final `RTSActionPlan`: validate it with `jsonschema` in the gateway. Gemini structured output supports
-      only part of JSON Schema (for example not `if/then`), so this check cannot be left to the model. Allow one
-      repair retry, then return an error.
-- [ ] Stale state: flag or reject snapshots older than N seconds.
-- [ ] JSONL tool log: timestamp, session, tool, arguments (no secrets), start/end, duration, status, result
-      count, validation errors.
-- [ ] Security log: suspected prompt-injection / policy-bypass attempts, rejected inputs, invalid plans.
+- [ ] Agent loop: it currently calls the MCP server object in-process; add a real stdio MCP client
+      (`mcp` client API) and test Gemini function calling live.
 - [ ] Standalone check: a compound question calls at least 3 tools; a knowledge-only question ("What does Iron
       Weapons do?") calls only search_game_knowledge.
 
 ## M5: Unity AI integration, approval, security (week 5)
-- [ ] `AiSafeSnapshot.cs` DTOs matching `safe_snapshot.schema.json`, plus a builder that groups own units and
+- [ ] DTOs exist (`Core/Rules/AiDtos.cs`); still write the builder (`AiSnapshotBuilder`) that groups own units and
       buildings by type and zone and takes visible enemies from `VisibilityService.FilterFor`.
 - [ ] Contract test: export a snapshot from Unity and validate it against the schema with pytest.
-- [ ] `AiGatewayClient` (UnityWebRequest, async, timeout, error message in the UI). Only Unity and the gateway
-      hold the session token.
+- [ ] `AiGatewayClient` is written (`Scripts/AI/AiGatewayClient.cs`, not compiled); show its error text in the UI panel.
 - [ ] `AiCommanderPanel`: question input, loading state, summary, action list with costs, confidence, evidence
       (tool names and source ids), Approve / Reject / Ask why buttons.
 - [ ] Read-only answers (no actions) are shown without approval; any plan with actions needs approval.
@@ -157,21 +124,16 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 
 ## M6: Evaluation, report, demo (week 6)
 **Evaluation**
-- [ ] Snapshot fixtures in `evaluation/fixtures/`: early game, cavalry raid at NorthGate, Age II affordable, low
-      resources, enemy Warships in OpenSea, no enemy visible (should suggest scouting), stale snapshot.
-- [ ] `evaluation/prompts.jsonl` with at least 14 labelled prompts: 4 economy, 4 combat, 2 technology,
-      2 knowledge-only, at least 1 prompt injection, at least 1 stale-state or invalid-action case, each with its
-      expected tools.
-- [ ] Eval runner: runs every prompt against its fixture and records observed tools, plan validity and latency.
-      Throttle requests for the Gemini free-tier rate limits.
+- [ ] `evaluation/prompts.jsonl` has 16 prompts; still add a stale-state and an invalid-action case, and check the
+      category mix (4 economy, 4 combat, 2 technology, 2 knowledge-only).
 - [ ] Compute the invalid-action rate: either a Python mirror of the gameplay checks (built from the knowledge
       JSON) or replaying the plans through Unity's GameActionValidator.
-- [ ] `evaluation/results.csv` and a summary table: latency mean/median/slowest, tool-call accuracy,
+- [ ] `run_eval.py` writes `results.json`; add CSV export and a summary table: latency mean/median/slowest, tool-call accuracy,
       invalid-action rate, prompt-injection result.
 - [ ] Document one failure case, the fix, and the numbers before and after.
 
 **Report and demo**
-- [ ] `docs/architecture.md`, suggested by the assignment (it can build on design brief §3–§5).
+- [ ] `docs/architecture.md` exists for the AI side; extend it with the Unity networking part once M2 is built.
 - [ ] IEEE conference report (A4): Abstract, Introduction, Game Design, System Architecture, Multiplayer Method,
       MCP and Agent Design, RAG Method, Structured Actions and Human Control, Security, Evaluation, Challenges and
       Lessons Learned, Conclusion and Future Work, Appendix (logs, prompts, schemas, setup).
@@ -187,3 +149,28 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
       ActionPlan validator, one security test.
 - [ ] Final check: no secrets in the repository (`.env`, `PhotonAppSettings.asset`), and `docs/setup.md` works
       from a clean clone.
+
+## Added by autopilot (M4 part 1 follow-ups)
+- [ ] **[You]** `pip install -r ai/requirements.txt`, then `python ai/rag/build_index.py` (downloads the embedding
+      model; the hybrid mode was not run in the cloud) and `pytest ai`.
+- [ ] **[You]** MCP Inspector: `RTS_SESSION_ID=<id> npx @modelcontextprotocol/inspector python ai/mcp-server/server.py`
+      (create a session id with `SessionStore.create_session()` and save a fixture snapshot first); screenshot
+      each tool with valid and invalid input.
+- [ ] **[You]** Live Gemini check: put `GEMINI_API_KEY` in `.env`, run `uvicorn --factory ai.gateway.app:create_app --port 8765`
+      from the repo root, `POST /session`, then `POST /ask` with a fixture snapshot (header `X-Session-Token`).
+      `GeminiLLM` (ai/gateway/llm.py) was never run against the real API.
+
+## Added by autopilot (Unity rules code, not compiled here)
+- [ ] **[You]** Open the project in Unity. The new scripts are `Assets/Scripts/Core/Rules/{GameData,DamageCalculator,GameActionValidator}.cs`
+      (assembly `RTS.Core`, `noEngineReferences`) and `Assets/Tests/EditMode/RulesTests.cs`. Check the Console for compile errors
+      (no dotnet SDK in the cloud, so they were never compiled) and run Window > General > Test Runner > EditMode.
+      Paste errors or failing test names into UNITY_FEEDBACK.md.
+- [ ] Wire `GameData.FromJson` to the knowledge JSON at runtime (copy `ai/rag/knowledge/*.json` into `Assets/StreamingAssets/`
+      or load as TextAssets) and use `DamageCalculator` from the combat code once it exists.
+
+## Added by autopilot (M6)
+- [ ] **[You]** Live evaluation: `GEMINI_API_KEY=... python evaluation/run_eval.py --real`; keep `evaluation/results.json` and
+      the numbers for the report. The mock mode (default) only checks the pipeline: its 100% accuracy is by construction.
+- [ ] Fill the "Live (Gemini)" column of `evaluation/security-tests.md`.
+- [ ] **[You]** Check that `Assets/Scripts/AI/AiGatewayClient.cs` and `Core/Rules/AiDtos.cs` compile (tuples and `Task` need
+      C# 7+, which Unity 6 has). Paste Console errors into UNITY_FEEDBACK.md.
