@@ -68,3 +68,9 @@ desktop.ini
 
 # Course assignment PDF (not part of the project)
 CSE-377_*.pdf
+
+ai/data/
+ai/logs/
+ai/rag/index/
+__pycache__/
+.pytest_cache/

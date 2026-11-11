@@ -87,30 +87,12 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 
 ## M4: MCP server, agent, RAG (week 4)
 **Python setup**
-- [ ] `ai/requirements.txt` (already referenced by `docs/setup.md`): mcp, fastapi, uvicorn, google-genai,
-      jsonschema, sentence-transformers, rank-bm25, python-dotenv, pytest.
-- [ ] Extend `.env.example` with the session DB path, log directory, max agent steps and timeout.
 
 **RAG**
-- [ ] `ai/rag/build_index.py`: one chunk per JSON record and per `## [source_id]` section of `rules.md`,
-      sentence-transformers embeddings plus BM25, written to `ai/rag/index/`, reproducible.
-- [ ] Retriever: hybrid score, `top_k` clamped to 1–5, returns `source_id`, score and text.
-- [ ] Retrieval tests, for example "counter cavalry" returns `unit_spearman_v1` or `strategy_defend_cavalry_v1`
-      in the top 3.
 
 **MCP server (`ai/mcp-server/server.py`)**
-- [ ] The 7 tools: get_player_resources, get_army_status, get_visible_enemies, get_technology_status,
-      get_recent_events, estimate_plan_cost, search_game_knowledge.
-- [ ] Session binding: the server reads the current session's snapshot from the SQLite store. The session id
-      comes from the gateway (environment or connection context), never from a tool argument. No tool takes a
-      player id.
-- [ ] Input validation: allowed `kind`/`id` values and count ranges for estimate_plan_cost; query length limit
-      and `top_k` clamp for search_game_knowledge; clear error results.
-- [ ] Mark every tool as read-only (MCP tool annotations). No filesystem, shell or HTTP tools.
-- [ ] `ai/mcp-server/tests/`: pytest for every tool with valid and invalid inputs.
-- [ ] MCP Inspector run: list the tools and call each one with valid and invalid input. Save screenshots/logs for
+- [ ] **[You]** MCP Inspector run: list the tools and call each one with valid and invalid input. Save screenshots/logs for
       the report.
-- [ ] Tool documentation (name, purpose, input, output, errors) in `docs/`. It is a required deliverable.
 
 **Gateway and agent (`ai/gateway/`)**
 - [ ] FastAPI endpoints: create session (returns a token), POST snapshot + question, "ask why" follow-up.
@@ -187,3 +169,10 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
       ActionPlan validator, one security test.
 - [ ] Final check: no secrets in the repository (`.env`, `PhotonAppSettings.asset`), and `docs/setup.md` works
       from a clean clone.
+
+## Added by autopilot (M4 part 1 follow-ups)
+- [ ] **[You]** `pip install -r ai/requirements.txt`, then `python ai/rag/build_index.py` (downloads the embedding
+      model; the hybrid mode was not run in the cloud) and `pytest ai`.
+- [ ] **[You]** MCP Inspector: `RTS_SESSION_ID=<id> npx @modelcontextprotocol/inspector python ai/mcp-server/server.py`
+      (create a session id with `SessionStore.create_session()` and save a fixture snapshot first); screenshot
+      each tool with valid and invalid input.
