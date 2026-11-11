@@ -165,3 +165,11 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 - [ ] **[You]** Live Gemini check: put `GEMINI_API_KEY` in `.env`, run `uvicorn --factory ai.gateway.app:create_app --port 8765`
       from the repo root, `POST /session`, then `POST /ask` with a fixture snapshot (header `X-Session-Token`).
       `GeminiLLM` (ai/gateway/llm.py) was never run against the real API.
+
+## Added by autopilot (Unity rules code, not compiled here)
+- [ ] **[You]** Open the project in Unity. The new scripts are `Assets/Scripts/Core/Rules/{GameData,DamageCalculator,GameActionValidator}.cs`
+      (assembly `RTS.Core`, `noEngineReferences`) and `Assets/Tests/EditMode/RulesTests.cs`. Check the Console for compile errors
+      (no dotnet SDK in the cloud, so they were never compiled) and run Window > General > Test Runner > EditMode.
+      Paste errors or failing test names into UNITY_FEEDBACK.md.
+- [ ] Wire `GameData.FromJson` to the knowledge JSON at runtime (copy `ai/rag/knowledge/*.json` into `Assets/StreamingAssets/`
+      or load as TextAssets) and use `DamageCalculator` from the combat code once it exists.

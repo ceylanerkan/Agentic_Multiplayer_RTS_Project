@@ -5,12 +5,13 @@
 - 7 araçlı salt-okunur MCP server (`ai/mcp-server/server.py`) ve araç dokümanı `docs/mcp-tools.md`.
 - 24 pytest testi geçiyor (`pytest ai`).
 - Gateway (`ai/gateway/`): `/session`, `/ask`, `/why`, agent döngüsü (max 6 adım, 30 sn), JSONL tool log ve security log; 33 test geçiyor.
-- Unity kodu henüz yok.
+- Unity için saf kural kodu: `GameData`, `DamageCalculator`, `GameActionValidator` + EditMode testleri (derlenmedi!).
 
 ## Bugün test et
 1. Pull request'i GitHub'da merge et, sonra `git pull`.
 2. `pip install -r ai/requirements.txt` ardından `python ai/rag/build_index.py` ve `pytest ai` çalıştır; hepsi geçmeli.
-3. Hata olursa çıktıyı UNITY_FEEDBACK.md'ye yaz. MCP Inspector adımı TODO.md'de.
+3. Unity'de projeyi aç, Console'da derleme hatası var mı bak, Test Runner > EditMode testlerini çalıştır (`RulesTests`).
+4. Hata olursa çıktıyı UNITY_FEEDBACK.md'ye yaz. MCP Inspector adımı TODO.md'de.
 
 ## Senin kararın gerekiyor
 Yok.
@@ -20,6 +21,8 @@ Yok.
 - Araç hataları exception yerine `{"error": ...}` döner.
 
 ## Emin olmadığım yerler
+- C# kodu burada derlenemedi (dotnet yok). `RTS.Core.asmdef` içindeki `Unity.Nuget.Newtonsoft-Json` referans adı hafızadan; yanlışsa Console'da görürsün.
+- Scriptler artık asmdef içinde (`RTS.Core`); ileride Fusion kodu için ayrı asmdef açılırsa `AssembliesToWeave` listesine eklenmeli.
 - `GeminiLLM` gerçek API ile hiç denenmedi; agent MCP server'ı süreç içinde çağırıyor (stdio client yok).
 - Hybrid (embedding) mod ve gerçek stdio MCP çalıştırması bu ortamda denenmedi.
 - `mcp` 2.x API'si (`MCPServer`) kullanıldı.
