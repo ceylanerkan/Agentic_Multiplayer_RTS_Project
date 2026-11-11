@@ -6,6 +6,7 @@
 - 24 pytest testi geçiyor (`pytest ai`).
 - Gateway (`ai/gateway/`): `/session`, `/ask`, `/why`, agent döngüsü (max 6 adım, 30 sn), JSONL tool log ve security log; 33 test geçiyor.
 - Değerlendirme: 3 fixture, 16 prompt, `evaluation/run_eval.py` (mock ve gerçek Gemini modu), `evaluation/security-tests.md`.
+- `AiDtos.cs`, `AiGatewayClient.cs` (derlenmedi) ve `docs/architecture.md`.
 - Unity için saf kural kodu: `GameData`, `DamageCalculator`, `GameActionValidator` + EditMode testleri (derlenmedi!).
 
 ## Bugün test et

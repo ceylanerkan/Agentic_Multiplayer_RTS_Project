@@ -99,11 +99,10 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
       Weapons do?") calls only search_game_knowledge.
 
 ## M5: Unity AI integration, approval, security (week 5)
-- [ ] `AiSafeSnapshot.cs` DTOs matching `safe_snapshot.schema.json`, plus a builder that groups own units and
+- [ ] DTOs exist (`Core/Rules/AiDtos.cs`); still write the builder (`AiSnapshotBuilder`) that groups own units and
       buildings by type and zone and takes visible enemies from `VisibilityService.FilterFor`.
 - [ ] Contract test: export a snapshot from Unity and validate it against the schema with pytest.
-- [ ] `AiGatewayClient` (UnityWebRequest, async, timeout, error message in the UI). Only Unity and the gateway
-      hold the session token.
+- [ ] `AiGatewayClient` is written (`Scripts/AI/AiGatewayClient.cs`, not compiled); show its error text in the UI panel.
 - [ ] `AiCommanderPanel`: question input, loading state, summary, action list with costs, confidence, evidence
       (tool names and source ids), Approve / Reject / Ask why buttons.
 - [ ] Read-only answers (no actions) are shown without approval; any plan with actions needs approval.
@@ -134,7 +133,7 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 - [ ] Document one failure case, the fix, and the numbers before and after.
 
 **Report and demo**
-- [ ] `docs/architecture.md`, suggested by the assignment (it can build on design brief §3–§5).
+- [ ] `docs/architecture.md` exists for the AI side; extend it with the Unity networking part once M2 is built.
 - [ ] IEEE conference report (A4): Abstract, Introduction, Game Design, System Architecture, Multiplayer Method,
       MCP and Agent Design, RAG Method, Structured Actions and Human Control, Security, Evaluation, Challenges and
       Lessons Learned, Conclusion and Future Work, Appendix (logs, prompts, schemas, setup).
@@ -173,3 +172,5 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 - [ ] **[You]** Live evaluation: `GEMINI_API_KEY=... python evaluation/run_eval.py --real`; keep `evaluation/results.json` and
       the numbers for the report. The mock mode (default) only checks the pipeline: its 100% accuracy is by construction.
 - [ ] Fill the "Live (Gemini)" column of `evaluation/security-tests.md`.
+- [ ] **[You]** Check that `Assets/Scripts/AI/AiGatewayClient.cs` and `Core/Rules/AiDtos.cs` compile (tuples and `Task` need
+      C# 7+, which Unity 6 has). Paste Console errors into UNITY_FEEDBACK.md.
