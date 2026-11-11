@@ -125,16 +125,11 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 
 ## M6: Evaluation, report, demo (week 6)
 **Evaluation**
-- [ ] Snapshot fixtures in `evaluation/fixtures/`: early game, cavalry raid at NorthGate, Age II affordable, low
-      resources, enemy Warships in OpenSea, no enemy visible (should suggest scouting), stale snapshot.
-- [ ] `evaluation/prompts.jsonl` with at least 14 labelled prompts: 4 economy, 4 combat, 2 technology,
-      2 knowledge-only, at least 1 prompt injection, at least 1 stale-state or invalid-action case, each with its
-      expected tools.
-- [ ] Eval runner: runs every prompt against its fixture and records observed tools, plan validity and latency.
-      Throttle requests for the Gemini free-tier rate limits.
+- [ ] `evaluation/prompts.jsonl` has 16 prompts; still add a stale-state and an invalid-action case, and check the
+      category mix (4 economy, 4 combat, 2 technology, 2 knowledge-only).
 - [ ] Compute the invalid-action rate: either a Python mirror of the gameplay checks (built from the knowledge
       JSON) or replaying the plans through Unity's GameActionValidator.
-- [ ] `evaluation/results.csv` and a summary table: latency mean/median/slowest, tool-call accuracy,
+- [ ] `run_eval.py` writes `results.json`; add CSV export and a summary table: latency mean/median/slowest, tool-call accuracy,
       invalid-action rate, prompt-injection result.
 - [ ] Document one failure case, the fix, and the numbers before and after.
 
@@ -173,3 +168,8 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
       Paste errors or failing test names into UNITY_FEEDBACK.md.
 - [ ] Wire `GameData.FromJson` to the knowledge JSON at runtime (copy `ai/rag/knowledge/*.json` into `Assets/StreamingAssets/`
       or load as TextAssets) and use `DamageCalculator` from the combat code once it exists.
+
+## Added by autopilot (M6)
+- [ ] **[You]** Live evaluation: `GEMINI_API_KEY=... python evaluation/run_eval.py --real`; keep `evaluation/results.json` and
+      the numbers for the report. The mock mode (default) only checks the pipeline: its 100% accuracy is by construction.
+- [ ] Fill the "Live (Gemini)" column of `evaluation/security-tests.md`.

@@ -74,3 +74,4 @@ ai/logs/
 ai/rag/index/
 __pycache__/
 .pytest_cache/
+evaluation/results.json

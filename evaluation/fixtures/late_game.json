@@ -1,0 +1,75 @@
+{
+ "match_id": "fx",
+ "game_time_s": 900,
+ "age": 2,
+ "resources": {
+  "wood": 500,
+  "food": 600,
+  "gold": 400
+ },
+ "population": {
+  "used": 40,
+  "capacity": 45
+ },
+ "own_army": [
+  {
+   "type": "villager",
+   "count": 8,
+   "zone": "P1Base",
+   "idle": 1
+  },
+  {
+   "type": "spearman",
+   "count": 3,
+   "zone": "P1Base"
+  },
+  {
+   "type": "warship",
+   "count": 2,
+   "zone": "P1Harbor"
+  }
+ ],
+ "own_buildings": [
+  {
+   "type": "town_center",
+   "count": 1
+  },
+  {
+   "type": "house",
+   "count": 2
+  },
+  {
+   "type": "barracks",
+   "count": 1
+  },
+  {
+   "type": "blacksmith",
+   "count": 1
+  },
+  {
+   "type": "stable",
+   "count": 1
+  },
+  {
+   "type": "dock",
+   "count": 1
+  }
+ ],
+ "visible_enemies": [
+  {
+   "type": "warship",
+   "count": 3,
+   "zone": "OpenSea"
+  },
+  {
+   "type": "archer",
+   "count": 5,
+   "zone": "Center"
+  }
+ ],
+ "researched_tech": [
+  "age_2",
+  "iron_weapons"
+ ],
+ "recent_events": []
+}

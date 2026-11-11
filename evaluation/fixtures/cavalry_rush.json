@@ -1,0 +1,56 @@
+{
+ "match_id": "fx",
+ "game_time_s": 300,
+ "age": 1,
+ "resources": {
+  "wood": 300,
+  "food": 250,
+  "gold": 120
+ },
+ "population": {
+  "used": 12,
+  "capacity": 15
+ },
+ "own_army": [
+  {
+   "type": "villager",
+   "count": 8,
+   "zone": "P1Base",
+   "idle": 1
+  },
+  {
+   "type": "spearman",
+   "count": 3,
+   "zone": "P1Base"
+  }
+ ],
+ "own_buildings": [
+  {
+   "type": "town_center",
+   "count": 1
+  },
+  {
+   "type": "house",
+   "count": 2
+  },
+  {
+   "type": "barracks",
+   "count": 1
+  }
+ ],
+ "visible_enemies": [
+  {
+   "type": "cavalry",
+   "count": 6,
+   "zone": "NorthGate"
+  }
+ ],
+ "researched_tech": [],
+ "recent_events": [
+  {
+   "type": "ENEMY_SIGHTED",
+   "zone": "NorthGate",
+   "seconds_ago": 8
+  }
+ ]
+}
