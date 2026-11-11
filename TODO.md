@@ -91,8 +91,6 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 **RAG**
 
 **MCP server (`ai/mcp-server/server.py`)**
-- [ ] **[You]** MCP Inspector run: list the tools and call each one with valid and invalid input. Save screenshots/logs for
-      the report.
 
 **Gateway and agent (`ai/gateway/`)**
 - [ ] FastAPI endpoints: create session (returns a token), POST snapshot + question, "ask why" follow-up.
