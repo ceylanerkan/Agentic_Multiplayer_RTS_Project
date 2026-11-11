@@ -4,7 +4,8 @@
 - M4 birinci kısım yeniden yapıldı (önceki push kaybolmuştu): `ai/requirements.txt`, RAG retriever, SQLite session store.
 - 7 araçlı salt-okunur MCP server (`ai/mcp-server/server.py`) ve araç dokümanı `docs/mcp-tools.md`.
 - 24 pytest testi geçiyor (`pytest ai`).
-- Gateway/agent döngüsü ve Unity kodu henüz yok.
+- Gateway (`ai/gateway/`): `/session`, `/ask`, `/why`, agent döngüsü (max 6 adım, 30 sn), JSONL tool log ve security log; 33 test geçiyor.
+- Unity kodu henüz yok.
 
 ## Bugün test et
 1. Pull request'i GitHub'da merge et, sonra `git pull`.
@@ -19,6 +20,7 @@ Yok.
 - Araç hataları exception yerine `{"error": ...}` döner.
 
 ## Emin olmadığım yerler
+- `GeminiLLM` gerçek API ile hiç denenmedi; agent MCP server'ı süreç içinde çağırıyor (stdio client yok).
 - Hybrid (embedding) mod ve gerçek stdio MCP çalıştırması bu ortamda denenmedi.
 - `mcp` 2.x API'si (`MCPServer`) kullanıldı.
 

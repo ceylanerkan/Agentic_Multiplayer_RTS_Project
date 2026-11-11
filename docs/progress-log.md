@@ -8,4 +8,9 @@
 - Tests: `python -m pytest -q ai` → 24 passed (mock-free; no LLM involved).
 - Open questions: none. Known risks: embeddings/hybrid mode and the real MCP stdio run were not exercised here;
   `mcp` 2.x API (`MCPServer`) is used, so requirements pin `mcp>=2.3,<3`.
-- Not started: gateway/agent loop, Unity work.
+- Chunk 2: gateway (`ai/gateway/`): FastAPI `/session`, `/ask`, `/why`; snapshot schema validation (unknown fields
+  rejected); agent loop (max 6 steps, 30 s, one repair retry) calling the MCP server in-process; provider-neutral
+  `LLM` interface with `ScriptedLLM` (tests) and `GeminiLLM` (untested); JSONL tool log + security log; stale flag.
+  Tests: `python -m pytest -q ai` → 33 passed.
+- Risks: `GeminiLLM` is untested against the real API; agent uses the MCP server object in-process, not a stdio client.
+- Not started: Unity work, M3, M5, M6.

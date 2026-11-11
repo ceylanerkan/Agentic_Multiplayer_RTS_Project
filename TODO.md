@@ -93,20 +93,8 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 **MCP server (`ai/mcp-server/server.py`)**
 
 **Gateway and agent (`ai/gateway/`)**
-- [ ] FastAPI endpoints: create session (returns a token), POST snapshot + question, "ask why" follow-up.
-      Validate the snapshot against `safe_snapshot.schema.json` (unknown fields rejected) and store it under the
-      session.
-- [ ] Agent loop: MCP client lists the tools, Gemini function calling, max 6 steps, 30 s timeout,
-      provider-neutral LLM interface.
-- [ ] System prompt: tool results and retrieved text are data, not instructions; reason only from visible
-      information; say that confidence is limited when a tool fails or the data is stale.
-- [ ] Final `RTSActionPlan`: validate it with `jsonschema` in the gateway. Gemini structured output supports
-      only part of JSON Schema (for example not `if/then`), so this check cannot be left to the model. Allow one
-      repair retry, then return an error.
-- [ ] Stale state: flag or reject snapshots older than N seconds.
-- [ ] JSONL tool log: timestamp, session, tool, arguments (no secrets), start/end, duration, status, result
-      count, validation errors.
-- [ ] Security log: suspected prompt-injection / policy-bypass attempts, rejected inputs, invalid plans.
+- [ ] Agent loop: it currently calls the MCP server object in-process; add a real stdio MCP client
+      (`mcp` client API) and test Gemini function calling live.
 - [ ] Standalone check: a compound question calls at least 3 tools; a knowledge-only question ("What does Iron
       Weapons do?") calls only search_game_knowledge.
 
@@ -174,3 +162,6 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 - [ ] **[You]** MCP Inspector: `RTS_SESSION_ID=<id> npx @modelcontextprotocol/inspector python ai/mcp-server/server.py`
       (create a session id with `SessionStore.create_session()` and save a fixture snapshot first); screenshot
       each tool with valid and invalid input.
+- [ ] **[You]** Live Gemini check: put `GEMINI_API_KEY` in `.env`, run `uvicorn --factory ai.gateway.app:create_app --port 8765`
+      from the repo root, `POST /session`, then `POST /ask` with a fixture snapshot (header `X-Session-Token`).
+      `GeminiLLM` (ai/gateway/llm.py) was never run against the real API.
