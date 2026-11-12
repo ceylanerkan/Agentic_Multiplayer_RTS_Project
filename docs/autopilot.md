@@ -43,6 +43,9 @@ project before the deadline on **2026-11-30**. The agent runs once a day at abou
      items are done, a chunk feels complete, or the remaining work needs the Unity editor (section 3 explains how
      to handle that). Stop early only when the whole plan and its "finished early" list are done, or when a usage
      limit stops you.
+   - A Stop hook enforces this (`.claude/settings.json`, `.claude/hooks/autopilot_min_runtime.py`). If you try to
+     end the run before 50 minutes, it sends you back with the time left; then continue with the next item. Never
+     edit, move or disable anything under `.claude/`.
    - Work in chunks: one coherent piece that is finished and tested, not many half-done items.
    - After each chunk, update `docs/nightly-plan.md`, `TODO.md`, `docs/progress-log.md` and `MORNING.md`, then
      commit and push (section 7). That way nothing is lost if a usage limit cuts the run off.

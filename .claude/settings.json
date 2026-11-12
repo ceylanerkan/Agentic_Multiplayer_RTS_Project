@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ \"$CLAUDE_CODE_REMOTE\" = \"true\" ] || exit 0; f=\"$CLAUDE_PROJECT_DIR/.claude/hooks/autopilot_min_runtime.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\" || exit 0",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
