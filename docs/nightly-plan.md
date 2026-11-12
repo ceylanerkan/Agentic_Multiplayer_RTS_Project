@@ -23,21 +23,21 @@ asmdef. They compile into `Assembly-CSharp`, which is already in Fusion's `Assem
 engine-free `RTS.Core` keeps its asmdef.
 
 ## Night 1 – 2026-11-12: check last night's C#, load the game data, start a match
-- [ ] Install the .NET SDK (autopilot.md section 3). Compile `Assets/Scripts/Core` and run `RulesTests` with NUnit
+- [x] (done 2026-11-12; `apt-get install dotnet-sdk-8.0` works, the dot.net script is blocked; 12/12 pass) Install the .NET SDK (autopilot.md section 3). Compile `Assets/Scripts/Core` and run `RulesTests` with NUnit
       in a throwaway project outside the repository, and fix every error.
-- [ ] `GameDataProvider`: load `ai/rag/knowledge/*.json` into `GameData` at runtime. In the editor it reads the
+- [x] (done 2026-11-12) `GameDataProvider`: load `ai/rag/knowledge/*.json` into `GameData` at runtime. In the editor it reads the
       repository folder. For builds, an `IPreprocessBuildWithReport` step copies the files to `StreamingAssets`.
-- [ ] `GameLauncher` and the menu UI script: Host or Join with a session name, `NetworkRunner.StartGame` with
+- [x] (done 2026-11-12, uncompiled: needs Unity) `GameLauncher` and the menu UI script: Host or Join with a session name, `NetworkRunner.StartGame` with
       `GameMode.Host` or `GameMode.Client`, loading the Game scene, P1/P2 assignment. When the other player
       disconnects, the match ends and both players return to the menu.
 - You: email the instructor about the one-person team if you have not done it yet. Delete the URP sample content,
   create the `Menu` and `Game` scenes, add them to Build Settings, and set up the launcher in `Menu`.
 
 ## Night 2 – 2026-11-13: networked state and commands
-- [ ] `PlayerState`: host-owned `[Networked]` resources, population used and capacity, age, researched technologies.
-- [ ] `NetworkUnit` and `NetworkBuilding`: owner, type key, `[Networked]` HP, and position through
+- [x] (done 2026-11-12, uncompiled; named `NetworkPlayerState`) `PlayerState`: host-owned `[Networked]` resources, population used and capacity, age, researched technologies.
+- [x] (done 2026-11-12, uncompiled; `GameSpawner` spawns TC + 3 Villagers) `NetworkUnit` and `NetworkBuilding`: owner, type key, `[Networked]` HP, and position through
       `NetworkTransform`. Spawn each player's Town Center and 3 Villagers when the player joins.
-- [ ] `CommandRelay` RPCs (InputAuthority to StateAuthority) for move, attack, gather, build, train and research.
+- [x] (done 2026-11-12, uncompiled; move/build/train/research done, attack and gather come with night 3/6) `CommandRelay` RPCs (InputAuthority to StateAuthority) for move, attack, gather, build, train and research.
       Before acting, the host checks ownership, cost, population and prerequisites with `RTS.Core`.
 - You: placeholder prefabs (capsules for units, cubes for buildings) with `NetworkObject`, then a two-instance
   smoke test with ParrelSync.

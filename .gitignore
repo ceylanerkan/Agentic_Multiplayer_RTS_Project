@@ -75,3 +75,7 @@ ai/rag/index/
 __pycache__/
 .pytest_cache/
 evaluation/results.json
+
+# Build-time copy of ai/rag/knowledge (see KnowledgeBuildCopy.cs)
+UnityRTS/Assets/StreamingAssets/knowledge/
+UnityRTS/Assets/StreamingAssets/knowledge.meta
