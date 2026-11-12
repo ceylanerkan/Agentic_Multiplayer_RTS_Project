@@ -34,10 +34,10 @@ engine-free `RTS.Core` keeps its asmdef.
   create the `Menu` and `Game` scenes, add them to Build Settings, and set up the launcher in `Menu`.
 
 ## Night 2 – 2026-11-13: networked state and commands
-- [ ] `PlayerState`: host-owned `[Networked]` resources, population used and capacity, age, researched technologies.
-- [ ] `NetworkUnit` and `NetworkBuilding`: owner, type key, `[Networked]` HP, and position through
+- [x] (done 2026-11-12, uncompiled; named `NetworkPlayerState`) `PlayerState`: host-owned `[Networked]` resources, population used and capacity, age, researched technologies.
+- [x] (done 2026-11-12, uncompiled; `GameSpawner` spawns TC + 3 Villagers) `NetworkUnit` and `NetworkBuilding`: owner, type key, `[Networked]` HP, and position through
       `NetworkTransform`. Spawn each player's Town Center and 3 Villagers when the player joins.
-- [ ] `CommandRelay` RPCs (InputAuthority to StateAuthority) for move, attack, gather, build, train and research.
+- [x] (done 2026-11-12, uncompiled; move/build/train/research done, attack and gather come with night 3/6) `CommandRelay` RPCs (InputAuthority to StateAuthority) for move, attack, gather, build, train and research.
       Before acting, the host checks ownership, cost, population and prerequisites with `RTS.Core`.
 - You: placeholder prefabs (capsules for units, cubes for buildings) with `NetworkObject`, then a two-instance
   smoke test with ParrelSync.

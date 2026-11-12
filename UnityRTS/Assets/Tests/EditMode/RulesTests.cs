@@ -94,5 +94,12 @@ namespace RTS.Tests
             Assert.AreEqual(0, PlayerSlots.SlotOf(new[] { 1, 2, 3 }, 3));
             Assert.AreEqual(0, PlayerSlots.SlotOf(new[] { 1, 2 }, 9));
         }
+
+        [Test] public void Capacity_TownCenterPlusHouses_CappedAt50()
+        {
+            Assert.AreEqual(5, GameConstants.Capacity(1, 0));
+            Assert.AreEqual(15, GameConstants.Capacity(1, 2));
+            Assert.AreEqual(50, GameConstants.Capacity(1, 20));
+        }
 }
 }

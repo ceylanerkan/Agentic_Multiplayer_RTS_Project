@@ -22,7 +22,7 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 
 ## M2: Networked core (week 2)
 **Networking**
-- [ ] Spawning each player's Town Center and 3 Villagers (night 2). The Host/Join launcher is written:
+- [ ] **[You]** Night 2 prefabs (after the Menu/Game step): create prefabs `Player` (empty + `NetworkObject`, `NetworkPlayerState`, `CommandRelay`), `Villager` and `Warrior` types as Capsule + `NetworkObject` + `NetworkTransform` + `NetworkUnit`, `TownCenter` and `House` as Cube + `NetworkObject` + `NetworkTransform` + `NetworkBuilding`. In `Game` add an object `Spawner` with `GameSpawner`: set Player Prefab, Unit Prefabs (key `villager` ...), Building Prefabs (key `town_center`, `house` ...), P1 Spawn / P2 Spawn (two empty objects ~40 units apart). Use Fusion menu to bake/register Network Prefabs. Test with ParrelSync: each side sees its TC and 3 villagers.
 - [ ] **[You]** Menu/Game scenes (night 1): delete `Assets/TutorialInfo`, `Assets/Readme.asset`; create scenes
       `Assets/Scenes/Menu.unity` and `Game.unity`, add both to File > Build Profiles > Scene List (Menu first).
       In `Menu`: add an empty GameObject `Launcher` with component `GameLauncher` (names Menu / Game are the defaults).
