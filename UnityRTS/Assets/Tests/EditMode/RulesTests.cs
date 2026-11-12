@@ -83,5 +83,16 @@ namespace RTS.Tests
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "OpenSea" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, Fresh()).Ok);
         }
-    }
+    
+        [Test] public void PlayerSlots_LowestIdIsP1()
+        {
+            Assert.AreEqual(1, PlayerSlots.SlotOf(new[] { 3, 2 }, 2));
+            Assert.AreEqual(2, PlayerSlots.SlotOf(new[] { 3, 2 }, 3));
+        }
+        [Test] public void PlayerSlots_ThirdPlayerAndUnknownGetZero()
+        {
+            Assert.AreEqual(0, PlayerSlots.SlotOf(new[] { 1, 2, 3 }, 3));
+            Assert.AreEqual(0, PlayerSlots.SlotOf(new[] { 1, 2 }, 9));
+        }
+}
 }

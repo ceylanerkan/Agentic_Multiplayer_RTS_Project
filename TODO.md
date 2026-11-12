@@ -13,7 +13,6 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 ## Unity project hygiene
 - [ ] Remove the URP sample content (`Assets/TutorialInfo`, `Assets/Readme.asset`) and replace `SampleScene`
       with `Menu` and `Game` scenes in Build Settings.
-- [ ] Create `Assets/Scripts/{Core,Units,Buildings,Resources,Combat,Networking,AI,UI}` (assignment §17 layout).
 - [ ] If the scripts get their own `.asmdef`, add that assembly to `AssembliesToWeave` in
       `NetworkProjectConfig.fusion`, otherwise Fusion does not weave the networked code.
 - [ ] ScriptableObjects for units, buildings and technologies, filled from `ai/rag/knowledge/*.json` (an importer
@@ -23,8 +22,14 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
 
 ## M2: Networked core (week 2)
 **Networking**
-- [ ] `NetworkRunner` bootstrap with a Host / Join menu (session name), P1/P2 assignment, and spawning each
-      player's Town Center and 3 Villagers.
+- [ ] Spawning each player's Town Center and 3 Villagers (night 2). The Host/Join launcher is written:
+- [ ] **[You]** Menu/Game scenes (night 1): delete `Assets/TutorialInfo`, `Assets/Readme.asset`; create scenes
+      `Assets/Scenes/Menu.unity` and `Game.unity`, add both to File > Build Profiles > Scene List (Menu first).
+      In `Menu`: add an empty GameObject `Launcher` with component `GameLauncher` (names Menu / Game are the defaults).
+      Add a Canvas with a `TMP_InputField` (session name), two Buttons (Host, Join) and a `TMP_Text` (status); add
+      `MenuUI` on the Canvas and drag the four objects into its fields. Do the same in `Game`: nothing yet.
+      Test: press Play in `Menu` with ParrelSync clone: one clicks Host, the other Join with the same name; both load
+      `Game`. Close the clone: the other returns to `Menu` with a message. Paste Console errors into UNITY_FEEDBACK.md.
 - [ ] Networked per-player state owned by the host: resources, population used/capacity, age, researched tech.
 - [ ] `CommandRelay` per player (RPC InputAuthority → StateAuthority) for move, attack, gather, build, train and
       research. The host checks ownership, cost, population and prerequisites.
@@ -165,8 +170,7 @@ Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation, Run In Backgro
       (assembly `RTS.Core`, `noEngineReferences`) and `Assets/Tests/EditMode/RulesTests.cs`. Check the Console for compile errors
       (no dotnet SDK in the cloud, so they were never compiled) and run Window > General > Test Runner > EditMode.
       Paste errors or failing test names into UNITY_FEEDBACK.md.
-- [ ] Wire `GameData.FromJson` to the knowledge JSON at runtime (copy `ai/rag/knowledge/*.json` into `Assets/StreamingAssets/`
-      or load as TextAssets) and use `DamageCalculator` from the combat code once it exists.
+- [ ] Use `DamageCalculator` from the combat code once it exists (`GameDataProvider.Get()` loads the data).
 
 ## Added by autopilot (M6)
 - [ ] **[You]** Live evaluation: `GEMINI_API_KEY=... python evaluation/run_eval.py --real`; keep `evaluation/results.json` and
