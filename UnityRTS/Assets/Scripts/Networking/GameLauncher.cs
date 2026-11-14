@@ -46,10 +46,11 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
         DontDestroyOnLoad(gameObject);
     }
 
-    public async void StartHost(string sessionName) { await Start(GameMode.Host, sessionName); }
-    public async void StartClient(string sessionName) { await Start(GameMode.Client, sessionName); }
+    public async void StartHost(string sessionName) { await StartSession(GameMode.Host, sessionName); }
+    public async void StartClient(string sessionName) { await StartSession(GameMode.Client, sessionName); }
 
-    async System.Threading.Tasks.Task Start(GameMode mode, string sessionName)
+    // Not called "Start": Unity reserves Start() for its own parameterless startup message.
+    async System.Threading.Tasks.Task StartSession(GameMode mode, string sessionName)
     {
         if (runner != null) return; // already connecting or running
         sessionName = string.IsNullOrWhiteSpace(sessionName) ? "room1" : sessionName.Trim();

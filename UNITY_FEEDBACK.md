@@ -20,3 +20,15 @@ Ajanın talimatları: [docs/autopilot.md](docs/autopilot.md).
 -->
 11/11/2026
 build_index + pytest tamam (35 passed)
+
+## 2026-11-14
+- Test 1 tamam: PR #2 merge edildi, main güncel.
+- Test 2, derleme: CS hatası yok. `GameLauncher`, `MenuUI`, `AiGatewayClient` ve Networking scriptleri derlendi;
+  Fusion/ILWeaver hatası da yok (private RPC'ler ve `NetworkString` parametreleri kabul edildi). Console'daki tek mesaj:
+  `Script error (GameLauncher): Start() can not take parameters.`
+  Sebep: `GameLauncher`'daki parametreli `Start(GameMode, string)` metodu. Main'de `StartSession` olarak yeniden
+  adlandırıldı. Bundan sonra Unity'nin mesaj adlarını (`Start`, `Awake`, `Update`, `OnEnable`, `OnDestroy`...)
+  parametreli kendi metodların için kullanma; mevcut scriptlerde başka örnek varsa düzelt.
+- Test 2, RulesTests (EditMode): 13/13 geçti.
+- Test 3 (Menu/Game sahneleri, ParrelSync ile Host/Join) ve 3b (prefab'lar, `GameSpawner`) henüz yapılmadı.
+  Bu sahnelerin ve prefab'ların henüz var olmadığını varsay.
