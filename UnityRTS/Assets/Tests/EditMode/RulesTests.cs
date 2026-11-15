@@ -512,5 +512,40 @@ namespace RTS.Tests
             foreach (var t in PlayerEventLog.TypeList) Assert.IsTrue(PlayerEventLog.ValidTypes.Contains(t));
             Assert.AreEqual(10, ZoneLookup.AllZones.Length);
         }
+
+        // A whole opening with the same rules the host uses (CommandRelay): pay when queued, reserve population, capacity from Houses.
+        [Test]
+        public void Scenario_Opening_PopulationCapHouseThenMoreVillagers()
+        {
+            var s = new PlayerState { PopulationUsed = GameConstants.StartVillagers, PopulationCapacity = GameConstants.Capacity(1, 0) };
+            s.Resources["wood"] = GameConstants.StartWood; s.Resources["food"] = GameConstants.StartFood; s.Resources["gold"] = GameConstants.StartGold;
+            s.CompletedBuildings["town_center"] = 1;
+            var train = new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 1 };
+            var queue = new ProductionQueue();
+
+            for (int i = 0; i < 2; i++)   // 3/5 -> 5/5
+            {
+                Assert.IsTrue(validator.Validate(train, s).Ok);
+                Assert.IsTrue(queue.Enqueue("villager", false, data.Units["villager"].TimeSeconds));
+                s.Resources["food"] -= data.Units["villager"].Cost["food"]; s.PopulationUsed++;
+            }
+            Assert.AreEqual(100, s.Resources["food"]);
+            Assert.IsFalse(validator.Validate(train, s).Ok);                    // blocked at the cap
+
+            var house = new PlanAction { ActionType = "BUILD", BuildingType = "house", TargetZone = "P1Base" };
+            Assert.IsTrue(validator.Validate(house, s).Ok);
+            foreach (var kv in data.Buildings["house"].Cost) s.Resources[kv.Key] -= kv.Value;
+            var site = new ConstructionState(data.Buildings["house"].TimeSeconds);
+            site.AddWork(data.Buildings["house"].TimeSeconds);                  // a Villager works until it is done
+            Assert.IsTrue(site.Done);
+            s.CompletedBuildings["house"] = 1; s.PopulationCapacity = GameConstants.Capacity(1, 1);
+            Assert.AreEqual(10, s.PopulationCapacity);
+            Assert.IsTrue(validator.Validate(train, s).Ok);                     // training works again
+
+            float total = 0; ProductionItem done = null;
+            while (queue.Count > 0) { total += 1f; done = queue.Tick(1f) ?? done; }
+            Assert.AreEqual(2 * data.Units["villager"].TimeSeconds, total, 1.01f);
+            Assert.IsNotNull(done);
+        }
     }
 }

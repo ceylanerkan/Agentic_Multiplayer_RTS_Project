@@ -3,7 +3,7 @@
 This file lists only the work that is still open. Milestone overview and status: [README.md](README.md#status).
 All code for nights 1-12 is written (updated 2026-11-15); what is left is editor work, play testing, live runs and
 the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is compiled and tested with the .NET SDK
-(46 C# tests), the Unity-specific scripts are only checked against stubs (`tools/compile-check`), so expect small
+(47 C# tests), the Unity-specific scripts are only checked against stubs (`tools/compile-check`), so expect small
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## Open decisions

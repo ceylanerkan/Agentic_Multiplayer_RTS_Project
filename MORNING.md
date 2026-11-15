@@ -4,7 +4,7 @@
 - Gece 3–12'nin tüm agent maddelerini yazdım (ZoneMap/BuildSlot/ResourceNode/gather, seçim + sağ tık komutları + kamera, üretim kuyruğu + inşaat + HUD, savaş + panel, teknolojiler + zafer ekranı, fog of war + olay günlüğü, AI snapshot + komutan paneli + onay akışı, siege/naval kuralları).
 - Rapor taslağı hazır: `docs/report/report.md` (tüm bölümler; canlı sayı gereken yerler `[TODO live]`), `docs/architecture.md` ağ bölümü, `docs/demo-script.md`, `docs/slides-outline.md`, `docs/defense-notes.md`.
 - Python: gerçek stdio MCP istemcisi (`MCP_TRANSPORT=stdio`), güvenlik testleri S10–S16, snapshot sözleşme testi, değerlendirmeye 5 yeni prompt + invalid-action oranı + CSV/tablo. `pytest ai evaluation`: 56 geçti.
-- C# kural kodu .NET ile derlendi: 46/46 EditMode testi geçti. Unity'ye özel scriptler `tools/compile-check` (sahte Unity/Fusion tipleri) ile derlendi: 0 hata. Bu gerçek Unity derlemesi değil.
+- C# kural kodu .NET ile derlendi: 47/47 EditMode testi geçti. Unity'ye özel scriptler `tools/compile-check` (sahte Unity/Fusion tipleri) ile derlendi: 0 hata. Bu gerçek Unity derlemesi değil.
 - Bulduğum hata: bina HP'si 0 okunuyordu (`buildings.json`'da `hp` üst seviyede); düzeltildi. `UNITY_FEEDBACK.md` 2026-11-14 notları işlendi (`Start` adı zaten main'de düzeltilmişti).
 
 ## Plan durumu
@@ -12,7 +12,7 @@ Gece 1–15'in agent maddeleri bitti (plan tarihlerinin yaklaşık 11 gün önü
 
 ## Bugün test et
 1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/3 , sonra `git pull`.
-2. Unity'yi aç, Console'daki derleme hatalarını `UNITY_FEEDBACK.md`'ye yapıştır (yeni scriptler hiç Unity'de derlenmedi; en olası: Fusion API ayrıntıları). EditMode testlerini çalıştır (46 beklenir).
+2. Unity'yi aç, Console'daki derleme hatalarını `UNITY_FEEDBACK.md`'ye yapıştır (yeni scriptler hiç Unity'de derlenmedi; en olası: Fusion API ayrıntıları). EditMode testlerini çalıştır (47 beklenir).
 3. `TODO.md` bölüm 1: `Assets/TutorialInfo` ve `Assets/Readme.asset`'i sil, sonra tek komut: `Tools > RTS > 0 Create Menu and Game scenes` (Menu + Game sahneleri, prefab'lar, harita, zone'lar, slot'lar, kaynaklar, `GameSpawner`, kamera, UI, Build Settings). Console'daki hataları yapıştır.
 4. ParrelSync ile iki örnek: Host/Join, birimleri seç/taşı, ağaca sağ tık (odun artmalı), House inşa et, Villager üret.
 5. Zaman kalırsa: Barracks + Spearman, düşman TC'yi yık (Victory/Defeat), fog of war. Sonuçları `UNITY_FEEDBACK.md`'ye `Test N tamam` / `Test N olmadı: ...` diye yaz.

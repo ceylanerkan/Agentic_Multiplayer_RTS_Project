@@ -123,6 +123,7 @@ engine-free `RTS.Core` keeps its asmdef.
 
 ## Night 16 – 2026-11-27: fix day
 - [ ] Fix everything open in `UNITY_FEEDBACK.md`, then review the code for bugs and missing tests.
+      (partly done 2026-11-15: 2026-11-14 feedback handled, first review pass + compile check done; waiting for the first real Unity feedback on the new code)
 - You: slides.
 
 ## Night 17 – 2026-11-28: final consistency pass
