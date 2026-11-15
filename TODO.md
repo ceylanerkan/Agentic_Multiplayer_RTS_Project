@@ -35,7 +35,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## [You] 2. Play tests (report results in UNITY_FEEDBACK.md)
 - [ ] Two instances: each side sees its TC and 3 Villagers; box-select and move; right-click a tree: wood rises in the HUD.
-- [ ] Build a House (Villager selected > Build house > click a slot): construction finishes, capacity 5 -> 10. Train a Villager at the TC.
+- [ ] Build a House (Villager selected > Build house > click a slot): construction finishes, capacity 5 -> 10. Select more Villagers and right-click the
+      unfinished building: they help and it finishes faster. Train a Villager at the TC.
 - [ ] Build a Barracks, train Spearmen, attack the enemy: HP drops on both screens; destroy the enemy TC: Victory / Defeat on both.
 - [ ] Fog: enemy units outside your sight are hidden, dark overlay on unseen ground; Scout sees farthest.
 - [ ] AI panel (needs the gateway running): ask, approve, reject, "Ask why". Menu Tools > RTS > Export AI snapshot, then `pytest ai`.
@@ -59,5 +60,4 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## Agent work still open
 - [ ] Night 16-18 of `docs/nightly-plan.md` (fix day, consistency pass, last run) and fixes from UNITY_FEEDBACK.md.
-- [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), Villager build help by right-click on a
-      construction site, ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
+- [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.

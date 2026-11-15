@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Right click with units selected:
+///  - on an own building under construction: Villagers help build it
 ///  - on a resource node: Villagers gather, other units just move there
 ///  - on an enemy unit or building: all selected units attack it
 ///  - on the ground: move, with a grid formation around the clicked point
@@ -29,6 +30,18 @@ public class UnitCommandInput : MonoBehaviour
 
         var node = hit.collider.GetComponentInParent<ResourceNode>();
         if (node != null) { GatherOrMove(sel.Units, node, relay); return; }
+
+        // Own building under construction: Villagers help build it, other units just walk there.
+        var site = hit.collider.GetComponentInParent<NetworkBuilding>();
+        if (site != null && site.Owner == relay.Object.InputAuthority && !site.Completed)
+        {
+            foreach (var u in sel.Units)
+            {
+                if (u.GetComponent<VillagerGatherer>() != null) relay.SendHelpBuild(u.Object.Id, site.Object.Id);
+                else relay.SendMove(u.Object.Id, site.transform.position);
+            }
+            return;
+        }
 
         var enemyUnit = hit.collider.GetComponentInParent<NetworkUnit>();
         if (enemyUnit != null && enemyUnit.Owner != relay.Object.InputAuthority)
