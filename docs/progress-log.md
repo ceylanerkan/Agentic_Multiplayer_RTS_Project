@@ -28,6 +28,12 @@
   Small decision: Approve executes the valid actions and skips the invalid ones, reporting why.
 - Night 10 security: `test_security.py` (S10-S14), agent now rejects undeclared tool arguments (`player_id`, `session_id`),
   `evaluation/security-tests.md` updated (S10-S16). `pytest ai evaluation` -> 43 passed.
+- Night 11 chunk: `ai/gateway/mcp_stdio.py` (`StdioMcp`: server as subprocess, real MCP over stdio, same two calls as the in-process
+  server); gateway option `MCP_TRANSPORT=stdio`; `test_mcp_stdio.py` (compound question calls 4 tools / 3 distinct,
+  knowledge-only calls only `search_game_knowledge`, 7 read-only tools, gateway end to end). `evaluation/plan_checks.py`
+  (Python copy of `GameActionValidator`) + tests, 5 new prompts (stale, invalid and valid actions), `run_eval.py` now reports
+  invalid-action rate and stale-confidence rate and writes `results.csv` and `results_table.md`.
+  `pytest ai evaluation` -> 51 passed. Mock numbers are by construction; the live Gemini run is a [You] task.
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

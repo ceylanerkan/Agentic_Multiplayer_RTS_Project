@@ -93,11 +93,11 @@ engine-free `RTS.Core` keeps its asmdef.
       knowledge chunk, invalid plans. Update `evaluation/security-tests.md`.
 
 ## Night 11 – 2026-11-22: real MCP client and evaluation numbers
-- [ ] Run the agent loop through a real stdio MCP client, with the server as a subprocess. Test it with the
+- [x] (done 2026-11-15) Run the agent loop through a real stdio MCP client, with the server as a subprocess. Test it with the
       scripted LLM: a compound question calls at least 3 tools, and a knowledge-only question calls only
       `search_game_knowledge`.
-- [ ] `prompts.jsonl`: add a stale-state case and an invalid-action case, and check the category mix.
-- [ ] Invalid-action rate through a Python copy of the gameplay checks, plus CSV export and a summary table.
+- [x] (done 2026-11-15) `prompts.jsonl`: add a stale-state case and an invalid-action case, and check the category mix.
+- [x] (done 2026-11-15) Invalid-action rate through a Python copy of the gameplay checks, plus CSV export and a summary table.
 - You: live Gemini run (`run_eval.py --real`), and keep the results.
 
 ## Night 12 – 2026-11-23: siege and naval (the first to cut if behind)

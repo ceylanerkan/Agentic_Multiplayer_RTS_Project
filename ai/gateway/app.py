@@ -62,10 +62,17 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
             raise HTTPException(422, "question too long")
         if INJECTION.search(question):
             sec_log.write(session=short_id(token), event="suspected_injection", question=question[:200])
-        agent = Agent(get_llm(), build_server(store, token, retriever), tool_log,
-                      int(os.environ.get("AGENT_MAX_STEPS", 6)), float(os.environ.get("AGENT_TIMEOUT_S", 30)))
+        steps, timeout = int(os.environ.get("AGENT_MAX_STEPS", 6)), float(os.environ.get("AGENT_TIMEOUT_S", 30))
         try:
-            plan, used = agent.run(short_id(token), question, note)
+            if os.environ.get("MCP_TRANSPORT", "inprocess") == "stdio":
+                # Demo mode: the MCP server runs as a subprocess and the agent speaks the real MCP protocol over stdio.
+                # It needs a file database (the subprocess reads the snapshot from it), not ":memory:".
+                from gateway.mcp_stdio import StdioMcp
+                db = os.environ.get("SESSION_DB_PATH", "ai/data/sessions.sqlite3")
+                with StdioMcp(token, db) as mcp:
+                    plan, used = Agent(get_llm(), mcp, tool_log, steps, timeout).run(short_id(token), question, note)
+            else:
+                plan, used = Agent(get_llm(), build_server(store, token, retriever), tool_log, steps, timeout).run(short_id(token), question, note)
         except AgentError as e:
             sec_log.write(session=short_id(token), event="invalid_plan_or_agent_failure", detail=str(e)[:200])
             raise HTTPException(502, f"AI could not produce a valid plan: {e}")
