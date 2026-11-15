@@ -101,8 +101,8 @@ engine-free `RTS.Core` keeps its asmdef.
 - You: live Gemini run (`run_eval.py --real`), and keep the results.
 
 ## Night 12 – 2026-11-23: siege and naval (the first to cut if behind)
-- [ ] Catapult: range, slow rate of fire, bonus against buildings.
-- [ ] Ships: Dock on a coastal slot, Raider Boat and Warship, a water-only NavMesh agent type, the domain rule in
+- [x] (done 2026-11-15, uncompiled; needs Unity) Catapult: range, slow rate of fire, bonus against buildings.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Ships: Dock on a coastal slot, Raider Boat and Warship, a water-only NavMesh agent type, the domain rule in
       combat, and fog of war on the sea.
 
 ## Night 13 – 2026-11-24: report, part 1

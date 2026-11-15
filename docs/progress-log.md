@@ -34,6 +34,10 @@
   (Python copy of `GameActionValidator`) + tests, 5 new prompts (stale, invalid and valid actions), `run_eval.py` now reports
   invalid-action rate and stale-confidence rate and writes `results.csv` and `results_table.md`.
   `pytest ai evaluation` -> 51 passed. Mock numbers are by construction; the live Gemini run is a [You] task.
+- Night 12 chunk: `DomainRules` (core) + 4 tests (45/45 pass): melee stays in its domain, ranged shoots across, Dock hit from both;
+  catapult cooldown 3.0 s (`GameConstants.CooldownFor`, small decision); `UnitCombat` uses domain rules and cooldown;
+  `NetworkUnit` movement stops at the shore (zone map decides land/water; simple replacement for per-agent-type NavMesh);
+  ships spawn in the own harbor zone. Fog of war already works on the sea (circle sight, no terrain).
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fusion;
+using RTS.Core.Rules;
 using UnityEngine;
 
 /// <summary>
@@ -51,6 +52,17 @@ public class NetworkUnit : NetworkBehaviour
         Vector3 to = MoveTarget - pos; to.y = 0;
         float step = GameDataProvider.Get().Units[TypeKey.ToString()].Speed * Runner.DeltaTime; // speed from units.json
         if (to.magnitude <= step) { transform.position = new Vector3(MoveTarget.x, pos.y, MoveTarget.z); HasMoveTarget = false; }
-        else transform.position = pos + to.normalized * step;
+        else
+        {
+            Vector3 next = pos + to.normalized * step;
+            // Domain rule: land units never enter water zones, ships never enter land zones (the zone map decides).
+            // This is the simple version; a baked NavMesh per agent type can replace it later.
+            if (ZoneMap.Instance != null)
+            {
+                bool water = ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(next));
+                if (!DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], water)) { HasMoveTarget = false; return; }
+            }
+            transform.position = next;
+        }
     }
 }

@@ -102,7 +102,14 @@ public class NetworkBuilding : NetworkBehaviour
         else
         {
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
-            GameSpawner.Instance.SpawnUnit(Owner, item.Key, transform.position + new Vector3(3f, 0, 3f));
+            Vector3 spawn = transform.position + new Vector3(3f, 0, 3f);
+            if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null)
+            {
+                // Ships appear in the player's own harbor (a water zone), not on the shore next to the Dock.
+                Vector3 harbor;
+                if (ZoneMap.Instance.TryGetCentre(st != null && st.Slot == 2 ? "P2Harbor" : "P1Harbor", out harbor)) spawn = harbor;
+            }
+            GameSpawner.Instance.SpawnUnit(Owner, item.Key, spawn);
             GameEvents.Report(Owner, "UNIT_TRAINED", transform.position, item.Key);
         }
     }

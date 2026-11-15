@@ -454,5 +454,55 @@ namespace RTS.Tests
             Assert.AreEqual(150, ActionCosts.CostOf(a, data)["food"]);
             StringAssert.Contains("150F", ActionCosts.Describe(a, data));
         }
+
+        // ---- Night 12: siege and naval ----
+        [Test]
+        public void Catapult_FiresSlowlyHasLongRangeAndHitsBuildingsHard()
+        {
+            Assert.Greater(GameConstants.CooldownFor("catapult"), GameConstants.CooldownFor("spearman"));
+            var cat = data.Units["catapult"];
+            Assert.Greater(cat.Range, data.Units["archer"].Range);
+            var tc = data.Buildings["town_center"];
+            float vsBuilding = DamageCalculator.Damage(cat, tc, true);
+            float vsUnit = DamageCalculator.Damage(cat, data.Units["spearman"], false);
+            Assert.AreEqual(cat.Attack * 3f - tc.Armor, vsBuilding, 0.001f);
+            Assert.Greater(vsBuilding, vsUnit);
+            Assert.AreEqual(1.5f, DamageCalculator.Multiplier(cat, data.Units["warship"], false)); // counters Warships
+        }
+
+        [Test]
+        public void Domain_MeleeStaysInOwnDomainRangedShootsAcross()
+        {
+            var spear = data.Units["spearman"]; var archer = data.Units["archer"];
+            var boat = data.Units["raider_boat"]; var ship = data.Units["warship"]; var cat = data.Units["catapult"];
+            Assert.IsFalse(DomainRules.CanAttack(spear, DomainRules.Water));   // melee on land cannot hit ships
+            Assert.IsTrue(DomainRules.CanAttack(archer, DomainRules.Water));   // ranged can
+            Assert.IsTrue(DomainRules.CanAttack(cat, DomainRules.Water));
+            Assert.IsTrue(DomainRules.CanAttack(ship, DomainRules.Land));
+            Assert.IsFalse(DomainRules.CanAttack(boat, DomainRules.Land));     // melee boat cannot hit land units
+            Assert.IsTrue(DomainRules.CanAttack(boat, DomainRules.Water));
+            string dock = DomainRules.DomainOfBuilding("dock");
+            Assert.IsTrue(DomainRules.CanAttack(spear, dock));                 // a Dock can be attacked from land and water
+            Assert.IsTrue(DomainRules.CanAttack(boat, dock));
+            Assert.AreEqual(DomainRules.Land, DomainRules.DomainOfBuilding("house"));
+        }
+
+        [Test]
+        public void Domain_WhereUnitsMayStand()
+        {
+            Assert.IsTrue(DomainRules.CanStandIn(data.Units["cavalry"], false));
+            Assert.IsFalse(DomainRules.CanStandIn(data.Units["cavalry"], true));
+            Assert.IsTrue(DomainRules.CanStandIn(data.Units["warship"], true));
+            Assert.IsFalse(DomainRules.CanStandIn(data.Units["warship"], false));
+        }
+
+        [Test]
+        public void Naval_CountersFollowTheLoop()
+        {
+            float boatVsShip = DamageCalculator.Multiplier(data.Units["raider_boat"], data.Units["warship"], false);
+            float shipVsArcher = DamageCalculator.Multiplier(data.Units["warship"], data.Units["archer"], false);
+            float archerVsBoat = DamageCalculator.Multiplier(data.Units["archer"], data.Units["raider_boat"], false);
+            Assert.AreEqual(1.5f, boatVsShip); Assert.AreEqual(1.5f, shipVsArcher); Assert.AreEqual(1.5f, archerVsBoat);
+        }
     }
 }

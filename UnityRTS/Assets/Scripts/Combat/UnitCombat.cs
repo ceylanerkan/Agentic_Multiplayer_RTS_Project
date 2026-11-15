@@ -43,12 +43,14 @@ public class UnitCombat : NetworkBehaviour
             if (tu == null && tb == null) { unit.AttackTarget = default; explicitTarget = false; } // target is gone
         }
 
+        if (explicitTarget && !CanHit(me, tu, tb)) { unit.AttackTarget = default; explicitTarget = false; } // e.g. melee unit ordered to hit a ship
+
         // 2. idle military units pick the nearest enemy in reach
         if (!explicitTarget)
         {
             bool busy = unit.HasMoveTarget || (gatherer != null && gatherer.Busy);
             if (busy || unit.TypeKey.ToString() == "villager") return;
-            FindAuto(range, out tu, out tb);
+            FindAuto(range, me, out tu, out tb);
             if (tu == null && tb == null) return;
         }
 
@@ -63,7 +65,7 @@ public class UnitCombat : NetworkBehaviour
         }
         if (explicitTarget) unit.StopMoving();
         if (cooldownLeft > 0) return;
-        cooldownLeft = GameConstants.AttackCooldown;
+        cooldownLeft = GameConstants.CooldownFor(unit.TypeKey.ToString());
         Hit(me, tu, tb);
     }
 
@@ -84,21 +86,31 @@ public class UnitCombat : NetworkBehaviour
         }
     }
 
-    void FindAuto(float range, out NetworkUnit bestU, out NetworkBuilding bestB)
+    static bool CanHit(DefRecord me, NetworkUnit tu, NetworkBuilding tb)
+    {
+        var data = GameDataProvider.Get();
+        string domain = tu != null ? DomainRules.DomainOfUnit(data.Units[tu.TypeKey.ToString()]) : DomainRules.DomainOfBuilding(tb.TypeKey.ToString());
+        return DomainRules.CanAttack(me, domain);
+    }
+
+    void FindAuto(float range, DefRecord me, out NetworkUnit bestU, out NetworkBuilding bestB)
     {
         bestU = null; bestB = null; float bestD = float.MaxValue;
-        Vector3 me = transform.position;
+        Vector3 pos = transform.position;
+        var data = GameDataProvider.Get();
         foreach (var u in NetworkUnit.All)
         {
             if (u.Owner == unit.Owner || u.Hp <= 0) continue;
-            float dist = Flat(u.transform.position - me);
+            if (!DomainRules.CanAttack(me, DomainRules.DomainOfUnit(data.Units[u.TypeKey.ToString()]))) continue;
+            float dist = Flat(u.transform.position - pos);
             if (dist <= range + GameConstants.UnitReach && dist < bestD) { bestD = dist; bestU = u; bestB = null; }
         }
         if (bestU != null) return; // units are preferred over buildings
         foreach (var b in NetworkBuilding.All)
         {
             if (b.Owner == unit.Owner || b.Hp <= 0) continue;
-            float dist = Flat(b.transform.position - me);
+            if (!DomainRules.CanAttack(me, DomainRules.DomainOfBuilding(b.TypeKey.ToString()))) continue;
+            float dist = Flat(b.transform.position - pos);
             if (dist <= range + GameConstants.BuildingReach && dist < bestD) { bestD = dist; bestB = b; }
         }
     }
