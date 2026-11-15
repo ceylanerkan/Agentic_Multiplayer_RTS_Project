@@ -18,6 +18,11 @@ public class NetworkPlayerState : NetworkBehaviour
     [Networked] public int Result { get; set; }          // 0 = match running, 1 = this player won, 2 = this player lost
     [Networked] public int TechMask { get; set; }        // bit i = i-th technology of GameData.Techs
 
+    // Every peer keeps the list of player states, so StateOf(owner) also works on clients (fog of war and the AI snapshot run there).
+    public static readonly List<NetworkPlayerState> All = new List<NetworkPlayerState>();
+    public override void Spawned() { All.Add(this); }
+    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
+
     public PlayerRef Owner => Object.InputAuthority;
 
     /// <summary>Host only: give the starting state from the rules.</summary>

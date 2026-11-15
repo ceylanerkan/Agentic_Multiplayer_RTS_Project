@@ -54,6 +54,6 @@ public class UnitCommandInput : MonoBehaviour
     {
         var offsets = FormationLayout.Offsets(units.Count, formationSpacing);
         for (int i = 0; i < units.Count; i++)
-            relay.SendMove(units[i].Id, point + new Vector3(offsets[i][0], 0, offsets[i][1]));
+            relay.SendMove(units[i].Object.Id, point + new Vector3(offsets[i][0], 0, offsets[i][1]));
     }
 }

@@ -33,11 +33,16 @@
   knowledge-only calls only `search_game_knowledge`, 7 read-only tools, gateway end to end). `evaluation/plan_checks.py`
   (Python copy of `GameActionValidator`) + tests, 5 new prompts (stale, invalid and valid actions), `run_eval.py` now reports
   invalid-action rate and stale-confidence rate and writes `results.csv` and `results_table.md`.
-  `pytest ai evaluation` -> 51 passed. Mock numbers are by construction; the live Gemini run is a [You] task.
+  `pytest ai evaluation` -> 53 passed. Mock numbers are by construction; the live Gemini run is a [You] task.
 - Night 12 chunk: `DomainRules` (core) + 4 tests (45/45 pass): melee stays in its domain, ranged shoots across, Dock hit from both;
   catapult cooldown 3.0 s (`GameConstants.CooldownFor`, small decision); `UnitCombat` uses domain rules and cooldown;
   `NetworkUnit` movement stops at the shore (zone map decides land/water; simple replacement for per-agent-type NavMesh);
   ships spawn in the own harbor zone. Fog of war already works on the sea (circle sight, no terrain).
+- Nights 13-15: `docs/report/report.md` (all sections, `[TODO live]` placeholders), networking section in `docs/architecture.md`,
+  `docs/demo-script.md`, `docs/slides-outline.md`, `docs/defense-notes.md`.
+- Review: `tools/compile-check` compiles the Unity scripts against stub Unity/Fusion/TMP types (0 errors; found `units[i].Id`).
+  Bug fixed: `GameSpawner.StateOf` only worked on the host, so fog of war and the AI snapshot on a client would have seen no objects;
+  `NetworkPlayerState.All` registry added. `TODO.md` and README status rewritten.
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

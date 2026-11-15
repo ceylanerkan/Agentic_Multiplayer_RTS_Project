@@ -22,11 +22,18 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     void Awake() { Instance = this; }
 
-    public NetworkPlayerState StateOf(PlayerRef p) { NetworkPlayerState s; players.TryGetValue(p, out s); return s; }
+    // Works on host and clients: NetworkPlayerState registers itself when it spawns (input authority = the player).
+    public NetworkPlayerState StateOf(PlayerRef p)
+    {
+        NetworkPlayerState known;
+        if (players.TryGetValue(p, out known) && known != null) return known; // host, right after spawning (Spawned may not have run yet)
+        foreach (var s in NetworkPlayerState.All) if (s.Object.InputAuthority == p) return s;
+        return null;
+    }
 
     public NetworkPlayerState StateBySlot(int slot)
     {
-        foreach (var s in players.Values) if (s.Slot == slot) return s;
+        foreach (var s in NetworkPlayerState.All) if (s.Slot == slot) return s;
         return null;
     }
 
