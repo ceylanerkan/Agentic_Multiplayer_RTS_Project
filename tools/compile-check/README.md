@@ -2,7 +2,7 @@
 
 `UnityFusionStubs.cs` contains minimal fake `UnityEngine`, `TMPro` and `Fusion` types. `CompileCheck.csproj` compiles our
 gameplay, networking and UI scripts against them, so typos and type errors are found without the editor.
-It does NOT check real Unity or Fusion APIs (the stubs are written from memory): a clean build here is necessary, not sufficient.
+It does NOT check real Unity or Fusion APIs (the stubs are written from memory; member names used by our scripts were also checked against `UnityRTS/Assets/Photon/Fusion/Assemblies/Fusion.Runtime.xml`): a clean build here is necessary, not sufficient.
 
     dotnet build tools/compile-check/CompileCheck.csproj
 

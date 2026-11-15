@@ -32,7 +32,7 @@ Yok.
 
 ## Emin olmadığım yerler
 - `Assets/Scripts/Editor/RtsSetupTools.cs` (dört menü komutu) da derlenmedi; hata verirse Console çıktısını yapıştır, elle adımlar TODO.md'de duruyor.
-- Yeni Unity/Fusion scriptleri (`UnitCombat`, `VillagerGatherer`, `CommandRelay`, `NetworkBuilding`, `FogOfWar`, panel scriptleri) gerçek Unity'de derlenmedi. Özellikle: `NetworkId.IsValid`, `Runner.Despawn`, `[Rpc(StateAuthority → InputAuthority)]` host kendi oyuncusuna RPC atarken (kodda host için doğrudan ekleme yapıyorum), `NetworkString<_128>`.
+- Yeni Unity/Fusion scriptleri gerçek Unity'de derlenmedi. Kullandığım Fusion üyelerinin hepsinin var olduğunu repodaki `Fusion.Runtime.xml` ile doğruladım (`NetworkId.IsValid/Raw`, `Runner.Despawn/Spawn/TryFindObject`, `NetworkTransform`, `IPlayerJoined`, `RpcTargets.InputAuthority`, `NetworkString` dönüşümü). Doğrulayamadığım: `[Rpc(StateAuthority → InputAuthority)]`'nin host kendi oyuncusuna gönderirken davranışı (host için RPC kullanmıyorum, doğrudan ekliyorum) ve Fusion'ın weaver'ının bazı kalıplara tepkisi.
 - `Shader.Find("Universal Render Pipeline/Unlit")` build'de ayıklanabilir (halka, hayalet, fog için); gerekirse `Sprites/Default`'a düşer. Build'de sorun olursa haber ver.
 - `FogOfWar` her 0.25 s'de 96×77 piksel boyar; yavaş gelirse `resolution`'ı düşür.
 - Client'ta `BuildSlot.occupied` bilgisi eski olabilir (host doğru olanı kontrol eder); hayalet bazen yanlışlıkla yeşil olabilir.
