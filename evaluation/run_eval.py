@@ -25,6 +25,7 @@ from gateway.agent import Agent, AgentError  # noqa: E402
 from gateway.llm import LLM, LLMReply  # noqa: E402
 from gateway.logs import JsonlLog  # noqa: E402
 import plan_checks  # noqa: E402
+from common.env import load_env  # noqa: E402
 from retriever import Retriever  # noqa: E402
 from server import build_server  # noqa: E402
 
@@ -105,6 +106,7 @@ def main():
     ap.add_argument("--real", action="store_true")
     ap.add_argument("--out", default=str(HERE / "results.json"))
     args = ap.parse_args()
+    load_env()  # GEMINI_API_KEY from .env for --real
     if args.real:
         import os
         from gateway.llm import GeminiLLM

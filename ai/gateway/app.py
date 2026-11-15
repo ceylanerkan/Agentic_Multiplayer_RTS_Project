@@ -36,7 +36,11 @@ class Why(BaseModel):
     question: str = "Why did you propose this plan?"
 
 
+from common.env import load_env  # noqa: E402
+
+
 def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
+    load_env()  # .env in the repository root (GEMINI_API_KEY, MCP_TRANSPORT, ...)
     store = store or SessionStore(os.environ.get("SESSION_DB_PATH", "ai/data/sessions.sqlite3"))
     log_dir = Path(log_dir or os.environ.get("LOG_DIR", "ai/logs"))
     tool_log, sec_log = JsonlLog(log_dir / "tool_calls.jsonl"), JsonlLog(log_dir / "security.jsonl")
