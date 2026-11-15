@@ -26,11 +26,14 @@ public class ResourceNode : NetworkBehaviour
     public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
 
     /// <summary>Host only. Removes up to amount from the node; despawns it when it reaches zero.</summary>
-    public void Take(float amount)
+    /// <returns>true when the node is now empty and was despawned (do not read it afterwards)</returns>
+    public bool Take(float amount)
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority) return false;
         Amount -= amount;
-        if (Amount <= 0.001f) { Amount = 0; Runner.Despawn(Object); }
+        if (Amount > 0.001f) return false;
+        Amount = 0; Runner.Despawn(Object);
+        return true;
     }
 
     public static ResourceNode Nearest(Vector3 from, string resource, float maxDistance)

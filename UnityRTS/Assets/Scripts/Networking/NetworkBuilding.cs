@@ -52,21 +52,23 @@ public class NetworkBuilding : NetworkBehaviour
     }
 
     /// <summary>Host only. A destroyed building frees its slot and population capacity.</summary>
-    public void TakeDamage(float amount)
+    /// <returns>true when this hit destroyed the building</returns>
+    public bool TakeDamage(float amount)
     {
-        if (!HasStateAuthority || Hp <= 0) return;
+        if (!HasStateAuthority || Hp <= 0) return false;
         Hp -= amount;
         GameEvents.Report(Owner, "UNDER_ATTACK", transform.position, TypeKey.ToString());
-        if (Hp > 0) return;
+        if (Hp > 0) return false;
         Hp = 0;
         GameEvents.Report(Owner, "BUILDING_LOST", transform.position, TypeKey.ToString());
         foreach (var slot in BuildSlot.All)
-            if ((slot.transform.position - transform.position).sqrMagnitude < 1f) slot.occupied = false;
+            { Vector3 d = slot.transform.position - transform.position; d.y = 0; if (d.sqrMagnitude < 1f) slot.occupied = false; } // XZ only: the building is lifted onto the ground
         var st = GameSpawner.Instance.StateOf(Owner);
-        if (st != null) st.RecalculateCapacity(this); // this building is still in All until Despawned runs
+        if (st != null) { st.PopUsed = Mathf.Max(0, st.PopUsed - queue.UnitCount); st.RecalculateCapacity(this); } // queued units never appear: free their reserved population // this building is still in All until Despawned runs
         bool wasTownCenter = TypeKey.ToString() == "town_center";
         Runner.Despawn(Object);
         if (wasTownCenter) MatchEnd.Check(this);
+        return true;
     }
 
     // ---- production queue (host only) ----

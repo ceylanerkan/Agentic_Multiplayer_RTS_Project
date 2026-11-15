@@ -16,6 +16,8 @@ public class CommandRelay : NetworkBehaviour
     /// <summary>The CommandRelay of the local player (the one this peer has input authority over).</summary>
     public static CommandRelay Local { get; private set; }
 
+    public override void Despawned(NetworkRunner runner, bool hasState) { if (Local == this) Local = null; }
+
     public override void Spawned()
     {
         if (Object.HasInputAuthority) Local = this;

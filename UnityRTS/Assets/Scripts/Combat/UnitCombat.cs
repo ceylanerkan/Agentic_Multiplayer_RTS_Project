@@ -76,13 +76,11 @@ public class UnitCombat : NetworkBehaviour
         float bonus = owner != null ? TechBonus.AttackBonus(me, owner) : 0f;
         if (tu != null)
         {
-            tu.TakeDamage(DamageCalculator.Damage(me, data.Units[tu.TypeKey.ToString()], false, bonus));
-            if (tu == null || tu.Hp <= 0) unit.AttackTarget = default;
+            if (tu.TakeDamage(DamageCalculator.Damage(me, data.Units[tu.TypeKey.ToString()], false, bonus))) unit.AttackTarget = default; // killed: do not read tu any more
         }
         else
         {
-            tb.TakeDamage(DamageCalculator.Damage(me, data.Buildings[tb.TypeKey.ToString()], true, bonus));
-            if (tb == null || tb.Hp <= 0) unit.AttackTarget = default;
+            if (tb.TakeDamage(DamageCalculator.Damage(me, data.Buildings[tb.TypeKey.ToString()], true, bonus))) unit.AttackTarget = default;
         }
     }
 

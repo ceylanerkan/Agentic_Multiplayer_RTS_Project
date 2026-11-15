@@ -5,6 +5,7 @@
 - Rapor taslağı hazır: `docs/report/report.md` (tüm bölümler; canlı sayı gereken yerler `[TODO live]`), `docs/architecture.md` ağ bölümü, `docs/demo-script.md`, `docs/slides-outline.md`, `docs/defense-notes.md`.
 - Python: gerçek stdio MCP istemcisi (`MCP_TRANSPORT=stdio`), güvenlik testleri S10–S16, snapshot sözleşme testi, değerlendirmeye 5 yeni prompt + invalid-action oranı + CSV/tablo. `pytest ai evaluation`: 57 geçti.
 - C# kural kodu .NET ile derlendi: 47/47 EditMode testi geçti. Unity'ye özel scriptler `tools/compile-check` (sahte Unity/Fusion tipleri) ile derlendi: 0 hata. Bu gerçek Unity derlemesi değil.
+- Bağımsız bir kod incelemesiyle 8 çalışma-zamanı hatası daha bulup düzelttim (Shutdown launcher'ı yok ediyordu, ölen nesnenin değerini okuma, slot/nüfus sızıntıları, event spam; ayrıntı `docs/progress-log.md`).
 - Bulduğum hata: bina HP'si 0 okunuyordu (`buildings.json`'da `hp` üst seviyede); düzeltildi. `UNITY_FEEDBACK.md` 2026-11-14 notları işlendi (`Start` adı zaten main'de düzeltilmişti).
 
 ## Plan durumu
@@ -36,6 +37,7 @@ Yok.
 - `Shader.Find("Universal Render Pipeline/Unlit")` build'de ayıklanabilir (halka, hayalet, fog için); gerekirse `Sprites/Default`'a düşer. Build'de sorun olursa haber ver.
 - `FogOfWar` her 0.25 s'de 96×77 piksel boyar; yavaş gelirse `resolution`'ı düşür.
 - Client'ta `BuildSlot.occupied` bilgisi eski olabilir (host doğru olanı kontrol eder); hayalet bazen yanlışlıkla yeşil olabilir.
+- Host'un kendi `PlayerJoined` çağrısı Game sahnesi yüklenmeden önce gelirse host'a üs verilmeyebilir (GameSpawner sahne nesnesi). Play'de kontrol et: host'ta TC + 3 Villager çıkmalı; çıkmazsa Console/feedback'e yaz.
 - Gemini ile canlı çalıştırma hiç yapılmadı (`GeminiLLM` gerçek API'de test edilmedi).
 
 ## Nasıl cevap verirsin

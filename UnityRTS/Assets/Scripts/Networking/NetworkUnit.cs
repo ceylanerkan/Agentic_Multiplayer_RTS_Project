@@ -30,17 +30,19 @@ public class NetworkUnit : NetworkBehaviour
 
     public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; }
     /// <summary>Host only. Death frees the population slot and removes the object.</summary>
-    public void TakeDamage(float amount)
+    /// <returns>true when this hit killed the unit (do not read its networked values afterwards)</returns>
+    public bool TakeDamage(float amount)
     {
-        if (!HasStateAuthority || Hp <= 0) return;
+        if (!HasStateAuthority || Hp <= 0) return false;
         Hp -= amount;
         GameEvents.Report(Owner, "UNDER_ATTACK", transform.position, TypeKey.ToString());
-        if (Hp > 0) return;
+        if (Hp > 0) return false;
         Hp = 0;
         GameEvents.Report(Owner, "UNIT_LOST", transform.position, TypeKey.ToString());
         var st = GameSpawner.Instance.StateOf(Owner);
         if (st != null && st.PopUsed > 0) st.PopUsed -= 1;
         Runner.Despawn(Object);
+        return true;
     }
 
     public void StopMoving() { HasMoveTarget = false; }

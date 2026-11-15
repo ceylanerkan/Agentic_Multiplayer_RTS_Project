@@ -49,14 +49,14 @@ public class NetworkPlayerState : NetworkBehaviour
         foreach (var kv in cost) Add(kv.Key, -kv.Value * count);
     }
 
-    public bool HasTech(string key) { return (TechMask & (1 << TechIndex(key))) != 0; }
-    public void GrantTech(string key) { TechMask |= 1 << TechIndex(key); }
+    public bool HasTech(string key) { int i = TechIndex(key); return i >= 0 && (TechMask & (1 << i)) != 0; }
+    public void GrantTech(string key) { int i = TechIndex(key); if (i >= 0) TechMask |= 1 << i; }
 
     static int TechIndex(string key)
     {
         int i = 0;
         foreach (var k in GameDataProvider.Get().Techs.Keys) { if (k == key) return i; i++; }
-        return 0;
+        return -1; // unknown technology
     }
 
     /// <summary>Snapshot for GameActionValidator. Completed buildings come from the NetworkBuilding registry.</summary>

@@ -20,7 +20,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     readonly Dictionary<PlayerRef, NetworkPlayerState> players = new Dictionary<PlayerRef, NetworkPlayerState>();
 
-    void Awake() { Instance = this; }
+    void Awake() { Instance = this; GameEvents.Local.Clear(); } // new match, new event log
 
     // Works on host and clients: NetworkPlayerState registers itself when it spawns (input authority = the player).
     public NetworkPlayerState StateOf(PlayerRef p)

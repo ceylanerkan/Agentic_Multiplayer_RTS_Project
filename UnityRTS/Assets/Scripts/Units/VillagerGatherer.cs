@@ -64,9 +64,10 @@ public class VillagerGatherer : NetworkBehaviour
                 if (node == null) { FindOtherNodeOrStop(); break; }
                 bool horseCollar = Owner() != null && Owner().HasTech("horse_collar"); // +20% food, see TechEffects
                 float taken = bag.Tick(Runner.DeltaTime, resource, node.Amount, horseCollar);
-                node.Take(taken); // may despawn the node; the reference then becomes null on the next tick
-                if (node.Amount <= 0f) GameEvents.Report(unit.Owner, "RESOURCE_DEPLETED", node.transform.position, resource);
-                if (bag.Full || taken <= 0f) GoDeposit();
+                Vector3 nodePos = node.transform.position;
+                bool depleted = node.Take(taken); // despawns the node when empty: do not read it afterwards
+                if (depleted) GameEvents.Report(unit.Owner, "RESOURCE_DEPLETED", nodePos, resource);
+                if (bag.Full || taken <= 0f || depleted) { if (depleted) node = null; if (bag.CarriedWhole > 0) GoDeposit(); else FindOtherNodeOrStop(); }
                 break;
 
             case Phase.ToBuild:

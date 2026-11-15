@@ -24,6 +24,7 @@ namespace RTS.Core.Rules
         readonly List<ProductionItem> items = new List<ProductionItem>();
 
         public int Count { get { return items.Count; } }
+        public int UnitCount { get { int n = 0; foreach (var i in items) if (!i.IsResearch) n++; return n; } }
         public ProductionItem Current { get { return items.Count > 0 ? items[0] : null; } }
         public float CurrentProgress { get { return Current == null || Current.Duration <= 0 ? 0f : Current.Elapsed / Current.Duration; } }
 
