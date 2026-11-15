@@ -57,7 +57,7 @@ public class NetworkPlayerState : NetworkBehaviour
     /// <summary>Snapshot for GameActionValidator. Completed buildings come from the NetworkBuilding registry.</summary>
     public PlayerState ToCore()
     {
-        var s = new PlayerState { PopulationUsed = PopUsed, PopulationCapacity = PopCapacity, Age = Age };
+        var s = new PlayerState { Slot = Slot, PopulationUsed = PopUsed, PopulationCapacity = PopCapacity, Age = Age };
         s.Resources["wood"] = Wood; s.Resources["food"] = Food; s.Resources["gold"] = Gold;
         foreach (var k in GameDataProvider.Get().Techs.Keys) if (HasTech(k)) s.Techs.Add(k);
         foreach (var b in NetworkBuilding.All)

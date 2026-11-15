@@ -1,0 +1,71 @@
+{
+  "match_id": "sample-match",
+  "game_time_s": 62.5,
+  "age": 2,
+  "resources": {
+    "wood": 120,
+    "food": 340,
+    "gold": 60
+  },
+  "population": {
+    "used": 4,
+    "capacity": 10
+  },
+  "own_army": [
+    {
+      "type": "archer",
+      "count": 1,
+      "zone": "NorthGate",
+      "idle": 0,
+      "avg_hp_pct": 64.5
+    },
+    {
+      "type": "villager",
+      "count": 1,
+      "zone": "P1Base",
+      "idle": 1,
+      "avg_hp_pct": 100.0
+    }
+  ],
+  "own_buildings": [
+    {
+      "type": "barracks",
+      "count": 0,
+      "under_construction": 1,
+      "busy": 0
+    },
+    {
+      "type": "town_center",
+      "count": 1,
+      "under_construction": 0,
+      "busy": 1
+    }
+  ],
+  "visible_enemies": [
+    {
+      "type": "spearman",
+      "count": 1,
+      "zone": "Center"
+    }
+  ],
+  "researched_tech": [
+    "age_2"
+  ],
+  "researching": [
+    "iron_weapons"
+  ],
+  "recent_events": [
+    {
+      "type": "UNIT_TRAINED",
+      "zone": "P1Base",
+      "detail": "villager",
+      "seconds_ago": 10.0
+    },
+    {
+      "type": "ENEMY_SIGHTED",
+      "zone": "Center",
+      "detail": "enemy spearman",
+      "seconds_ago": 20.0
+    }
+  ]
+}

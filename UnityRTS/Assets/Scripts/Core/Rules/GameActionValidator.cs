@@ -16,6 +16,7 @@ namespace RTS.Core.Rules
         public Dictionary<string, int> Resources = new Dictionary<string, int> { { "wood", 0 }, { "food", 0 }, { "gold", 0 } };
         public int PopulationUsed, PopulationCapacity;
         public int Age = 1;
+        public int Slot = 1;   // 1 = P1, 2 = P2: decides which base is "own"
         public HashSet<string> Techs = new HashSet<string>();
         public Dictionary<string, int> CompletedBuildings = new Dictionary<string, int>();
         public HashSet<string> CoastalSlotZones = new HashSet<string>(); // own zones with a free coastal slot
@@ -69,6 +70,8 @@ namespace RTS.Core.Rules
             DefRecord b;
             if (a.BuildingType == null || !data.Buildings.TryGetValue(a.BuildingType, out b) || !b.Buildable) return ValidationResult.Fail("unknown or unbuildable building_type");
             if (a.TargetZone == null || !LandZones.Contains(a.TargetZone)) return ValidationResult.Fail("buildings need a land target_zone");
+            string enemyBase = s.Slot == 1 ? "P2Base" : "P1Base";
+            if (a.TargetZone == enemyBase) return ValidationResult.Fail("cannot build in the enemy base");
             if (a.BuildingType == "dock" && !s.CoastalSlotZones.Contains(a.TargetZone)) return ValidationResult.Fail("dock needs a free coastal slot in your own base");
             var req = Requirement(b.Requires, s);
             if (req != null) return ValidationResult.Fail(req);

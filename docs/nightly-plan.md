@@ -79,15 +79,15 @@ engine-free `RTS.Core` keeps its asmdef.
 - [x] (done 2026-11-15, uncompiled; needs Unity) Recent-event log per player (the 8 event types, with zone and time), holding only what the player may know.
 
 ## Night 9 – 2026-11-20: AI in Unity
-- [ ] `AiSnapshotBuilder`: own units and buildings grouped by type and zone, enemies only from `FilterFor`. Add a
+- [x] (done 2026-11-15, Unity parts uncompiled) `AiSnapshotBuilder`: own units and buildings grouped by type and zone, enemies only from `FilterFor`. Add a
       snapshot export, and a pytest contract test that validates an exported snapshot against the schema.
-- [ ] `AiCommanderPanel`: question, loading state, summary, actions with costs, confidence, evidence, and Approve,
+- [x] (done 2026-11-15, Unity parts uncompiled) `AiCommanderPanel`: question, loading state, summary, actions with costs, confidence, evidence, and Approve,
       Reject and Ask why buttons. Read-only answers need no approval.
 
 ## Night 10 – 2026-11-21: approval flow and security
-- [ ] Approval: run `GameActionValidator` again on the current state and send approved actions through
+- [x] (done 2026-11-15, Unity parts uncompiled) Approval: run `GameActionValidator` again on the current state and send approved actions through
       `CommandRelay`. Reject changes nothing. Decision log: plan id, decision, validator result per action.
-- [ ] Domain checks in `GameActionValidator` (land and water zones, Dock only on your own coastal slot), with
+- [x] (done 2026-11-15, Unity parts uncompiled) Domain checks in `GameActionValidator` (land and water zones, Dock only on your own coastal slot), with
       EditMode tests.
 - [ ] Security tests, in pytest where possible: hidden extra field, identity switch, oversized `top_k`, injected
       knowledge chunk, invalid plans. Update `evaluation/security-tests.md`.

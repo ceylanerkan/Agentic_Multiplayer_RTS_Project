@@ -322,5 +322,137 @@ namespace RTS.Tests
             Assert.AreEqual(100f - 60f, recent[0].Value, 0.001f);
             Assert.LessOrEqual(log.Count, PlayerEventLog.MaxStored);
         }
+
+        [Test]
+        public void Snapshot_GroupsUnitsAndKeepsOnlyGivenEnemies()
+        {
+            var units = new List<OwnUnitInfo>
+            {
+                new OwnUnitInfo { Type = "villager", Zone = "P1Base", HpPct = 100, Idle = true },
+                new OwnUnitInfo { Type = "villager", Zone = "P1Base", HpPct = 50, Idle = false },
+                new OwnUnitInfo { Type = "spearman", Zone = "Center", HpPct = 80, Idle = true },
+            };
+            var buildings = new List<OwnBuildingInfo>
+            {
+                new OwnBuildingInfo { Type = "town_center", Completed = true, Busy = true },
+                new OwnBuildingInfo { Type = "house", Completed = false },
+            };
+            var enemies = new List<EnemySighting> { new EnemySighting { Type = "cavalry", Zone = "NorthGate" }, new EnemySighting { Type = "cavalry", Zone = "NorthGate" } };
+            var log = new PlayerEventLog(); log.Add("UNIT_TRAINED", "P1Base", "villager", 5f);
+            var snap = SnapshotAssembler.Build("m1", 100f, 1, 200, 150, 50, 3, 5, units, buildings, enemies,
+                new List<string>(), new List<string>(), log.Recent(10f));
+            Assert.AreEqual(2, snap.OwnArmy.Count);
+            var vill = snap.OwnArmy.Find(g => g.Type == "villager");
+            Assert.AreEqual(2, vill.Count); Assert.AreEqual(1, vill.Idle); Assert.AreEqual(75f, vill.AvgHpPct, 0.01f);
+            Assert.AreEqual(1, snap.OwnBuildings.Find(b => b.Type == "house").UnderConstruction);
+            Assert.AreEqual(0, snap.OwnBuildings.Find(b => b.Type == "house").Count);
+            Assert.AreEqual(1, snap.VisibleEnemies.Count); Assert.AreEqual(2, snap.VisibleEnemies[0].Count);
+            Assert.AreEqual(5f, snap.RecentEvents[0].SecondsAgo, 0.01f);
+            StringAssert.DoesNotContain("opponent", snap.ToJson());
+        }
+
+        // Writes the sample that the Python contract test (ai/gateway/tests/test_snapshot_contract.py) validates.
+        // Only when RTS_SNAPSHOT_OUT is set, so a normal test run never touches the repository.
+        [Test]
+        public void Snapshot_ExportSampleForPythonContractTest()
+        {
+            string outPath = System.Environment.GetEnvironmentVariable("RTS_SNAPSHOT_OUT");
+            var units = new List<OwnUnitInfo>
+            {
+                new OwnUnitInfo { Type = "villager", Zone = "P1Base", HpPct = 100, Idle = true },
+                new OwnUnitInfo { Type = "archer", Zone = "NorthGate", HpPct = 64.5f, Idle = false },
+            };
+            var buildings = new List<OwnBuildingInfo> { new OwnBuildingInfo { Type = "town_center", Completed = true, Busy = true }, new OwnBuildingInfo { Type = "barracks", Completed = false } };
+            var enemies = new List<EnemySighting> { new EnemySighting { Type = "spearman", Zone = "Center" } };
+            var log = new PlayerEventLog(); log.Add("ENEMY_SIGHTED", "Center", "enemy spearman", 40f); log.Add("UNIT_TRAINED", "P1Base", "villager", 50f);
+            var snap = SnapshotAssembler.Build("sample-match", 62.5f, 2, 120, 340, 60, 4, 10, units, buildings, enemies,
+                new List<string> { "age_2" }, new List<string> { "iron_weapons" }, log.Recent(60f));
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(snap, Newtonsoft.Json.Formatting.Indented);
+            if (!string.IsNullOrEmpty(outPath)) File.WriteAllText(outPath, json);
+            Assert.IsTrue(json.Contains("\"visible_enemies\""));
+        }
+
+        // ---- Night 10: domain rules ----
+        [Test]
+        public void Domain_DockNeedsOwnCoastalSlot()
+        {
+            var s = Fresh(); s.Resources["wood"] = 500;
+            var dock = new PlanAction { ActionType = "BUILD", BuildingType = "dock", TargetZone = "P1Base" };
+            Assert.IsFalse(validator.Validate(dock, s).Ok);                 // no free coastal slot
+            s.CoastalSlotZones.Add("P1Base");
+            Assert.IsTrue(validator.Validate(dock, s).Ok);
+            dock.TargetZone = "Center";                                      // slot exists only in the own base
+            Assert.IsFalse(validator.Validate(dock, s).Ok);
+            dock.TargetZone = "P1Harbor";                                    // water zone: buildings are land only
+            Assert.IsFalse(validator.Validate(dock, s).Ok);
+        }
+
+        [Test]
+        public void Domain_NoBuildingInTheEnemyBase()
+        {
+            var s = Fresh(); s.Resources["wood"] = 500;
+            var house = new PlanAction { ActionType = "BUILD", BuildingType = "house", TargetZone = "P2Base" };
+            Assert.IsFalse(validator.Validate(house, s).Ok);                 // P1 cannot build in P2Base
+            s.Slot = 2;
+            Assert.IsTrue(validator.Validate(house, s).Ok);
+            house.TargetZone = "P1Base";
+            Assert.IsFalse(validator.Validate(house, s).Ok);
+        }
+
+        [Test]
+        public void Domain_LandAndWaterMoves()
+        {
+            var s = Fresh();
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "archer", TargetZone = "OpenSea" }, s).Ok);
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "warship", TargetZone = "Center" }, s).Ok);
+            Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "warship", TargetZone = "OpenSea" }, s).Ok);
+            Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, s).Ok);
+        }
+
+        [Test]
+        public void Validator_RejectsBadCountsAndUnknownThings()
+        {
+            var s = Fresh();
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 21 }, s).Ok);
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "dragon", Count = 1 }, s).Ok);
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "DELETE_ALL", Count = 1 }, s).Ok);
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "BUILD", BuildingType = "town_center", TargetZone = "Center" }, s).Ok);
+        }
+
+        [Test]
+        public void Approval_RechecksOnCurrentStateAndReservesResources()
+        {
+            var s = Fresh(); s.Resources["wood"] = 200; s.Resources["food"] = 100; // only 2 villagers affordable
+            var actions = new List<PlanAction>
+            {
+                new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 2 },
+                new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 1 }, // food is already reserved
+            };
+            s.PopulationCapacity = 10;
+            var r = ApprovalEvaluator.Evaluate(actions, s, validator);
+            Assert.IsTrue(r[0].Ok); Assert.IsFalse(r[1].Ok);
+            Assert.AreEqual(100, s.Resources["food"]); // evaluation never spends anything
+        }
+
+        [Test]
+        public void DecisionLog_ProducesIdsAndJson()
+        {
+            var log = new DecisionLog();
+            Assert.AreEqual("plan-001", log.NextPlanId()); Assert.AreEqual("plan-002", log.NextPlanId());
+            var e = log.Add(new DecisionEntry { PlanId = "plan-001", Decision = "rejected", GameTime = 5f });
+            e.Actions.Add("TRAIN_UNIT archer"); e.Validator.Add("not checked");
+            string line = log.ToJsonLine(e);
+            StringAssert.Contains("\"plan_id\":\"plan-001\"", line);
+            StringAssert.Contains("\"decision\":\"rejected\"", line);
+            Assert.AreEqual(1, log.Entries.Count);
+        }
+
+        [Test]
+        public void ActionCosts_TotalsAndDescription()
+        {
+            var a = new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 3 };
+            Assert.AreEqual(150, ActionCosts.CostOf(a, data)["food"]);
+            StringAssert.Contains("150F", ActionCosts.Describe(a, data));
+        }
     }
 }
