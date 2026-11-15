@@ -26,3 +26,35 @@ Security boundaries: see [design-brief.md §4](design-brief.md). The session tok
 gateway; the MCP server receives its session id from the environment of the gateway, and no tool takes a player id.
 Plans are validated by JSON Schema in the gateway (`jsonschema`, one repair retry), by `GameActionValidator` in Unity
 at approval time, and by the host in the RPC handler.
+
+## Networking (Photon Fusion 2, Host Mode)
+
+```
+ Client (InputAuthority)                       Host (StateAuthority)
+ SelectionManager / UnitCommandInput  ──RPC──► CommandRelay (one per player)
+ SelectionPanel / BuildPlacement      ──RPC──►   │ FindOwned: the object must belong to the sender
+ AiApprovalFlow (approved plan)       ──RPC──►   │ GameActionValidator: cost, population, prerequisites, zone rules
+                                                 ▼
+                                       NetworkPlayerState  [Networked] wood, food, gold, pop, age, techs, result
+                                       NetworkUnit         [Networked] owner, type, HP, move target, attack target
+                                       NetworkBuilding     [Networked] owner, type, HP, build progress, queue summary
+                                       ResourceNode        [Networked] remaining amount
+                                       VillagerGatherer / UnitCombat / production queue run only on the host
+ NetworkTransform ◄── position of every unit ◄──┘
+```
+
+| Topic | Decision |
+|---|---|
+| Authority | The host owns all game state and runs gathering, construction, production, combat, the win check. |
+| Commands | A client never changes state. It calls `CommandRelay.Send*`, an RPC `InputAuthority -> StateAuthority`. The host checks ownership (`FindOwned`) and the rules (`GameActionValidator`, `ProductionQueue.WhyNot`) before acting. |
+| AI actions | The approved plan uses the same `CommandRelay` RPCs as manual play, so the AI cannot bypass authority. |
+| Resources and population | Cost is paid and population is reserved when a unit is queued, so a long queue cannot exceed the cap. |
+| Slots | Player 1 is the lowest `PlayerRef`, player 2 the next one (`PlayerSlots`); every peer computes the same result. |
+| Disconnect | When the other player leaves, the host ends the match and both peers return to the menu (`GameLauncher`). |
+| Match end | When a player's last Town Center is destroyed the host sets `NetworkPlayerState.Result` (1 = won, 2 = lost) for both players; `GameOverUI` shows Victory or Defeat. |
+| Events | Per-player event log. The host decides what a player may know and sends each event to its owner with an RPC (`StateAuthority -> InputAuthority`); every peer stores only its own log. |
+| Fog of war | `VisibilityService.FilterFor` (engine-free) decides what a player sees. Rendering (`FogOfWar`) and the AI snapshot (`AiSnapshotBuilder`) both call it. Interest management is off, so a modified client could read hidden positions: a known limitation, the AI is not affected. |
+| Land and water | Zones come from the nearest `ZoneVolume` centre (`ZoneLookup`, every point has a zone). Land units cannot leave land zones and ships cannot leave water zones (`DomainRules`). |
+
+Engine-free rule code (`Assets/Scripts/Core/Rules`, assembly `RTS.Core`) is compiled and tested outside Unity;
+the networked MonoBehaviours are thin adapters around it.

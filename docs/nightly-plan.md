@@ -106,7 +106,7 @@ engine-free `RTS.Core` keeps its asmdef.
       combat, and fog of war on the sea.
 
 ## Night 13 – 2026-11-24: report, part 1
-- [ ] `docs/report/report.md` in IEEE structure: Abstract, Introduction, Game Design, System Architecture,
+- [x] (done 2026-11-15) `docs/report/report.md` in IEEE structure: Abstract, Introduction, Game Design, System Architecture,
       Multiplayer Method, MCP and Agent Design, RAG Method. Add the networking part to `docs/architecture.md`.
 
 ## Night 14 – 2026-11-25: report, part 2
