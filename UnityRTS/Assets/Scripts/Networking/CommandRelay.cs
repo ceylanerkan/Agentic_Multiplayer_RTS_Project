@@ -27,9 +27,10 @@ public class CommandRelay : NetworkBehaviour
     public void SendMove(NetworkId unit, Vector3 pos) { RPC_Move(unit, pos); }
     public void SendAttack(NetworkId unit, NetworkId target) { RPC_Attack(unit, target); }
     public void SendGather(NetworkId unit, NetworkId node) { RPC_Gather(unit, node); }
-    public void SendBuild(string buildingKey, Vector3 pos, string zone) { RPC_Build(buildingKey, pos, zone); }
+    public void SendBuild(string buildingKey, Vector3 pos, string zone, NetworkId builder) { RPC_Build(buildingKey, pos, zone, builder); }
+    public void SendHelpBuild(NetworkId unit, NetworkId building) { RPC_HelpBuild(unit, building); }
     public void SendTrain(string unitKey, NetworkId building) { RPC_Train(unitKey, building); }
-    public void SendResearch(string techKey) { RPC_Research(techKey); }
+    public void SendResearch(string techKey, NetworkId building) { RPC_Research(techKey, building); }
 
     // ---- host side ----
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -65,21 +66,33 @@ public class CommandRelay : NetworkBehaviour
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_Build(NetworkString<_32> buildingKey, Vector3 pos, NetworkString<_32> zone)
+    void RPC_Build(NetworkString<_32> buildingKey, Vector3 pos, NetworkString<_32> zone, NetworkId builderId)
     {
         var a = new PlanAction { ActionType = "BUILD", BuildingType = buildingKey.ToString(), TargetZone = zone.ToString() };
         if (!validator.Validate(a, state.ToCore()).Ok) return;
-        // The action only names a zone, so the host picks the place: a free BuildSlot in that zone.
-        // (Without any slots in the scene the client's position is used, so early smoke tests still work.)
+        // The action only names a zone, so the host picks the place: the free BuildSlot nearest to the requested
+        // position (the ghost the player clicked). Without any slots in the scene the position is used as is.
         if (BuildSlot.All.Count > 0)
         {
-            var slot = BuildSlot.FindFree(a.TargetZone, a.BuildingType == "dock");
+            var slot = BuildSlot.FindNear(a.TargetZone, a.BuildingType == "dock", pos);
             if (slot == null) return;
             slot.occupied = true;
             pos = slot.transform.position;
         }
         state.Spend(GameDataProvider.Get().Buildings[a.BuildingType].Cost, 1);
-        GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villager construction comes later
+        var b = GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villagers finish it
+        var builder = FindOwned<NetworkUnit>(builderId);
+        var g = builder != null ? builder.GetComponent<VillagerGatherer>() : null;
+        if (g != null) g.StartBuild(b);
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_HelpBuild(NetworkId unitId, NetworkId buildingId)
+    {
+        var unit = FindOwned<NetworkUnit>(unitId);
+        var b = FindOwned<NetworkBuilding>(buildingId);
+        var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null;
+        if (g != null && b != null && !b.Completed) g.StartBuild(b);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -88,20 +101,24 @@ public class CommandRelay : NetworkBehaviour
         var b = FindOwned<NetworkBuilding>(buildingId);
         if (b == null || !b.Completed) return;
         var a = new PlanAction { ActionType = "TRAIN_UNIT", UnitType = unitKey.ToString() };
+        if (!GameDataProvider.Get().Buildings[b.TypeKey.ToString()].Trains.Contains(a.UnitType)) return; // wrong building
         if (!validator.Validate(a, state.ToCore()).Ok) return;
+        if (!b.Enqueue(a.UnitType, false)) return; // queue full or Town Center researching Age II
         state.Spend(GameDataProvider.Get().Units[a.UnitType].Cost, 1);
-        state.PopUsed += 1;
-        // Instant for now; the production queue with train time comes on night 5.
-        GameSpawner.Instance.SpawnUnit(Object.InputAuthority, a.UnitType, b.transform.position + new Vector3(2, 0, 2));
+        state.PopUsed += 1; // reserved now, so a full queue cannot exceed the population cap
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    void RPC_Research(NetworkString<_32> techKey)
+    void RPC_Research(NetworkString<_32> techKey, NetworkId buildingId)
     {
+        var b = FindOwned<NetworkBuilding>(buildingId);
+        if (b == null || !b.Completed) return;
         var a = new PlanAction { ActionType = "RESEARCH", TechType = techKey.ToString() };
+        if (!GameDataProvider.Get().Buildings[b.TypeKey.ToString()].Researches.Contains(a.TechType)) return;
+        if (state.HasTech(a.TechType)) return; // already researched
         if (!validator.Validate(a, state.ToCore()).Ok) return;
+        if (!b.Enqueue(a.TechType, true)) return;
         state.Spend(GameDataProvider.Get().Techs[a.TechType].Cost, 1);
-        state.GrantTech(a.TechType); // research time and effects come on night 5/7
     }
 
     // The RPC sender is Object.InputAuthority; objects belonging to somebody else are ignored.

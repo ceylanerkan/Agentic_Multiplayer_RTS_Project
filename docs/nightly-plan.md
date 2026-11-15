@@ -55,10 +55,10 @@ engine-free `RTS.Core` keeps its asmdef.
 - [x] (done 2026-11-15, uncompiled; needs Unity) RTS camera (pan and zoom) with the Input System, and group movement with formation offsets.
 
 ## Night 5 – 2026-11-16: buildings and production
-- [ ] Building placement ghost (valid or invalid on build slots) and Villager construction with build time.
-- [ ] Production queue with train time, and the research queue. The Town Center cannot train while it researches
+- [x] (done 2026-11-15, uncompiled; needs Unity) Building placement ghost (valid or invalid on build slots) and Villager construction with build time.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Production queue with train time, and the research queue. The Town Center cannot train while it researches
       Age II.
-- [ ] HUD: resources, population, age.
+- [x] (done 2026-11-15, uncompiled; needs Unity) HUD: resources, population, age.
 
 ## Night 6 – 2026-11-17: UI panels and combat
 - [ ] Selection panel (info, HP), build menu, train and research buttons with cost and disabled state, queue

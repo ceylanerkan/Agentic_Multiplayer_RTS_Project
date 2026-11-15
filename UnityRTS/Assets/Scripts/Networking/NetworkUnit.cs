@@ -17,7 +17,6 @@ public class NetworkUnit : NetworkBehaviour
     [Networked] public NetworkBool HasMoveTarget { get; set; }
     [Networked] public NetworkId AttackTarget { get; set; } // default (0) = none; used by combat on night 6
 
-    const float MoveSpeed = 3.5f; // placeholder until unit speeds are in the knowledge JSON
 
     public override void Spawned() { All.Add(this); }
     public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
@@ -36,7 +35,7 @@ public class NetworkUnit : NetworkBehaviour
         if (!HasStateAuthority || !HasMoveTarget) return;
         Vector3 pos = transform.position;
         Vector3 to = MoveTarget - pos; to.y = 0;
-        float step = MoveSpeed * Runner.DeltaTime;
+        float step = GameDataProvider.Get().Units[TypeKey.ToString()].Speed * Runner.DeltaTime; // speed from units.json
         if (to.magnitude <= step) { transform.position = new Vector3(MoveTarget.x, pos.y, MoveTarget.z); HasMoveTarget = false; }
         else transform.position = pos + to.normalized * step;
     }

@@ -186,5 +186,58 @@ namespace RTS.Tests
             Assert.AreEqual(0f, one[0][0]); Assert.AreEqual(0f, one[0][1]);
             Assert.AreEqual(0, FormationLayout.Offsets(0, 2f).Count);
         }
+
+        [Test]
+        public void GameData_HasBuildingHpAndTimes()
+        {
+            Assert.AreEqual(1500f, data.Buildings["town_center"].Hp);
+            Assert.Greater(data.Buildings["barracks"].TimeSeconds, 0f);
+            Assert.AreEqual(12f, data.Units["villager"].TimeSeconds);
+            Assert.AreEqual(40f, data.Techs["age_2"].TimeSeconds);
+            Assert.Greater(data.Units["villager"].Speed, 0f);
+            Assert.Contains("villager", data.Buildings["town_center"].Trains);
+        }
+
+        [Test]
+        public void Queue_RunsInOrderAndReportsProgress()
+        {
+            var q = new ProductionQueue();
+            Assert.IsTrue(q.Enqueue("villager", false, 10f));
+            Assert.IsTrue(q.Enqueue("villager", false, 10f));
+            Assert.IsNull(q.Tick(5f));
+            Assert.AreEqual(0.5f, q.CurrentProgress, 0.001f);
+            Assert.AreEqual("villager", q.Tick(5f).Key);
+            Assert.AreEqual(1, q.Count);
+        }
+
+        [Test]
+        public void Queue_TownCenterCannotTrainWhileResearchingAgeTwo()
+        {
+            var q = new ProductionQueue();
+            Assert.IsTrue(q.Enqueue("age_2", true, 40f));
+            Assert.IsFalse(q.Enqueue("villager", false, 12f));
+            Assert.IsTrue(q.Enqueue("horse_collar", true, 20f)); // other research may queue behind it
+            var q2 = new ProductionQueue(); q2.Enqueue("villager", false, 12f);
+            Assert.IsFalse(q2.Enqueue("age_2", true, 40f)); // and the other way round
+        }
+
+        [Test]
+        public void Queue_HasMaxLength()
+        {
+            var q = new ProductionQueue();
+            for (int i = 0; i < ProductionQueue.MaxLength; i++) Assert.IsTrue(q.Enqueue("villager", false, 1f));
+            Assert.IsFalse(q.Enqueue("villager", false, 1f));
+        }
+
+        [Test]
+        public void Construction_MoreBuildersAreFaster()
+        {
+            var c = new ConstructionState(30f);
+            c.AddWork(10f); c.AddWork(10f); // two builders for 10 s
+            Assert.AreEqual(20f / 30f, c.Progress, 0.001f);
+            Assert.IsFalse(c.Done);
+            c.AddWork(10f);
+            Assert.IsTrue(c.Done); Assert.AreEqual(1f, c.Progress);
+        }
     }
 }

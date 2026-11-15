@@ -4,12 +4,13 @@ using UnityEngine;
 
 /// <summary>
 /// The Villager gather loop, run only on the host: walk to the node, gather (GatherState: 0.6/s, carry 10),
-/// walk to the nearest own Town Center, deposit, and walk back. Movement goes through NetworkUnit.MoveTo.
+/// walk to the nearest own Town Center, deposit, and walk back. It also builds: walk to an unfinished building and
+/// add work until it is complete. Movement goes through NetworkUnit.MoveTo.
 /// </summary>
 [RequireComponent(typeof(NetworkUnit))]
 public class VillagerGatherer : NetworkBehaviour
 {
-    enum Phase { Idle, ToNode, Gathering, ToDeposit }
+    enum Phase { Idle, ToNode, Gathering, ToDeposit, ToBuild, Building }
 
     const float NodeReach = 2.5f;      // how close to a node/Town Center counts as "there"
     const float DepositReach = 4.5f;   // Town Center is a big cube, so a larger reach
@@ -19,6 +20,7 @@ public class VillagerGatherer : NetworkBehaviour
     readonly GatherState bag = new GatherState();
     Phase phase = Phase.Idle;
     ResourceNode node;
+    NetworkBuilding site;   // building under construction
     string resource;
 
     public override void Spawned() { unit = GetComponent<NetworkUnit>(); }
@@ -33,8 +35,16 @@ public class VillagerGatherer : NetworkBehaviour
         unit.MoveTo(target.transform.position);
     }
 
-    /// <summary>Host only. A move command cancels gathering.</summary>
-    public void Cancel() { phase = Phase.Idle; node = null; }
+    /// <summary>Host only: walk to an unfinished building and work on it until it is done.</summary>
+    public void StartBuild(NetworkBuilding b)
+    {
+        if (!HasStateAuthority || b == null) return;
+        site = b; node = null; phase = Phase.ToBuild;
+        unit.MoveTo(b.transform.position);
+    }
+
+    /// <summary>Host only. A move command cancels gathering and building.</summary>
+    public void Cancel() { phase = Phase.Idle; node = null; site = null; }
 
     public override void FixedUpdateNetwork()
     {
@@ -54,6 +64,16 @@ public class VillagerGatherer : NetworkBehaviour
                 float taken = bag.Tick(Runner.DeltaTime, resource, node.Amount, horseCollar);
                 node.Take(taken); // may despawn the node; the reference then becomes null on the next tick
                 if (bag.Full || taken <= 0f) GoDeposit();
+                break;
+
+            case Phase.ToBuild:
+                if (site == null || site.Completed) { phase = Phase.Idle; break; }
+                if (Flat(site.transform.position - pos) <= DepositReach) { unit.StopMoving(); phase = Phase.Building; }
+                break;
+
+            case Phase.Building:
+                if (site == null || site.Completed) { phase = Phase.Idle; site = null; break; }
+                site.AddBuildWork(Runner.DeltaTime); // each Villager adds real seconds of work
                 break;
 
             case Phase.ToDeposit:

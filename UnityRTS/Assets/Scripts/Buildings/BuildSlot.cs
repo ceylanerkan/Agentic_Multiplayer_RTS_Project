@@ -26,6 +26,19 @@ public class BuildSlot : MonoBehaviour
         return null;
     }
 
+    /// <summary>The free slot in the zone (coastal for a Dock) that is nearest to pos, or null.</summary>
+    public static BuildSlot FindNear(string zone, bool needCoastal, Vector3 pos)
+    {
+        BuildSlot best = null; float bestD = float.MaxValue;
+        foreach (var s in All)
+        {
+            if (s.occupied || s.Zone != zone || (needCoastal && !s.coastal)) continue;
+            float d = (s.transform.position - pos).sqrMagnitude;
+            if (d < bestD) { bestD = d; best = s; }
+        }
+        return best;
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.color = occupied ? Color.red : (coastal ? Color.cyan : Color.yellow);
