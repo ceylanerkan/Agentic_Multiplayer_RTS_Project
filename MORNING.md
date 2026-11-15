@@ -3,7 +3,7 @@
 ## Dün gece ne yaptım
 - Gece 3–12'nin tüm agent maddelerini yazdım (ZoneMap/BuildSlot/ResourceNode/gather, seçim + sağ tık komutları + kamera, üretim kuyruğu + inşaat + HUD, savaş + panel, teknolojiler + zafer ekranı, fog of war + olay günlüğü, AI snapshot + komutan paneli + onay akışı, siege/naval kuralları).
 - Rapor taslağı hazır: `docs/report/report.md` (tüm bölümler; canlı sayı gereken yerler `[TODO live]`), `docs/architecture.md` ağ bölümü, `docs/demo-script.md`, `docs/slides-outline.md`, `docs/defense-notes.md`.
-- Python: gerçek stdio MCP istemcisi (`MCP_TRANSPORT=stdio`), güvenlik testleri S10–S16, snapshot sözleşme testi, değerlendirmeye 5 yeni prompt + invalid-action oranı + CSV/tablo. `pytest ai evaluation`: 56 geçti.
+- Python: gerçek stdio MCP istemcisi (`MCP_TRANSPORT=stdio`), güvenlik testleri S10–S16, snapshot sözleşme testi, değerlendirmeye 5 yeni prompt + invalid-action oranı + CSV/tablo. `pytest ai evaluation`: 57 geçti.
 - C# kural kodu .NET ile derlendi: 47/47 EditMode testi geçti. Unity'ye özel scriptler `tools/compile-check` (sahte Unity/Fusion tipleri) ile derlendi: 0 hata. Bu gerçek Unity derlemesi değil.
 - Bulduğum hata: bina HP'si 0 okunuyordu (`buildings.json`'da `hp` üst seviyede); düzeltildi. `UNITY_FEEDBACK.md` 2026-11-14 notları işlendi (`Start` adı zaten main'de düzeltilmişti).
 

@@ -49,6 +49,7 @@
 - Fix: `RPC_Event` sent three `NetworkString`s (> 512 byte RPC limit); now sends type and zone as indices (`PlayerEventLog.TypeList`) and a 31 character detail. C# tests: 46/46.
 - Gateway: LLM or network errors now give HTTP 502 with only the exception type (no key leak); right-click help-build; null guards in the AI panel.
   `docs/design-brief.md`: one sentence now says Unity reads the JSON at run time (ScriptableObjects were replaced by `GameDataProvider`). `pytest ai evaluation` -> 56 passed.
+- System prompt now lists the allowed action types, unit/building/tech names, groups and zones (generated from the schema) plus an example plan, so the live model is less likely to invent values. `pytest ai evaluation` -> 57 passed.
 - Added an opening-build-order scenario test (47/47 C# tests). Fusion member names verified against `Fusion.Runtime.xml` in the repo.
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 

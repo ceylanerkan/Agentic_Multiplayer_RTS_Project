@@ -18,7 +18,28 @@ SYSTEM_PROMPT = """You are the Strategic Commander advisor of an RTS game player
 - If a tool fails or the snapshot is old, say that your confidence is limited and lower `confidence`.
 - Finish with ONE JSON object (RTSActionPlan: summary, confidence 0-1, evidence = tool names and source_ids,
   actions). Use an empty actions list for questions that only need an answer.
-"""
+{plan_format}"""
+
+
+def _plan_format():
+    """The allowed values, read from the schema, so the prompt can never disagree with the validator."""
+    d = PLAN_SCHEMA["$defs"]
+    enum = lambda name: ", ".join(d[name]["enum"])  # noqa: E731
+    return (
+        "\nPlan format (JSON only, no other text; every action needs a short `reason`):\n"
+        f"- action_type: {', '.join(d['action']['properties']['action_type']['enum'])}\n"
+        f"- TRAIN_UNIT needs unit_type and count (1-20); unit_type: {enum('unit_type')}\n"
+        f"- BUILD needs building_type and target_zone (a land zone); building_type: {enum('building_type')}\n"
+        f"- RESEARCH needs tech_type: {enum('tech_type')}\n"
+        f"- MOVE_GROUP needs unit_group and target_zone; unit_group: {enum('unit_group')}\n"
+        f"- zones: {enum('zone')}. Land units go only to land zones, ships only to water zones (P1Harbor, P2Harbor, OpenSea).\n"
+        'Example: {"summary": "...", "confidence": 0.7, "evidence": ["get_visible_enemies"], "actions": '
+        '[{"action_type": "TRAIN_UNIT", "unit_type": "spearman", "count": 4, "reason": "counter the cavalry"}]}\n'
+        "Only propose actions the player can afford and that satisfy the prerequisites: check with estimate_plan_cost.\n"
+    )
+
+
+SYSTEM_PROMPT = SYSTEM_PROMPT.replace("{plan_format}", _plan_format())
 
 
 class AgentError(Exception):
