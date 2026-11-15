@@ -72,8 +72,8 @@ public class AiCommanderPanel : MonoBehaviour
         {
             sb.AppendLine(a.Plan.Summary);
             sb.AppendLine("Confidence: " + Mathf.RoundToInt(a.Plan.Confidence * 100) + "%");
-            if (a.Plan.Evidence.Count > 0) sb.AppendLine("Evidence: " + string.Join(", ", a.Plan.Evidence));
-            if (a.ToolsUsed.Count > 0) sb.AppendLine("Tools: " + string.Join(", ", a.ToolsUsed));
+            if (a.Plan.Evidence != null && a.Plan.Evidence.Count > 0) sb.AppendLine("Evidence: " + string.Join(", ", a.Plan.Evidence));
+            if (a.ToolsUsed != null && a.ToolsUsed.Count > 0) sb.AppendLine("Tools: " + string.Join(", ", a.ToolsUsed));
             if (hasActions)
             {
                 sb.AppendLine("Proposed actions:");
