@@ -26,6 +26,8 @@
   decision-log.jsonl), validator rule "no building in the enemy base" (`PlayerState.Slot`) + domain tests.
   C#: 41/41 pass. Python: `pytest ai evaluation` 38 passed (new `test_snapshot_contract.py`, sample exported by the C# test).
   Small decision: Approve executes the valid actions and skips the invalid ones, reporting why.
+- Night 10 security: `test_security.py` (S10-S14), agent now rejects undeclared tool arguments (`player_id`, `session_id`),
+  `evaluation/security-tests.md` updated (S10-S16). `pytest ai evaluation` -> 43 passed.
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

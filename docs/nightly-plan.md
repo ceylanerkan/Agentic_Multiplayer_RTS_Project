@@ -89,7 +89,7 @@ engine-free `RTS.Core` keeps its asmdef.
       `CommandRelay`. Reject changes nothing. Decision log: plan id, decision, validator result per action.
 - [x] (done 2026-11-15, Unity parts uncompiled) Domain checks in `GameActionValidator` (land and water zones, Dock only on your own coastal slot), with
       EditMode tests.
-- [ ] Security tests, in pytest where possible: hidden extra field, identity switch, oversized `top_k`, injected
+- [x] (done 2026-11-15) Security tests, in pytest where possible: hidden extra field, identity switch, oversized `top_k`, injected
       knowledge chunk, invalid plans. Update `evaluation/security-tests.md`.
 
 ## Night 11 – 2026-11-22: real MCP client and evaluation numbers

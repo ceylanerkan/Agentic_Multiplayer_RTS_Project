@@ -51,6 +51,13 @@ class Agent:
         start = time.time()
         status, validation_error = "ok", None
         try:
+            # Reject arguments the tool does not declare (e.g. player_id, session_id): they would be ignored silently,
+            # but an attempt to pass them should be visible in the log as an error.
+            spec = next((t for t in self._tool_specs() if t["name"] == name), None)
+            if spec is not None:
+                extra = set(args or {}) - set((spec["schema"] or {}).get("properties", {}))
+                if extra:
+                    raise ValueError(f"unknown argument(s): {sorted(extra)}")
             res = asyncio.run(self.mcp.call_tool(name, args))
             out = json.loads(res.content[0].text)
             if "error" in out:
