@@ -74,9 +74,9 @@ engine-free `RTS.Core` keeps its asmdef.
       Victory or Defeat screen.
 
 ## Night 8 – 2026-11-19: fog of war and events
-- [ ] `VisibilityService.FilterFor(player)`: a pure core in `RTS.Core` with EditMode tests, plus a Unity adapter
+- [x] (done 2026-11-15, uncompiled; needs Unity) `VisibilityService.FilterFor(player)`: a pure core in `RTS.Core` with EditMode tests, plus a Unity adapter
       that hides enemy renderers outside line of sight and draws a simple fog overlay.
-- [ ] Recent-event log per player (the 8 event types, with zone and time), holding only what the player may know.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Recent-event log per player (the 8 event types, with zone and time), holding only what the player may know.
 
 ## Night 9 – 2026-11-20: AI in Unity
 - [ ] `AiSnapshotBuilder`: own units and buildings grouped by type and zone, enemies only from `FilterFor`. Add a

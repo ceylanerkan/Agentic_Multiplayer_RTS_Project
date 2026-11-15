@@ -33,8 +33,10 @@ public class NetworkUnit : NetworkBehaviour
     {
         if (!HasStateAuthority || Hp <= 0) return;
         Hp -= amount;
+        GameEvents.Report(Owner, "UNDER_ATTACK", transform.position, TypeKey.ToString());
         if (Hp > 0) return;
         Hp = 0;
+        GameEvents.Report(Owner, "UNIT_LOST", transform.position, TypeKey.ToString());
         var st = GameSpawner.Instance.StateOf(Owner);
         if (st != null && st.PopUsed > 0) st.PopUsed -= 1;
         Runner.Despawn(Object);

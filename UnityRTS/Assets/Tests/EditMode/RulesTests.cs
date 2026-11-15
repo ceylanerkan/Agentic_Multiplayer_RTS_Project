@@ -280,5 +280,47 @@ namespace RTS.Tests
             Assert.AreEqual(12f, data.Units["scout"].LineOfSight);
             Assert.AreEqual(10f, data.Buildings["town_center"].LineOfSight);
         }
+
+        static MapObject Obj(int id, int owner, float x, float z, float los, string type = "spearman")
+        {
+            return new MapObject { Id = id, Owner = owner, Type = type, X = x, Z = z, Los = los };
+        }
+
+        [Test]
+        public void Visibility_OwnAlwaysEnemyOnlyInSight()
+        {
+            var all = new List<MapObject> { Obj(1, 1, 0, 0, 7), Obj(2, 2, 5, 0, 7), Obj(3, 2, 30, 0, 7), Obj(4, 1, -3, 0, 7) };
+            var v1 = VisibilityService.FilterFor(1, all);
+            CollectionAssert.AreEquivalent(new[] { 1, 2, 4 }, v1.ConvertAll(o => o.Id));   // enemy 3 is hidden
+            var v2 = VisibilityService.FilterFor(2, all);
+            CollectionAssert.AreEquivalent(new[] { 2, 3, 1 }, v2.ConvertAll(o => o.Id));   // P2 sees P1 unit at distance 5
+        }
+
+        [Test]
+        public void Visibility_SightEdgeAndPoints()
+        {
+            var all = new List<MapObject> { Obj(1, 1, 0, 0, 7), Obj(2, 2, 7, 0, 5), Obj(3, 2, 7.1f, 0, 5) };
+            var v = VisibilityService.FilterFor(1, all);
+            Assert.AreEqual(2, v.Count);      // exactly at the edge counts as visible
+            Assert.IsTrue(VisibilityService.PointVisible(1, 3, 3, all));
+            Assert.IsFalse(VisibilityService.PointVisible(1, 20, 20, all));
+        }
+
+        [Test]
+        public void EventLog_ValidTypesLimitsAndAge()
+        {
+            var log = new PlayerEventLog();
+            Assert.IsFalse(log.Add("SECRET_ENEMY_POSITION", "Center", "x", 1f));
+            Assert.IsTrue(log.Add("UNIT_TRAINED", "P1Base", "villager", 1f));
+            Assert.IsTrue(log.Add("UNDER_ATTACK", "NorthGate", null, 5f));
+            Assert.IsFalse(log.Add("UNDER_ATTACK", "NorthGate", null, 8f));   // within the 10 s cooldown
+            Assert.IsTrue(log.Add("UNDER_ATTACK", "NorthGate", null, 20f));
+            for (int i = 0; i < 40; i++) log.Add("UNIT_TRAINED", "P1Base", new string('x', 200), 21f + i);
+            var recent = log.Recent(100f);
+            Assert.AreEqual(20, recent.Count);
+            Assert.AreEqual(80, recent[0].Key.Detail.Length);
+            Assert.AreEqual(100f - 60f, recent[0].Value, 0.001f);
+            Assert.LessOrEqual(log.Count, PlayerEventLog.MaxStored);
+        }
     }
 }

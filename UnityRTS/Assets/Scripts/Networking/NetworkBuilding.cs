@@ -46,6 +46,7 @@ public class NetworkBuilding : NetworkBehaviour
         BuildProgress = construction.Progress;
         if (!construction.Done) return;
         Completed = true;
+        GameEvents.Report(Owner, "BUILDING_COMPLETED", transform.position, TypeKey.ToString());
         var st = GameSpawner.Instance.StateOf(Owner);
         if (st != null) st.RecalculateCapacity(); // a finished House raises the population capacity
     }
@@ -55,8 +56,10 @@ public class NetworkBuilding : NetworkBehaviour
     {
         if (!HasStateAuthority || Hp <= 0) return;
         Hp -= amount;
+        GameEvents.Report(Owner, "UNDER_ATTACK", transform.position, TypeKey.ToString());
         if (Hp > 0) return;
         Hp = 0;
+        GameEvents.Report(Owner, "BUILDING_LOST", transform.position, TypeKey.ToString());
         foreach (var slot in BuildSlot.All)
             if ((slot.transform.position - transform.position).sqrMagnitude < 1f) slot.occupied = false;
         var st = GameSpawner.Instance.StateOf(Owner);
@@ -93,12 +96,14 @@ public class NetworkBuilding : NetworkBehaviour
         {
             if (st == null) return;
             st.GrantTech(item.Key);
+            GameEvents.Report(Owner, "TECH_RESEARCHED", transform.position, item.Key);
             if (item.Key == "age_2") st.Age = 2;
         }
         else
         {
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
             GameSpawner.Instance.SpawnUnit(Owner, item.Key, transform.position + new Vector3(3f, 0, 3f));
+            GameEvents.Report(Owner, "UNIT_TRAINED", transform.position, item.Key);
         }
     }
 

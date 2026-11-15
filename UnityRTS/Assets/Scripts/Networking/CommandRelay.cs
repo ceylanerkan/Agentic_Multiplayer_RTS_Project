@@ -32,6 +32,16 @@ public class CommandRelay : NetworkBehaviour
     public void SendTrain(string unitKey, NetworkId building) { RPC_Train(unitKey, building); }
     public void SendResearch(string techKey, NetworkId building) { RPC_Research(techKey, building); }
 
+    /// <summary>Host only: deliver an event to the player this relay belongs to (see GameEvents).</summary>
+    public void SendEventToOwner(string type, string zone, string detail) { RPC_Event(type, zone, detail); }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    void RPC_Event(NetworkString<_32> type, NetworkString<_32> zone, NetworkString<_128> detail)
+    {
+        string z = zone.ToString();
+        GameEvents.Local.Add(type.ToString(), z.Length == 0 ? null : z, detail.ToString(), Time.time);
+    }
+
     // ---- host side ----
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_Move(NetworkId unitId, Vector3 pos)
