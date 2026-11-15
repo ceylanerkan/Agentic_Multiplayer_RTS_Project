@@ -15,6 +15,7 @@ public class NetworkUnit : NetworkBehaviour
     [Networked] public float Hp { get; set; }
     [Networked] public Vector3 MoveTarget { get; set; }
     [Networked] public NetworkBool HasMoveTarget { get; set; }
+    [Networked] public NetworkId AttackTarget { get; set; } // default (0) = none; used by combat on night 6
 
     const float MoveSpeed = 3.5f; // placeholder until unit speeds are in the knowledge JSON
 

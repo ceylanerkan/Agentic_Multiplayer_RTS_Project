@@ -13,14 +13,19 @@ public class CommandRelay : NetworkBehaviour
     NetworkPlayerState state;
     GameActionValidator validator;
 
+    /// <summary>The CommandRelay of the local player (the one this peer has input authority over).</summary>
+    public static CommandRelay Local { get; private set; }
+
     public override void Spawned()
     {
+        if (Object.HasInputAuthority) Local = this;
         state = GetComponent<NetworkPlayerState>();
         validator = new GameActionValidator(GameDataProvider.Get());
     }
 
     // ---- local API (called by the UI / AI approval flow) ----
     public void SendMove(NetworkId unit, Vector3 pos) { RPC_Move(unit, pos); }
+    public void SendAttack(NetworkId unit, NetworkId target) { RPC_Attack(unit, target); }
     public void SendGather(NetworkId unit, NetworkId node) { RPC_Gather(unit, node); }
     public void SendBuild(string buildingKey, Vector3 pos, string zone) { RPC_Build(buildingKey, pos, zone); }
     public void SendTrain(string unitKey, NetworkId building) { RPC_Train(unitKey, building); }
@@ -35,6 +40,19 @@ public class CommandRelay : NetworkBehaviour
         var g = unit.GetComponent<VillagerGatherer>();
         if (g != null) g.Cancel(); // an explicit move stops gathering
         unit.MoveTo(pos);
+    }
+
+    // Stores the target; the combat loop that uses it comes on night 6.
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_Attack(NetworkId unitId, NetworkId targetId)
+    {
+        var unit = FindOwned<NetworkUnit>(unitId);
+        if (unit == null || !Runner.TryFindObject(targetId, out var target)) return;
+        var tu = target.GetComponent<NetworkUnit>(); var tb = target.GetComponent<NetworkBuilding>();
+        PlayerRef owner = tu != null ? tu.Owner : (tb != null ? tb.Owner : PlayerRef.None);
+        if (owner == PlayerRef.None || owner == Object.InputAuthority) return; // only enemy objects can be attacked
+        var g = unit.GetComponent<VillagerGatherer>(); if (g != null) g.Cancel();
+        unit.AttackTarget = targetId;
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]

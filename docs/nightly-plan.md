@@ -50,9 +50,9 @@ engine-free `RTS.Core` keeps its asmdef.
 - You: build the map (ground, 7 land and 3 water zone volumes, resource nodes, build slots) and bake the NavMesh.
 
 ## Night 4 – 2026-11-15: player control
-- [ ] Selection: click, drag box, shift to add, and a highlight.
-- [ ] Right-click commands (move, gather, attack, build), sent through `CommandRelay`.
-- [ ] RTS camera (pan and zoom) with the Input System, and group movement with formation offsets.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Selection: click, drag box, shift to add, and a highlight.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Right-click commands (move, gather, attack, build), sent through `CommandRelay`.
+- [x] (done 2026-11-15, uncompiled; needs Unity) RTS camera (pan and zoom) with the Input System, and group movement with formation offsets.
 
 ## Night 5 – 2026-11-16: buildings and production
 - [ ] Building placement ghost (valid or invalid on build slots) and Villager construction with build time.

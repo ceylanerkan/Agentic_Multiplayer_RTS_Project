@@ -1,0 +1,130 @@
+using System.Collections.Generic;
+using Fusion;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+
+/// <summary>
+/// Local player's selection: left click selects one own unit or building, dragging draws a box that selects all
+/// own units inside, Shift adds to the selection. Selected objects get a flat ring as highlight.
+/// Purely local (no network): only commands are sent to the host.
+/// </summary>
+public class SelectionManager : MonoBehaviour
+{
+    public static SelectionManager Instance { get; private set; }
+
+    const float DragThreshold = 6f; // pixels; below this a mouse-up counts as a click
+
+    public readonly List<NetworkUnit> Units = new List<NetworkUnit>();
+    public NetworkBuilding Building;  // at most one building, only when no unit is selected
+
+    [SerializeField] Camera cam;
+    [SerializeField] Color ringColor = new Color(0.2f, 1f, 0.3f);
+
+    Vector2 dragStart;
+    bool dragging;
+    readonly Dictionary<GameObject, GameObject> rings = new Dictionary<GameObject, GameObject>();
+    Material ringMaterial;
+
+    void Awake()
+    {
+        Instance = this;
+        if (cam == null) cam = Camera.main;
+        Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
+        if (sh == null) sh = Shader.Find("Sprites/Default"); // fallback if URP shader is not found
+        ringMaterial = new Material(sh) { color = ringColor };
+    }
+
+    void Update()
+    {
+        var mouse = Mouse.current; var kb = Keyboard.current;
+        if (mouse == null || cam == null || CommandRelay.Local == null) return;
+        bool shift = kb != null && kb.shiftKey.isPressed;
+        Vector2 pos = mouse.position.ReadValue();
+
+        if (mouse.leftButton.wasPressedThisFrame && !OverUi()) { dragStart = pos; dragging = true; }
+
+        if (dragging && mouse.leftButton.wasReleasedThisFrame)
+        {
+            dragging = false;
+            if ((pos - dragStart).magnitude < DragThreshold) ClickSelect(pos, shift);
+            else BoxSelect(dragStart, pos, shift);
+        }
+
+        PruneDestroyed();
+        UpdateRings();
+    }
+
+    bool OverUi() { return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(); }
+
+    PlayerRef Me { get { return CommandRelay.Local.Object.InputAuthority; } }
+
+    void ClickSelect(Vector2 screen, bool add)
+    {
+        if (!add) Clear();
+        if (!Physics.Raycast(cam.ScreenPointToRay(screen), out var hit, 500f)) return;
+        var unit = hit.collider.GetComponentInParent<NetworkUnit>();
+        if (unit != null && unit.Owner == Me) { if (!Units.Contains(unit)) Units.Add(unit); Building = null; return; }
+        var b = hit.collider.GetComponentInParent<NetworkBuilding>();
+        if (b != null && b.Owner == Me && Units.Count == 0) Building = b;
+    }
+
+    void BoxSelect(Vector2 a, Vector2 b, bool add)
+    {
+        if (!add) Clear();
+        var rect = Rect.MinMaxRect(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Max(a.x, b.x), Mathf.Max(a.y, b.y));
+        foreach (var u in NetworkUnit.All)
+        {
+            if (u.Owner != Me || Units.Contains(u)) continue;
+            Vector3 sp = cam.WorldToScreenPoint(u.transform.position);
+            if (sp.z > 0 && rect.Contains(sp)) Units.Add(u);
+        }
+        if (Units.Count > 0) Building = null;
+    }
+
+    public void Clear() { Units.Clear(); Building = null; }
+
+    void PruneDestroyed()
+    {
+        Units.RemoveAll(u => u == null);
+        if (Building == null) Building = null; // Unity null check: turns a destroyed reference into a real null
+    }
+
+    // ---- highlight: one flat ring under each selected object ----
+    void UpdateRings()
+    {
+        var wanted = new HashSet<GameObject>();
+        foreach (var u in Units) wanted.Add(u.gameObject);
+        if (Building != null) wanted.Add(Building.gameObject);
+
+        var remove = new List<GameObject>();
+        foreach (var kv in rings) if (kv.Key == null || !wanted.Contains(kv.Key)) remove.Add(kv.Key);
+        foreach (var k in remove) { Destroy(rings[k]); rings.Remove(k); }
+
+        foreach (var go in wanted)
+        {
+            if (!rings.TryGetValue(go, out var ring))
+            {
+                ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                Destroy(ring.GetComponent<Collider>()); // a ring must never block raycasts
+                ring.GetComponent<Renderer>().sharedMaterial = ringMaterial;
+                ring.transform.localScale = new Vector3(go.GetComponent<NetworkBuilding>() != null ? 6f : 1.6f, 0.02f, go.GetComponent<NetworkBuilding>() != null ? 6f : 1.6f);
+                rings[go] = ring;
+            }
+            ring.transform.position = go.transform.position + Vector3.up * 0.05f;
+        }
+    }
+
+    void OnGUI()
+    {
+        if (!dragging || Mouse.current == null) return;
+        Vector2 now = Mouse.current.position.ReadValue();
+        if ((now - dragStart).magnitude < DragThreshold) return;
+        // GUI y axis points down, screen y axis points up.
+        var r = Rect.MinMaxRect(Mathf.Min(dragStart.x, now.x), Screen.height - Mathf.Max(dragStart.y, now.y),
+                                Mathf.Max(dragStart.x, now.x), Screen.height - Mathf.Min(dragStart.y, now.y));
+        GUI.color = new Color(0.2f, 1f, 0.3f, 0.25f);
+        GUI.DrawTexture(r, Texture2D.whiteTexture);
+        GUI.color = Color.white;
+    }
+}

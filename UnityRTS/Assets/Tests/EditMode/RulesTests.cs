@@ -171,5 +171,20 @@ namespace RTS.Tests
             var r = validator.Validate(new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 1 }, s);
             Assert.IsFalse(r.Ok);
         }
+
+        [Test]
+        public void Formation_OneOffsetPerUnitAndNoOverlap()
+        {
+            for (int n = 1; n <= 12; n++)
+            {
+                var o = FormationLayout.Offsets(n, 2f);
+                Assert.AreEqual(n, o.Count);
+                for (int i = 0; i < n; i++) for (int j = i + 1; j < n; j++)
+                    Assert.IsTrue(System.Math.Abs(o[i][0] - o[j][0]) >= 1.99f || System.Math.Abs(o[i][1] - o[j][1]) >= 1.99f);
+            }
+            var one = FormationLayout.Offsets(1, 2f);
+            Assert.AreEqual(0f, one[0][0]); Assert.AreEqual(0f, one[0][1]);
+            Assert.AreEqual(0, FormationLayout.Offsets(0, 2f).Count);
+        }
     }
 }
