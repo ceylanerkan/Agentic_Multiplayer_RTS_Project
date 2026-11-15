@@ -79,11 +79,11 @@ Unity (host or client, Fusion 2)                      Python (ai/)
 
 **Engine-free core.** The game rules that must be correct and explainable (costs, population, prerequisites, damage,
 domains, visibility, production queue, win condition, approval checks) are plain C# classes in the assembly
-`RTS.Core` without any `UnityEngine` reference. They are compiled and covered by 45 NUnit tests outside Unity. The
+`RTS.Core` without any `UnityEngine` reference. They are compiled and covered by 46 NUnit tests outside Unity. The
 MonoBehaviours and NetworkBehaviours are thin adapters that read the networked objects and call the core.
 
 **Python side.** `ai/gateway` (FastAPI, agent loop, logs), `ai/mcp-server` (seven tools), `ai/rag` (knowledge index
-and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 53 pytest cases.
+and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 55 pytest cases.
 
 **Data flow of one question.** (1) The player types a question. (2) `AiSnapshotBuilder` collects own units and
 buildings and the enemies returned by `VisibilityService.FilterFor`. (3) The gateway validates the snapshot against
@@ -270,7 +270,7 @@ failures of the real model (for example a missing prerequisite or a wrong zone) 
 
 *Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S16; most are automated, the live Gemini column is open).
 
-**Unity side.** 45 EditMode tests cover damage, costs, validator, domains, visibility, event log, production queue,
+**Unity side.** 46 EditMode tests cover damage, costs, validator, domains, visibility, event log, production queue,
 tech effects, snapshot assembly, approval and the decision log. They were compiled and run with the .NET SDK outside
 Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance test results and the demo video.
 
@@ -313,7 +313,7 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
-**C. Tests.** Python: `python -m pytest -q ai evaluation` (53 tests, no network, no API key). C#: Unity Test Runner,
-EditMode, assembly `RTS.Tests.EditMode` (45 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+**C. Tests.** Python: `python -m pytest -q ai evaluation` (55 tests, no network, no API key). C#: Unity Test Runner,
+EditMode, assembly `RTS.Tests.EditMode` (46 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

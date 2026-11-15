@@ -36,7 +36,7 @@ A Gemini API key can be created at https://aistudio.google.com/apikey (free tier
 ## 5. Run and test
 ```bash
 # from the repository root
-python -m pytest -q ai evaluation                           # 53 tests, no network, no API key needed
+python -m pytest -q ai evaluation                           # 55 tests, no network, no API key needed
 uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs GEMINI_API_KEY)
 python evaluation/run_eval.py                               # offline mock run; add --real for Gemini
 dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)

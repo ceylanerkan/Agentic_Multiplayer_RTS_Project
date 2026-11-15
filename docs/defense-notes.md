@@ -37,5 +37,5 @@ Alternative: *injection* - a poisoned knowledge chunk is returned only as data, 
 - *What if the LLM is wrong?* The plan needs approval; invalid actions are skipped with a reason; confidence and evidence are shown.
 - *What if the snapshot is stale?* "Ask why" tells the model the snapshot is old and to lower its confidence.
 - *Why a mock evaluation?* Offline and repeatable; its 100% is by construction; live numbers are reported separately.
-- *Why plain C# classes in `RTS.Core`?* Testable without the editor (45 tests); MonoBehaviours only adapt.
+- *Why plain C# classes in `RTS.Core`?* Testable without the editor (46 tests); MonoBehaviours only adapt.
 - *What did you not finish / what would you change?* Fill in honestly after the last test day (see MORNING.md notes).
