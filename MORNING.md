@@ -13,7 +13,7 @@ Gece 1–15'in agent maddeleri bitti (plan tarihlerinin yaklaşık 11 gün önü
 ## Bugün test et
 1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/3 , sonra `git pull`.
 2. Unity'yi aç, Console'daki derleme hatalarını `UNITY_FEEDBACK.md`'ye yapıştır (yeni scriptler hiç Unity'de derlenmedi; en olası: Fusion API ayrıntıları). EditMode testlerini çalıştır (45 beklenir).
-3. `TODO.md` bölüm 1–3'ü sırayla yap: sahneler (Menu/Game), sonra iki menü komutu: `Tools > RTS > 1 Create placeholder prefabs` ve (Game sahnesi açıkken) `Tools > RTS > 2 Setup open Game scene` (prefab'lar, harita, zone'lar, slot'lar, kaynaklar, `GameSpawner`, kamera, `Systems`). Son olarak UI'ı elle kur (HUD, panel, GameOver, AI paneli).
+3. `TODO.md` bölüm 1–3'ü sırayla yap: sahneler (Menu/Game), sonra iki menü komutu: `Tools > RTS > 1 Create placeholder prefabs` ve (Game sahnesi açıkken) `Tools > RTS > 2 Setup open Game scene` (prefab'lar, harita, zone'lar, slot'lar, kaynaklar, `GameSpawner`, kamera, `Systems`). Sonra aynı sahnede `Tools > RTS > 3 Create Game UI` (HUD, seçim paneli, AI paneli, GameOver; alanlar otomatik bağlanır).
 4. ParrelSync ile iki örnek: Host/Join, birimleri seç/taşı, ağaca sağ tık (odun artmalı), House inşa et, Villager üret.
 5. Zaman kalırsa: Barracks + Spearman, düşman TC'yi yık (Victory/Defeat), fog of war. Sonuçları `UNITY_FEEDBACK.md`'ye `Test N tamam` / `Test N olmadı: ...` diye yaz.
 6. Python tarafı (isteğe bağlı): `pip install -r ai/requirements.txt`, `pytest ai evaluation`.
@@ -31,7 +31,7 @@ Yok.
 - Olay günlüğü: host hangi olayı kimin bilebileceğine karar verir ve RPC ile sahibine yollar; her peer sadece kendi günlüğünü tutar.
 
 ## Emin olmadığım yerler
-- `Assets/Scripts/Editor/RtsSetupTools.cs` (iki menü komutu) da derlenmedi; hata verirse Console çıktısını yapıştır, elle adımlar TODO.md'de duruyor.
+- `Assets/Scripts/Editor/RtsSetupTools.cs` (üç menü komutu) da derlenmedi; hata verirse Console çıktısını yapıştır, elle adımlar TODO.md'de duruyor.
 - Yeni Unity/Fusion scriptleri (`UnitCombat`, `VillagerGatherer`, `CommandRelay`, `NetworkBuilding`, `FogOfWar`, panel scriptleri) gerçek Unity'de derlenmedi. Özellikle: `NetworkId.IsValid`, `Runner.Despawn`, `[Rpc(StateAuthority → InputAuthority)]` host kendi oyuncusuna RPC atarken (kodda host için doğrudan ekleme yapıyorum), `NetworkString<_128>`.
 - `Shader.Find("Universal Render Pipeline/Unlit")` build'de ayıklanabilir (halka, hayalet, fog için); gerekirse `Sprites/Default`'a düşer. Build'de sorun olursa haber ver.
 - `FogOfWar` her 0.25 s'de 96×77 piksel boyar; yavaş gelirse `resolution`'ı düşür.

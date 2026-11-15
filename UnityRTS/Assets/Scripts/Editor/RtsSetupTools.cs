@@ -2,14 +2,20 @@ using System.Collections.Generic;
 using System.IO;
 using Fusion;
 using UnityEditor;
+using TMPro;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.UI;
 
 /// <summary>
 /// Saves editor work: creates the placeholder prefabs (capsules, cubes) and fills the open Game scene with the map markers,
-/// build slots, resource nodes, GameSpawner and the gameplay "Systems". UI canvases are still made by hand (see TODO.md).
+/// build slots, resource nodes, GameSpawner, the gameplay "Systems" and the UI (HUD, selection panel, game over, AI panel).
 ///   Tools > RTS > 1 Create placeholder prefabs
 ///   Tools > RTS > 2 Setup open Game scene          (open Assets/Scenes/Game.unity first)
+///   Tools > RTS > 3 Create Game UI                 (same scene; layout is plain, restyle as you like)
 /// Map layout (x -100..100, z -70..80): land up to z = 45, sea north of it; bases at x = -65 / +65.
 /// Everything here is a starting point: move the objects in the scene as you like.
 /// </summary>
@@ -149,6 +155,102 @@ public static class RtsSetupTools
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         Debug.Log("RTS: Game scene set up under 'MapAndSystems'. Save the scene (Ctrl+S). UI canvases are still manual (TODO.md section 4).");
+    }
+
+    [MenuItem("Tools/RTS/3 Create Game UI")]
+    static void CreateUi()
+    {
+        var canvasGo = new GameObject("GameCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        var canvas = canvasGo.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        var scaler = canvasGo.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920, 1080);
+        if (Object.FindFirstObjectByType<EventSystem>() == null)
+            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule)); // new Input System UI module
+
+        // HUD: top bar with five texts
+        var bar = Panel(canvasGo.transform, "HudBar", new Color(0, 0, 0, 0.5f), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -22), new Vector2(0, 44));
+        var h = bar.gameObject.AddComponent<HorizontalLayoutGroup>(); h.childControlWidth = true; h.childControlHeight = true; h.padding = new RectOffset(16, 16, 4, 4); h.spacing = 16;
+        var hud = canvasGo.AddComponent<HudUI>(); var hso = new SerializedObject(hud);
+        foreach (var f in new[] { "wood", "food", "gold", "population", "age" })
+            hso.FindProperty(f).objectReferenceValue = Label(bar, f, f, 26, TextAlignmentOptions.Center);
+        hso.ApplyModifiedPropertiesWithoutUndo();
+
+        // selection panel: info text + a grid for the generated buttons
+        var sel = Panel(canvasGo.transform, "SelectionPanel", new Color(0, 0, 0, 0.55f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(250, 160), new Vector2(500, 320));
+        var info = Label(sel, "Info", "", 22, TextAlignmentOptions.TopLeft);
+        var infoRt = (RectTransform)info.transform; infoRt.anchorMin = new Vector2(0, 1); infoRt.anchorMax = new Vector2(1, 1); infoRt.pivot = new Vector2(0.5f, 1); infoRt.sizeDelta = new Vector2(-16, 80); infoRt.anchoredPosition = new Vector2(0, -8);
+        var grid = new GameObject("Buttons", typeof(RectTransform), typeof(GridLayoutGroup)); grid.transform.SetParent(sel, false);
+        var grt = (RectTransform)grid.transform; grt.anchorMin = Vector2.zero; grt.anchorMax = Vector2.one; grt.offsetMin = new Vector2(8, 8); grt.offsetMax = new Vector2(-8, -92);
+        var gl = grid.GetComponent<GridLayoutGroup>(); gl.cellSize = new Vector2(230, 44); gl.spacing = new Vector2(8, 6);
+        var sp = sel.gameObject.AddComponent<SelectionPanel>(); var sso = new SerializedObject(sp);
+        sso.FindProperty("info").objectReferenceValue = info; sso.FindProperty("buttonRoot").objectReferenceValue = grt; sso.ApplyModifiedPropertiesWithoutUndo();
+
+        // AI commander panel (right side)
+        var ai = Panel(canvasGo.transform, "AiCommanderPanel", new Color(0, 0, 0, 0.6f), new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-260, 0), new Vector2(500, 640));
+        var title = Label(ai, "Title", "AI Commander", 28, TextAlignmentOptions.Center);
+        Place((RectTransform)title.transform, new Vector2(0, 280), new Vector2(480, 40));
+        var input = InputField(ai, new Vector2(0, 225), new Vector2(480, 44));
+        var ask = Button(ai, "Ask", new Vector2(-180, 170), new Vector2(110, 44)); var approve = Button(ai, "Approve", new Vector2(-60, 170), new Vector2(110, 44));
+        var reject = Button(ai, "Reject", new Vector2(60, 170), new Vector2(110, 44)); var why = Button(ai, "Ask why", new Vector2(180, 170), new Vector2(110, 44));
+        var answer = Label(ai, "Answer", "", 20, TextAlignmentOptions.TopLeft); Place((RectTransform)answer.transform, new Vector2(0, -10), new Vector2(480, 330));
+        var status = Label(ai, "Status", "", 20, TextAlignmentOptions.TopLeft); Place((RectTransform)status.transform, new Vector2(0, -250), new Vector2(480, 110));
+        var cp = ai.gameObject.AddComponent<AiCommanderPanel>(); var cso = new SerializedObject(cp);
+        cso.FindProperty("questionInput").objectReferenceValue = input; cso.FindProperty("askButton").objectReferenceValue = ask;
+        cso.FindProperty("approveButton").objectReferenceValue = approve; cso.FindProperty("rejectButton").objectReferenceValue = reject;
+        cso.FindProperty("whyButton").objectReferenceValue = why; cso.FindProperty("answerText").objectReferenceValue = answer;
+        cso.FindProperty("statusText").objectReferenceValue = status; cso.ApplyModifiedPropertiesWithoutUndo();
+
+        // game over screen (inactive until the match ends)
+        var over = Panel(canvasGo.transform, "GameOverPanel", new Color(0, 0, 0, 0.8f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        var overText = Label(over, "Result", "", 96, TextAlignmentOptions.Center); Place((RectTransform)overText.transform, new Vector2(0, 60), new Vector2(900, 160));
+        var back = Button(over, "Back to menu", new Vector2(0, -80), new Vector2(300, 60));
+        var go = canvasGo.AddComponent<GameOverUI>(); var oso = new SerializedObject(go);
+        oso.FindProperty("panel").objectReferenceValue = over.gameObject; oso.FindProperty("resultText").objectReferenceValue = overText; oso.ApplyModifiedPropertiesWithoutUndo();
+        UnityEventTools.AddPersistentListener(back.onClick, go.OnMenuClicked);
+        over.gameObject.SetActive(false);
+
+        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        Debug.Log("RTS: GameCanvas created (HUD, selection panel, AI panel, game over). Save the scene.");
+    }
+
+    static RectTransform Panel(Transform parent, string name, Color colour, Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPos, Vector2 size)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(Image)); go.transform.SetParent(parent, false);
+        go.GetComponent<Image>().color = colour;
+        var rt = (RectTransform)go.transform; rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.anchoredPosition = anchoredPos; rt.sizeDelta = size;
+        return rt;
+    }
+
+    static TMP_Text Label(Transform parent, string name, string text, float size, TextAlignmentOptions align)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI)); go.transform.SetParent(parent, false);
+        var t = go.GetComponent<TextMeshProUGUI>(); t.text = text; t.fontSize = size; t.alignment = align; t.color = Color.white;
+        return t;
+    }
+
+    static void Place(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.anchoredPosition = pos; rt.sizeDelta = size; }
+
+    static Button Button(Transform parent, string label, Vector2 pos, Vector2 size)
+    {
+        var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button)); go.transform.SetParent(parent, false);
+        go.GetComponent<Image>().color = new Color(0.85f, 0.85f, 0.85f);
+        Place((RectTransform)go.transform, pos, size);
+        var t = Label(go.transform, "Text", label, 20, TextAlignmentOptions.Center); t.color = Color.black;
+        var rt = (RectTransform)t.transform; rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+        return go.GetComponent<Button>();
+    }
+
+    static TMP_InputField InputField(Transform parent, Vector2 pos, Vector2 size)
+    {
+        var go = new GameObject("Question", typeof(RectTransform), typeof(Image), typeof(TMP_InputField)); go.transform.SetParent(parent, false);
+        go.GetComponent<Image>().color = Color.white; Place((RectTransform)go.transform, pos, size);
+        var area = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D)); area.transform.SetParent(go.transform, false);
+        var art = (RectTransform)area.transform; art.anchorMin = Vector2.zero; art.anchorMax = Vector2.one; art.offsetMin = new Vector2(8, 4); art.offsetMax = new Vector2(-8, -4);
+        var ph = Label(area.transform, "Placeholder", "Ask the AI commander...", 20, TextAlignmentOptions.Left); ph.color = new Color(0.4f, 0.4f, 0.4f);
+        var tx = Label(area.transform, "Text", "", 20, TextAlignmentOptions.Left); tx.color = Color.black;
+        foreach (var r in new[] { (RectTransform)ph.transform, (RectTransform)tx.transform }) { r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero; }
+        var f = go.GetComponent<TMP_InputField>(); f.textViewport = art; f.textComponent = tx; f.placeholder = ph;
+        return f;
     }
 
     // ---------- helpers ----------

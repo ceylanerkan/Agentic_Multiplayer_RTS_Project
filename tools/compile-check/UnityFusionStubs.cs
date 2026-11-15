@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 namespace UnityEngine
 {
-    public class Object { public static void Destroy(Object o) { } public static void DestroyImmediate(Object o) { } public static T[] FindObjectsByType<T>(FindObjectsSortMode m) where T : Object { return new T[0]; }
+    public class Object { public static void Destroy(Object o) { } public static void DestroyImmediate(Object o) { } public static T[] FindObjectsByType<T>(FindObjectsSortMode m) where T : Object { return new T[0]; } public static T FindFirstObjectByType<T>() where T : Object { return null; }
         public static implicit operator bool(Object o) { return o != null; } public string name; }
     public enum FindObjectsSortMode { None }
     public class Component : Object { public GameObject gameObject; public Transform transform;
@@ -19,7 +19,7 @@ namespace UnityEngine
     public enum PrimitiveType { Cube, Cylinder, Quad, Capsule, Sphere }
     public class Transform : Component { public Vector3 position, localScale; public Quaternion rotation; public Vector3 forward;
         public void SetParent(Transform p, bool w) { } public void SetParent(Transform p) { } }
-    public class RectTransform : Transform { public Vector2 anchorMin, anchorMax, offsetMin, offsetMax; }
+    public class RectTransform : Transform { public Vector2 anchoredPosition, sizeDelta, pivot; public Vector2 anchorMin, anchorMax, offsetMin, offsetMax; }
     public struct Vector2 { public float x, y; public Vector2(float x, float y) { this.x = x; this.y = y; }
         public static Vector2 zero, one; public float magnitude { get { return 0; } }
         public static Vector2 operator -(Vector2 a, Vector2 b) { return a; } public static implicit operator Vector3(Vector2 v) { return default(Vector3); } }
@@ -55,9 +55,13 @@ namespace UnityEngine
     public class SerializeFieldAttribute : Attribute { } public class HideInInspectorAttribute : Attribute { }
     public class RequireComponentAttribute : Attribute { public RequireComponentAttribute(Type t) { } }
 }
-namespace UnityEngine.UI { public class Image : Component { } public class LayoutElement : Component { public float preferredHeight, minHeight; }
+namespace UnityEngine.UI { public class Graphic : Component { public Color color; } public class Image : Graphic { }
+    public class CanvasScaler : Component { public enum ScaleMode { ScaleWithScreenSize } public ScaleMode uiScaleMode; public Vector2 referenceResolution; }
+    public class GraphicRaycaster : Component { } public class RectOffset { public RectOffset(int a, int b, int c, int d) { } }
+    public class HorizontalLayoutGroup : Component { public bool childControlWidth, childControlHeight; public RectOffset padding; public float spacing; }
+    public class GridLayoutGroup : Component { public Vector2 cellSize, spacing; } public class RectMask2D : Component { } public class LayoutElement : Component { public float preferredHeight, minHeight; }
     public class Button : Component { public bool interactable; public ButtonClickedEvent onClick = new ButtonClickedEvent(); public class ButtonClickedEvent { public void AddListener(Action a) { } } } }
-namespace UnityEngine.EventSystems { public class EventSystem { public static EventSystem current; public bool IsPointerOverGameObject() { return false; } } }
+namespace UnityEngine.EventSystems { public class EventSystem : Component { public static EventSystem current; public bool IsPointerOverGameObject() { return false; } } }
 namespace UnityEngine.InputSystem {
     public class ButtonControl { public bool isPressed, wasPressedThisFrame, wasReleasedThisFrame; }
     public class Vec2Ctl { public Vector2 ReadValue() { return default(Vector2); } public float y; }
@@ -65,9 +69,9 @@ namespace UnityEngine.InputSystem {
         }
     public class Keyboard { public static Keyboard current; public ButtonControl wKey, aKey, sKey, dKey, upArrowKey, downArrowKey, leftArrowKey, rightArrowKey, shiftKey, escapeKey; }
 }
-namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.Component { public string text; public float fontSize; public Color color; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
-    public class TextMeshProUGUI : TMP_Text { } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center }
-    public class TMP_InputField : UnityEngine.Component { public string text; } }
+namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
+    public class TextMeshProUGUI : TMP_Text { } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
+    public class TMP_InputField : UnityEngine.Component { public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
 namespace Fusion
 {
     using UnityEngine;
@@ -106,3 +110,14 @@ namespace UnityEditor
 }
 namespace UnityEditor.SceneManagement { public static class EditorSceneManager { public static void MarkSceneDirty(UnityEngine.SceneManagement.Scene s) { } public static UnityEngine.SceneManagement.Scene GetActiveScene() { return default(UnityEngine.SceneManagement.Scene); } } }
 namespace UnityEngine.SceneManagement { public struct Scene { } }
+
+namespace UnityEngine { public class Canvas : Component { public RenderMode renderMode; } public enum RenderMode { ScreenSpaceOverlay } }
+namespace UnityEngine.InputSystem.UI { public class InputSystemUIInputModule : UnityEngine.Component { } }
+namespace UnityEditor.Events { public static class UnityEventTools { public static void AddPersistentListener(UnityEngine.UI.Button.ButtonClickedEvent e, System.Action a) { } } }
+// Stand-in with the same signatures as Assets/Scripts/AI/AiGatewayClient.cs (the real one needs UnityWebRequest).
+public class AiGatewayClient
+{
+    public AiGatewayClient(string baseUrl = "", int timeoutSeconds = 40) { }
+    public System.Threading.Tasks.Task<(RTS.Core.Rules.AiAnswer answer, string error)> Ask(RTS.Core.Rules.AiSafeSnapshot snapshot, string question) { return null; }
+    public System.Threading.Tasks.Task<(RTS.Core.Rules.AiAnswer answer, string error)> AskWhy() { return null; }
+}

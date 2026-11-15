@@ -44,7 +44,7 @@
   Bug fixed: `GameSpawner.StateOf` only worked on the host, so fog of war and the AI snapshot on a client would have seen no objects;
   `NetworkPlayerState.All` registry added. `TODO.md` and README status rewritten.
 - Editor automation: `Editor/RtsSetupTools.cs` (menu: create placeholder prefabs; set up the open Game scene with map, zones, slots, resources,
-  spawner, systems, camera). Compiles against the stubs. `.env` is now loaded by the gateway and `run_eval.py` (it was not before).
+  spawner, systems, camera; create the Game UI with all fields assigned). Compiles against the stubs. `.env` is now loaded by the gateway and `run_eval.py` (it was not before).
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

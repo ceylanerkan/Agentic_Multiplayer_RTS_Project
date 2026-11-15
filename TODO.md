@@ -30,12 +30,10 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
       `NetworkTransform` + `NetworkBuilding`; nodes `NetworkObject` + `ResourceNode`; `Player` = `NetworkObject` + `NetworkPlayerState` + `CommandRelay`.
 
 ## [You] 3. Game scene: UI
-- [ ] HUD: Canvas with five `TMP_Text` (wood, food, gold, population, age) and `HudUI` with them assigned.
-- [ ] Bottom panel: `SelectionPanel` with an info `TMP_Text` and an empty `RectTransform` (add a Vertical Layout Group) as button root.
-      Buttons are created by the script.
-- [ ] `GameOverUI`: inactive panel with a `TMP_Text` and a Button (On Click -> `GameOverUI.OnMenuClicked`); assign the panel and the text.
-- [ ] `AiCommanderPanel`: `TMP_InputField` (question), Buttons Ask / Approve / Reject / Why, two `TMP_Text` (answer, status). Assign all.
-      Set the gateway URL if it is not `http://127.0.0.1:8765`.
+- [ ] In the same Game scene run `Tools > RTS > 3 Create Game UI`: creates `GameCanvas` with the HUD bar, `SelectionPanel` (info + generated
+      buttons), the AI commander panel (question field, Ask / Approve / Reject / Ask why, answer and status text) and the inactive game over
+      screen with a "Back to menu" button, all with their fields assigned (plain layout; restyle as you like). Save the scene.
+      If the gateway is not at `http://127.0.0.1:8765`, change the URL on `AiCommanderPanel`.
 
 ## [You] 4. Play tests (report results in UNITY_FEEDBACK.md)
 - [ ] Two instances: each side sees its TC and 3 Villagers; box-select and move; right-click a tree: wood rises in the HUD.
