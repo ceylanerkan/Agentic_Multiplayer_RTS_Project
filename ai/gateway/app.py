@@ -1,6 +1,6 @@
 """FastAPI gateway. Unity holds the session token; the LLM never sees it or any player id.
 
-Run: uvicorn ai.gateway.app:app --port 8765   (needs GEMINI_API_KEY; tests inject a ScriptedLLM instead)
+Run (from the repository root): uvicorn --factory ai.gateway.app:create_app --port 8765   (needs GEMINI_API_KEY; tests inject a ScriptedLLM instead)
 """
 import os
 import re

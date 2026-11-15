@@ -268,7 +268,7 @@ rejected by the validator, which is the intended behaviour and the observed limi
 literal player request even when it is illegal, so the validator is necessary.** **[TODO live]** Add the observed
 failures of the real model (for example a missing prerequisite or a wrong zone) and the 2-3 slowest prompts.
 
-*Table III. Security tests.* See `evaluation/security-tests.md` (16 rows; 14 automated, rest live).
+*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S16; most are automated, the live Gemini column is open).
 
 **Unity side.** 45 EditMode tests cover damage, costs, validator, domains, visibility, event log, production queue,
 tech effects, snapshot assembly, approval and the decision log. They were compiled and run with the .NET SDK outside

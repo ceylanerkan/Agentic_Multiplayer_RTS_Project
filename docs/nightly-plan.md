@@ -116,8 +116,8 @@ engine-free `RTS.Core` keeps its asmdef.
 - You: Windows build (IL2CPP), and two instances on the demo machine.
 
 ## Night 15 – 2026-11-26: demo and defense material
-- [ ] `docs/demo-script.md`: click-by-click steps for the 9 required scenarios (listed below), with what to say.
-- [ ] `docs/slides-outline.md` and `docs/defense-notes.md`: authority model, 3 MCP tools, the RAG pipeline, the
+- [x] (done 2026-11-15) `docs/demo-script.md`: click-by-click steps for the 9 required scenarios (listed below), with what to say.
+- [x] (done 2026-11-15) `docs/slides-outline.md` and `docs/defense-notes.md`: authority model, 3 MCP tools, the RAG pipeline, the
       validator, one security test.
 - You: record the backup video while following the demo script.
 
