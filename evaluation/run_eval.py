@@ -105,6 +105,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--real", action="store_true")
     ap.add_argument("--out", default=str(HERE / "results.json"))
+    ap.add_argument("--delay", type=float, default=None, help="seconds to wait between prompts (default: 4 with --real because of free-tier rate limits, else 0)")
     args = ap.parse_args()
     load_env()  # GEMINI_API_KEY from .env for --real
     if args.real:
@@ -115,7 +116,10 @@ def main():
         llm = MockLLM()
     retriever, rows = Retriever(), []
     log = JsonlLog(Path(tempfile.mkdtemp()) / "tools.jsonl")
-    for line in (HERE / "prompts.jsonl").read_text().splitlines():
+    delay = args.delay if args.delay is not None else (4.0 if args.real else 0.0)
+    for n, line in enumerate((HERE / "prompts.jsonl").read_text().splitlines()):
+        if n and delay:
+            time.sleep(delay)
         p = json.loads(line)
         store = SessionStore(":memory:")
         sid = store.create_session()
@@ -127,6 +131,9 @@ def main():
             plan, used = agent.run("eval", p["question"], stale_note)
         except AgentError:
             ok_plan = False
+        except Exception as e:  # a network or quota error must not abort the whole run: count it as a failed prompt
+            ok_plan = False
+            print("ERROR", p["id"], type(e).__name__)
         state = json.loads((HERE / "fixtures" / f"{p['fixture']}.json").read_text())
         reasons = plan_checks.validate_plan(plan, state)
         missing = [t for t in p["expected_tools"] if t not in used]

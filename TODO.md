@@ -46,7 +46,7 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 - [ ] `pip install -r ai/requirements.txt`, `python ai/rag/build_index.py` (downloads the embedding model), `pytest ai evaluation`.
 - [ ] Live Gemini: `.env` with `GEMINI_API_KEY`, `uvicorn --factory ai.gateway.app:create_app --port 8765` from the repo root; try
       `MCP_TRANSPORT=stdio` with a file `SESSION_DB_PATH` too.
-- [ ] `GEMINI_API_KEY=... python evaluation/run_eval.py --real`: keep `results.json`, `results.csv`, `results_table.md`; fill the `[TODO live]`
+- [ ] `GEMINI_API_KEY=... python evaluation/run_eval.py --real` (waits 4 s between prompts for the free-tier rate limit; `--delay N` changes it): keep `results.json`, `results.csv`, `results_table.md`; fill the `[TODO live]`
       cells in `docs/report/report.md` and the "Live (Gemini)" column of `evaluation/security-tests.md`.
 - [ ] MCP Inspector screenshots of the 7 tools with valid and invalid input
       (`RTS_SESSION_ID=<id> npx @modelcontextprotocol/inspector python ai/mcp-server/server.py`).

@@ -41,6 +41,7 @@ uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the
 python evaluation/run_eval.py                               # offline mock run; add --real for Gemini
 dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)
 ```
+Windows shortcut: double-click `tools/run_gateway.bat` (same command as the uvicorn line).
 Set `MCP_TRANSPORT=stdio` (in `.env`) to run the MCP server as a subprocess with the real MCP protocol.
 C# rule tests: Unity > Window > General > Test Runner > EditMode (`RulesTests`).
 
