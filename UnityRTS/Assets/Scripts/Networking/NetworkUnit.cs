@@ -28,6 +28,7 @@ public class NetworkUnit : NetworkBehaviour
     }
 
     public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; }
+    public void StopMoving() { HasMoveTarget = false; }
 
     public override void FixedUpdateNetwork()
     {

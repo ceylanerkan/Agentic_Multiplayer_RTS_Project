@@ -1,5 +1,13 @@
 # Progress log (newest first)
 
+## 2026-11-15 (run 3, night 3)
+- UNITY_FEEDBACK.md headings handled: "2026-11-14" (the `Start()` rename was already fixed on main; no other
+  Unity-message method names with parameters in the scripts; compile and RulesTests 13/13 confirmed by the student).
+- Night 3 chunk: `ZoneLookup` + `GatherState` (core, tested), `ZoneVolume`, `ZoneMap`, `BuildSlot`, `ResourceNode`,
+  `VillagerGatherer`, `CommandRelay.SendGather`, build slot choice on the host, coastal slots feed the Dock rule.
+- Tests: throwaway net8.0 project (dotnet from apt): 19/19 pass (6 new: zones, gather, capacity, pop cap).
+- Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
+
 ## 2026-11-12 (run 2, night 1)
 - UNITY_FEEDBACK.md headings handled: "11/11/2026" (build_index + pytest passed, nothing to fix).
 - Compiled `Assets/Scripts/Core` + `RulesTests` in a throwaway net8.0 project (dotnet from apt; dot.net is blocked): no

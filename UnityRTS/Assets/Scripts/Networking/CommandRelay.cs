@@ -21,6 +21,7 @@ public class CommandRelay : NetworkBehaviour
 
     // ---- local API (called by the UI / AI approval flow) ----
     public void SendMove(NetworkId unit, Vector3 pos) { RPC_Move(unit, pos); }
+    public void SendGather(NetworkId unit, NetworkId node) { RPC_Gather(unit, node); }
     public void SendBuild(string buildingKey, Vector3 pos, string zone) { RPC_Build(buildingKey, pos, zone); }
     public void SendTrain(string unitKey, NetworkId building) { RPC_Train(unitKey, building); }
     public void SendResearch(string techKey) { RPC_Research(techKey); }
@@ -30,7 +31,19 @@ public class CommandRelay : NetworkBehaviour
     void RPC_Move(NetworkId unitId, Vector3 pos)
     {
         var unit = FindOwned<NetworkUnit>(unitId);
-        if (unit != null) unit.MoveTo(pos);
+        if (unit == null) return;
+        var g = unit.GetComponent<VillagerGatherer>();
+        if (g != null) g.Cancel(); // an explicit move stops gathering
+        unit.MoveTo(pos);
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_Gather(NetworkId unitId, NetworkId nodeId)
+    {
+        var unit = FindOwned<NetworkUnit>(unitId);
+        var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null; // only Villagers have a gatherer
+        if (g == null || !Runner.TryFindObject(nodeId, out var nodeObj)) return;
+        g.StartGather(nodeObj.GetComponent<ResourceNode>());
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -38,6 +51,15 @@ public class CommandRelay : NetworkBehaviour
     {
         var a = new PlanAction { ActionType = "BUILD", BuildingType = buildingKey.ToString(), TargetZone = zone.ToString() };
         if (!validator.Validate(a, state.ToCore()).Ok) return;
+        // The action only names a zone, so the host picks the place: a free BuildSlot in that zone.
+        // (Without any slots in the scene the client's position is used, so early smoke tests still work.)
+        if (BuildSlot.All.Count > 0)
+        {
+            var slot = BuildSlot.FindFree(a.TargetZone, a.BuildingType == "dock");
+            if (slot == null) return;
+            slot.occupied = true;
+            pos = slot.transform.position;
+        }
         state.Spend(GameDataProvider.Get().Buildings[a.BuildingType].Cost, 1);
         GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villager construction comes later
     }

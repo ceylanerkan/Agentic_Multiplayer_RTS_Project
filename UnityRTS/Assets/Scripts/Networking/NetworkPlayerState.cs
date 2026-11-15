@@ -65,6 +65,10 @@ public class NetworkPlayerState : NetworkBehaviour
             string key = b.TypeKey.ToString();
             int n; s.CompletedBuildings.TryGetValue(key, out n); s.CompletedBuildings[key] = n + 1;
         }
+        // Docks need a free coastal slot in the player's own base.
+        string ownBase = Slot == 1 ? "P1Base" : "P2Base";
+        foreach (var slot in BuildSlot.All)
+            if (slot.coastal && !slot.occupied && slot.Zone == ownBase) s.CoastalSlotZones.Add(ownBase);
         return s;
     }
 

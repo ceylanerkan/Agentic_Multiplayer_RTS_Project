@@ -43,10 +43,10 @@ engine-free `RTS.Core` keeps its asmdef.
   smoke test with ParrelSync.
 
 ## Night 3 – 2026-11-14: map and economy
-- [ ] `ZoneMap`: maps a world position to one of the 10 zone names, so that every point belongs to a zone.
+- [x] (done 2026-11-15, uncompiled; needs Unity) `ZoneMap`: maps a world position to one of the 10 zone names, so that every point belongs to a zone.
       `BuildSlot` per zone, with a coastal flag.
-- [ ] `ResourceNode` (finite, networked amount, despawned when empty) and the Villager gather loop on the host.
-- [ ] Population capacity from Houses and the Town Center, the hard cap, and training blocked at the cap.
+- [x] (done 2026-11-15, uncompiled; needs Unity) `ResourceNode` (finite, networked amount, despawned when empty) and the Villager gather loop on the host.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Population capacity from Houses and the Town Center, the hard cap, and training blocked at the cap.
 - You: build the map (ground, 7 land and 3 water zone volumes, resource nodes, build slots) and bake the NavMesh.
 
 ## Night 4 – 2026-11-15: player control

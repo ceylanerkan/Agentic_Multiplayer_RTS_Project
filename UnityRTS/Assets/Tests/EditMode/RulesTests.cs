@@ -101,5 +101,75 @@ namespace RTS.Tests
             Assert.AreEqual(15, GameConstants.Capacity(1, 2));
             Assert.AreEqual(50, GameConstants.Capacity(1, 20));
         }
-}
+
+        // ---- Night 3 ----
+        static ZoneLookup TenZones()
+        {
+            var z = new ZoneLookup();
+            z.Add("P1Base", -40, 0); z.Add("P2Base", 40, 0); z.Add("Center", 0, 0);
+            z.Add("NorthGate", 0, 20); z.Add("SouthField", 0, -25); z.Add("EastForest", 30, -25); z.Add("WestMine", -30, -25);
+            z.Add("P1Harbor", -40, 50); z.Add("OpenSea", 0, 50); z.Add("P2Harbor", 40, 50);
+            return z;
+        }
+
+        [Test]
+        public void ZoneLookup_EveryPointHasAZone()
+        {
+            var z = TenZones();
+            Assert.IsTrue(z.IsComplete());
+            for (float x = -100; x <= 100; x += 7) for (float y = -100; y <= 100; y += 7)
+                Assert.IsNotNull(z.ZoneAt(x, y));
+            Assert.AreEqual("P1Base", z.ZoneAt(-38, 2));
+            Assert.AreEqual("OpenSea", z.ZoneAt(3, 60));
+            Assert.IsTrue(ZoneLookup.IsWater("OpenSea"));
+            Assert.IsFalse(ZoneLookup.IsWater("Center"));
+        }
+
+        [Test]
+        public void ZoneLookup_IncompleteWithoutAllNames()
+        {
+            var z = new ZoneLookup(); z.Add("Center", 0, 0);
+            Assert.IsFalse(z.IsComplete());
+        }
+
+        [Test]
+        public void Gather_FillsAtRateAndCapsAtTen()
+        {
+            var g = new GatherState();
+            float taken = g.Tick(5f, "wood", 100, false);
+            Assert.AreEqual(3f, taken, 0.001f);
+            g.Tick(20f, "wood", 100, false);
+            Assert.AreEqual(10, g.CarriedWhole);
+            Assert.IsTrue(g.Full);
+            Assert.AreEqual(10, g.Deposit());
+            Assert.AreEqual(0, g.CarriedWhole);
+        }
+
+        [Test]
+        public void Gather_NodeRunsOutAndHorseCollarHelpsFoodOnly()
+        {
+            var g = new GatherState();
+            Assert.AreEqual(2f, g.Tick(10f, "gold", 2f, false), 0.001f);
+            var f = new GatherState();
+            Assert.AreEqual(0.72f, f.Tick(1f, "food", 50, true), 0.001f);
+            var w = new GatherState();
+            Assert.AreEqual(0.6f, w.Tick(1f, "wood", 50, true), 0.001f);
+        }
+
+        [Test]
+        public void Capacity_ComesFromHousesAndStopsAtFifty()
+        {
+            Assert.AreEqual(5, GameConstants.Capacity(1, 0));
+            Assert.AreEqual(15, GameConstants.Capacity(1, 2));
+            Assert.AreEqual(50, GameConstants.Capacity(1, 20));
+        }
+
+        [Test]
+        public void Training_BlockedAtPopulationCap()
+        {
+            var s = Fresh(); s.PopulationUsed = 5; s.PopulationCapacity = 5;
+            var r = validator.Validate(new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager", Count = 1 }, s);
+            Assert.IsFalse(r.Ok);
+        }
+    }
 }
