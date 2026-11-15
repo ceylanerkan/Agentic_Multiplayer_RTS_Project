@@ -9,6 +9,7 @@
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Units/*.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Combat/*.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Camera/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/MenuUI.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Editor/RtsSetupTools.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Data/*.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/AI/AiSnapshotBuilder.cs"/>

@@ -13,6 +13,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Saves editor work: creates the placeholder prefabs (capsules, cubes) and fills the open Game scene with the map markers,
 /// build slots, resource nodes, GameSpawner, the gameplay "Systems" and the UI (HUD, selection panel, game over, AI panel).
+///   Tools > RTS > 0 Create Menu and Game scenes     (new scenes, Build Settings, then runs 1-3 for you)
 ///   Tools > RTS > 1 Create placeholder prefabs
 ///   Tools > RTS > 2 Setup open Game scene          (open Assets/Scenes/Game.unity first)
 ///   Tools > RTS > 3 Create Game UI                 (same scene; layout is plain, restyle as you like)
@@ -36,6 +37,41 @@ public static class RtsSetupTools
         { "barracks", "Barracks", "0.6,0.3,0.3", "4" }, { "stable", "Stable", "0.5,0.4,0.2", "4" },
         { "blacksmith", "Blacksmith", "0.3,0.3,0.3", "4" }, { "dock", "Dock", "0.3,0.4,0.6", "4" },
     };
+
+    [MenuItem("Tools/RTS/0 Create Menu and Game scenes")]
+    static void CreateScenes()
+    {
+        EnsureFolder("Assets", "Scenes");
+        const string menuPath = "Assets/Scenes/Menu.unity", gamePath = "Assets/Scenes/Game.unity";
+        if (File.Exists(menuPath) || File.Exists(gamePath)) { Debug.LogError("RTS: Assets/Scenes/Menu.unity or Game.unity already exists; delete it first or use commands 1-3 on your own scene."); return; }
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
+        // Menu: launcher + canvas with session name, Host, Join and a status line
+        var menu = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+        new GameObject("Launcher", typeof(GameLauncher));
+        var canvasGo = new GameObject("MenuCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(MenuUI));
+        canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+        var sc = canvasGo.GetComponent<CanvasScaler>(); sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; sc.referenceResolution = new Vector2(1920, 1080);
+        new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+        var title = Label(canvasGo.transform, "Title", "Agentic RTS", 72, TextAlignmentOptions.Center); Place((RectTransform)title.transform, new Vector2(0, 250), new Vector2(900, 120));
+        var nameField = InputField(canvasGo.transform, new Vector2(0, 100), new Vector2(500, 60));
+        var host = Button(canvasGo.transform, "Host", new Vector2(-130, 0), new Vector2(240, 70)); var join = Button(canvasGo.transform, "Join", new Vector2(130, 0), new Vector2(240, 70));
+        var status = Label(canvasGo.transform, "Status", "", 28, TextAlignmentOptions.Center); Place((RectTransform)status.transform, new Vector2(0, -110), new Vector2(1000, 80));
+        var mso = new SerializedObject(canvasGo.GetComponent<MenuUI>());
+        mso.FindProperty("sessionNameInput").objectReferenceValue = nameField; mso.FindProperty("hostButton").objectReferenceValue = host;
+        mso.FindProperty("joinButton").objectReferenceValue = join; mso.FindProperty("statusText").objectReferenceValue = status;
+        mso.ApplyModifiedPropertiesWithoutUndo();
+        EditorSceneManager.SaveScene(menu, menuPath);
+
+        // Game: map, systems and UI
+        var game = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+        EditorSceneManager.SaveScene(game, gamePath);
+        SetupScene(); CreateUi();
+        EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+
+        EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(menuPath, true), new EditorBuildSettingsScene(gamePath, true) };
+        Debug.Log("RTS: scenes Menu and Game created and added to the Build Settings (Menu first). Open Menu and press Play, or use ParrelSync.");
+    }
 
     [MenuItem("Tools/RTS/1 Create placeholder prefabs")]
     static void CreatePrefabs()

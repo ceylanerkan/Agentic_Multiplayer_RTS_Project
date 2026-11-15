@@ -93,7 +93,7 @@ namespace Fusion
         public virtual void Spawned() { } public virtual void Despawned(NetworkRunner r, bool h) { } public virtual void FixedUpdateNetwork() { } }
     public interface IPlayerJoined { void PlayerJoined(PlayerRef p); }
 }
-public class GameLauncher : UnityEngine.MonoBehaviour { public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
+public class GameLauncher : UnityEngine.MonoBehaviour { public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
 
 namespace UnityEngine { public class Object2 { } }
 namespace Fusion { public class NetworkTransform : UnityEngine.MonoBehaviour { } }
@@ -108,7 +108,9 @@ namespace UnityEditor
         public static void CreateAsset(UnityEngine.Object o, string p) { } public static void SaveAssets() { } public static void Refresh() { } }
     public static class PrefabUtility { public static GameObject SaveAsPrefabAsset(GameObject g, string p) { return g; } public static UnityEngine.Object InstantiatePrefab(UnityEngine.Object o, Transform t) { return null; } }
 }
-namespace UnityEditor.SceneManagement { public static class EditorSceneManager { public static void MarkSceneDirty(UnityEngine.SceneManagement.Scene s) { } public static UnityEngine.SceneManagement.Scene GetActiveScene() { return default(UnityEngine.SceneManagement.Scene); } } }
+namespace UnityEditor.SceneManagement { public static class EditorSceneManager { public static void MarkSceneDirty(UnityEngine.SceneManagement.Scene s) { } public static UnityEngine.SceneManagement.Scene GetActiveScene() { return default(UnityEngine.SceneManagement.Scene); }
+        public static UnityEngine.SceneManagement.Scene NewScene(NewSceneSetup s, NewSceneMode m) { return default(UnityEngine.SceneManagement.Scene); }
+        public static bool SaveScene(UnityEngine.SceneManagement.Scene s, string path = null) { return true; } public static bool SaveCurrentModifiedScenesIfUserWantsTo() { return true; } } }
 namespace UnityEngine.SceneManagement { public struct Scene { } }
 
 namespace UnityEngine { public class Canvas : Component { public RenderMode renderMode; } public enum RenderMode { ScreenSpaceOverlay } }
@@ -121,3 +123,5 @@ public class AiGatewayClient
     public System.Threading.Tasks.Task<(RTS.Core.Rules.AiAnswer answer, string error)> Ask(RTS.Core.Rules.AiSafeSnapshot snapshot, string question) { return null; }
     public System.Threading.Tasks.Task<(RTS.Core.Rules.AiAnswer answer, string error)> AskWhy() { return null; }
 }
+namespace UnityEditor.SceneManagement { public enum NewSceneSetup { DefaultGameObjects } public enum NewSceneMode { Single } }
+namespace UnityEditor { public class EditorBuildSettingsScene { public EditorBuildSettingsScene(string p, bool e) { } } public static class EditorBuildSettings { public static EditorBuildSettingsScene[] scenes; } }
