@@ -86,7 +86,7 @@ namespace Fusion
     public enum RpcSources { InputAuthority, StateAuthority } public enum RpcTargets { StateAuthority, InputAuthority }
     public class RpcAttribute : Attribute { public RpcAttribute(RpcSources s, RpcTargets t) { } }
     public class NetworkObject : UnityEngine.MonoBehaviour { public NetworkId Id; public PlayerRef InputAuthority; public bool HasInputAuthority, HasStateAuthority; }
-    public class NetworkRunner : UnityEngine.MonoBehaviour { public float DeltaTime; public bool IsServer; public PlayerRef LocalPlayer;
+    public class NetworkRunner : UnityEngine.MonoBehaviour { public float DeltaTime; public bool IsServer, IsRunning; public System.Collections.Generic.IEnumerable<PlayerRef> ActivePlayers; public PlayerRef LocalPlayer;
         public NetworkObject Spawn(NetworkObject p, Vector3 pos, Quaternion r, PlayerRef owner) { return null; } public void Despawn(NetworkObject o) { }
         public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; } }
     public class SimulationBehaviour : UnityEngine.MonoBehaviour { public NetworkRunner Runner; }

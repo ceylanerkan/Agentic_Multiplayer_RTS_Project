@@ -37,12 +37,20 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
         return null;
     }
 
+    // The Game scene loads after the players joined, so a PlayerJoined callback may have been missed: the host checks every frame
+    // that each active player has a base, and spawns it for those that do not (PlayerJoined ignores players that already have one).
+    void Update()
+    {
+        if (Runner == null || !Runner.IsRunning || !Runner.IsServer) return;
+        foreach (var p in Runner.ActivePlayers) if (!players.ContainsKey(p)) PlayerJoined(p);
+    }
+
     public void PlayerJoined(PlayerRef player)
     {
-        if (!Runner.IsServer) return;
+        if (!Runner.IsServer || players.ContainsKey(player)) return; // already has a base (also called from Update)
         MatchEnd.Reset();
         int slot = GameLauncher.Instance != null ? GameLauncher.Instance.SlotOf(player) : players.Count + 1;
-        if (slot == 0) return; // third player: ignored
+        if (slot == 0) { players[player] = null; return; } // third player: ignored (remembered, so Update does not retry)
         Transform baseCentre = slot == 1 ? p1Spawn : p2Spawn;
 
         var po = Runner.Spawn(playerPrefab, Vector3.zero, Quaternion.identity, player);
