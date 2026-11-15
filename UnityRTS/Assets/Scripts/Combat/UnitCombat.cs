@@ -31,6 +31,8 @@ public class UnitCombat : NetworkBehaviour
 
         var data = GameDataProvider.Get();
         var me = data.Units[unit.TypeKey.ToString()];
+        var ownerState = GameSpawner.Instance.StateOf(unit.Owner);
+        float range = me.Range + (ownerState != null ? TechBonus.RangeBonus(me, ownerState) : 0f); // Fletching
 
         // 1. explicit target
         NetworkUnit tu = null; NetworkBuilding tb = null;
@@ -46,12 +48,12 @@ public class UnitCombat : NetworkBehaviour
         {
             bool busy = unit.HasMoveTarget || (gatherer != null && gatherer.Busy);
             if (busy || unit.TypeKey.ToString() == "villager") return;
-            FindAuto(me.Range, out tu, out tb);
+            FindAuto(range, out tu, out tb);
             if (tu == null && tb == null) return;
         }
 
         Vector3 targetPos = tu != null ? tu.transform.position : tb.transform.position;
-        float reach = me.Range + (tu != null ? GameConstants.UnitReach : GameConstants.BuildingReach);
+        float reach = range + (tu != null ? GameConstants.UnitReach : GameConstants.BuildingReach);
         Vector3 d = targetPos - transform.position; d.y = 0;
 
         if (d.magnitude > reach)

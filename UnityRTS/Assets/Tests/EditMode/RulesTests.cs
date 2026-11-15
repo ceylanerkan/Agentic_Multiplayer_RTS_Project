@@ -239,5 +239,46 @@ namespace RTS.Tests
             c.AddWork(10f);
             Assert.IsTrue(c.Done); Assert.AreEqual(1f, c.Progress);
         }
+
+        [Test]
+        public void TechEffects_ApplyOnlyToTheRightUnits()
+        {
+            var none = new HashSet<string>();
+            var all = new HashSet<string> { "iron_weapons", "fletching", "horse_collar", "age_2" };
+            Assert.AreEqual(0f, TechEffects.AttackBonus("spearman", none));
+            Assert.AreEqual(2f, TechEffects.AttackBonus("spearman", all));
+            Assert.AreEqual(0f, TechEffects.AttackBonus("villager", all));
+            Assert.AreEqual(1f, TechEffects.RangeBonus("archer", all));
+            Assert.AreEqual(0f, TechEffects.RangeBonus("spearman", all));
+            Assert.AreEqual(1f, TechEffects.LosBonus("archer", all));
+            Assert.AreEqual(1.2f, TechEffects.FoodGatherMultiplier(all), 0.0001f);
+            Assert.AreEqual(1f, TechEffects.FoodGatherMultiplier(none));
+        }
+
+        [Test]
+        public void IronWeapons_RaisesDamage()
+        {
+            var sp = data.Units["spearman"]; var vil = data.Units["villager"];
+            float before = DamageCalculator.Damage(sp, vil, false, 0f);
+            float after = DamageCalculator.Damage(sp, vil, false, TechEffects.AttackBonus("spearman", new HashSet<string> { "iron_weapons" }));
+            Assert.AreEqual(2f, after - before, 0.001f);
+        }
+
+        [Test]
+        public void WinCondition_LoserIsThePlayerWithoutTownCenter()
+        {
+            Assert.AreEqual(0, WinCondition.LosingSlot(1, 1));
+            Assert.AreEqual(1, WinCondition.LosingSlot(0, 1));
+            Assert.AreEqual(2, WinCondition.LosingSlot(2, 0));
+        }
+
+        [Test]
+        public void Scout_IsTrainedAtTheBarracksWithLongestSight()
+        {
+            Assert.Contains("scout", data.Buildings["barracks"].Trains);
+            Assert.AreEqual(2f, data.Units["scout"].Attack);
+            Assert.AreEqual(12f, data.Units["scout"].LineOfSight);
+            Assert.AreEqual(10f, data.Buildings["town_center"].LineOfSight);
+        }
     }
 }

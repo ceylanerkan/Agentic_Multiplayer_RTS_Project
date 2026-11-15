@@ -68,9 +68,9 @@ engine-free `RTS.Core` keeps its asmdef.
 - You: two-instance test of gather, build, train and fight. Record a short clip as M3 evidence.
 
 ## Night 7 – 2026-11-18: technologies, Scout, win condition
-- [ ] Technology effects: Age II unlocks, Iron Weapons, Fletching, Horse Collar, for existing and future units.
-- [ ] Scout unit.
-- [ ] Win condition: when a Town Center is destroyed, the match ends over the network and both players see a
+- [x] (done 2026-11-15, uncompiled; needs Unity) Technology effects: Age II unlocks, Iron Weapons, Fletching, Horse Collar, for existing and future units.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Scout unit.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Win condition: when a Town Center is destroyed, the match ends over the network and both players see a
       Victory or Defeat screen.
 
 ## Night 8 – 2026-11-19: fog of war and events

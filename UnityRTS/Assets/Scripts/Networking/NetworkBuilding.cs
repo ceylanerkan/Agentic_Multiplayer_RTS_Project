@@ -61,7 +61,9 @@ public class NetworkBuilding : NetworkBehaviour
             if ((slot.transform.position - transform.position).sqrMagnitude < 1f) slot.occupied = false;
         var st = GameSpawner.Instance.StateOf(Owner);
         if (st != null) st.RecalculateCapacity(this); // this building is still in All until Despawned runs
+        bool wasTownCenter = TypeKey.ToString() == "town_center";
         Runner.Despawn(Object);
+        if (wasTownCenter) MatchEnd.Check(this);
     }
 
     // ---- production queue (host only) ----

@@ -24,9 +24,16 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     public NetworkPlayerState StateOf(PlayerRef p) { NetworkPlayerState s; players.TryGetValue(p, out s); return s; }
 
+    public NetworkPlayerState StateBySlot(int slot)
+    {
+        foreach (var s in players.Values) if (s.Slot == slot) return s;
+        return null;
+    }
+
     public void PlayerJoined(PlayerRef player)
     {
         if (!Runner.IsServer) return;
+        MatchEnd.Reset();
         int slot = GameLauncher.Instance != null ? GameLauncher.Instance.SlotOf(player) : players.Count + 1;
         if (slot == 0) return; // third player: ignored
         Transform baseCentre = slot == 1 ? p1Spawn : p2Spawn;

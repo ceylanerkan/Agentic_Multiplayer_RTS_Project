@@ -62,7 +62,7 @@ public class VillagerGatherer : NetworkBehaviour
 
             case Phase.Gathering:
                 if (node == null) { FindOtherNodeOrStop(); break; }
-                bool horseCollar = Owner() != null && Owner().HasTech("horse_collar");
+                bool horseCollar = Owner() != null && Owner().HasTech("horse_collar"); // +20% food, see TechEffects
                 float taken = bag.Tick(Runner.DeltaTime, resource, node.Amount, horseCollar);
                 node.Take(taken); // may despawn the node; the reference then becomes null on the next tick
                 if (bag.Full || taken <= 0f) GoDeposit();

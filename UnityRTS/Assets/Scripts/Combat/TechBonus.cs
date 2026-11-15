@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using RTS.Core.Rules;
 
-/// <summary>Attack bonus from researched technologies (Iron Weapons: +2 attack for military units).</summary>
+/// <summary>Adapter from a player's networked tech mask to the pure TechEffects rules.</summary>
 public static class TechBonus
 {
-    public const float IronWeaponsBonus = 2f;
-
-    public static float AttackBonus(DefRecord unit, NetworkPlayerState owner)
+    public static ICollection<string> TechsOf(NetworkPlayerState owner)
     {
-        if (unit.Key == "villager") return 0f; // "military" only
-        return owner.HasTech("iron_weapons") ? IronWeaponsBonus : 0f;
+        var set = new HashSet<string>();
+        foreach (var k in GameDataProvider.Get().Techs.Keys) if (owner.HasTech(k)) set.Add(k);
+        return set;
     }
+
+    public static float AttackBonus(DefRecord unit, NetworkPlayerState owner) { return TechEffects.AttackBonus(unit.Key, TechsOf(owner)); }
+    public static float RangeBonus(DefRecord unit, NetworkPlayerState owner) { return TechEffects.RangeBonus(unit.Key, TechsOf(owner)); }
 }

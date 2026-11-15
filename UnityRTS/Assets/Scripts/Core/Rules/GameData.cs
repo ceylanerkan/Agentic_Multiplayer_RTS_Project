@@ -17,6 +17,7 @@ namespace RTS.Core.Rules
         public bool Buildable = true; // false for the Town Center
         public float TimeSeconds;     // train_time_s (units), build_time_s (buildings), research_time_s (technologies)
         public float Speed;           // units only
+        public float LineOfSight;     // units (stats) and buildings (top level); used by fog of war
         public List<string> Trains = new List<string>();     // buildings: unit keys
         public List<string> Researches = new List<string>(); // buildings: technology keys
         public string TrainedAt, ResearchedAt;                // units / technologies: building key
@@ -53,6 +54,8 @@ namespace RTS.Core.Rules
             }
             // Buildings keep hp at the top level, units keep it under "stats".
             if (stats == null && r["hp"] != null) rec.Hp = (float)r["hp"];
+            if (stats != null && stats["line_of_sight"] != null) rec.LineOfSight = (float)stats["line_of_sight"];
+            if (stats == null && r["line_of_sight"] != null) rec.LineOfSight = (float)r["line_of_sight"];
             if (stats != null && stats["speed"] != null) rec.Speed = (float)stats["speed"];
             foreach (var name in new[] { "train_time_s", "build_time_s", "research_time_s" })
                 if (r[name] != null && r[name].Type != JTokenType.Null) rec.TimeSeconds = (float)r[name];

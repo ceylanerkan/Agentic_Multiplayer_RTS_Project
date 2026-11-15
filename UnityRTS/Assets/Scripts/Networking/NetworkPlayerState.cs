@@ -15,6 +15,7 @@ public class NetworkPlayerState : NetworkBehaviour
     [Networked] public int PopUsed { get; set; }
     [Networked] public int PopCapacity { get; set; }
     [Networked] public int Age { get; set; }
+    [Networked] public int Result { get; set; }          // 0 = match running, 1 = this player won, 2 = this player lost
     [Networked] public int TechMask { get; set; }        // bit i = i-th technology of GameData.Techs
 
     public PlayerRef Owner => Object.InputAuthority;
@@ -24,7 +25,7 @@ public class NetworkPlayerState : NetworkBehaviour
     {
         Slot = slot; Age = 1;
         Wood = GameConstants.StartWood; Food = GameConstants.StartFood; Gold = GameConstants.StartGold;
-        PopUsed = 0; PopCapacity = GameConstants.TownCenterCapacity; TechMask = 0;
+        Result = 0; PopUsed = 0; PopCapacity = GameConstants.TownCenterCapacity; TechMask = 0;
     }
 
     public int Get(string resource)
