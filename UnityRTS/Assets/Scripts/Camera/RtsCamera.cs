@@ -13,8 +13,29 @@ public class RtsCamera : MonoBehaviour
     [SerializeField] float minHeight = 8f, maxHeight = 60f;
     [SerializeField] Vector2 mapMin = new Vector2(-80, -60), mapMax = new Vector2(80, 70); // clamp on x/z
 
+    bool focused;
+
+    /// <summary>Once, when the local player's Town Center exists: move the camera so that it looks at it (P2 would otherwise start at P1's base).</summary>
+    void FocusOnOwnTownCenter()
+    {
+        if (focused || CommandRelay.Local == null) return;
+        foreach (var b in NetworkBuilding.All)
+        {
+            if (b.Owner != CommandRelay.Local.Object.InputAuthority || b.TypeKey.ToString() != "town_center") continue;
+            Vector3 fwd = transform.forward;
+            if (fwd.y >= -0.01f) return; // camera does not look down: nothing sensible to compute
+            float t = transform.position.y / -fwd.y;                     // distance along the view direction to the ground
+            Vector3 lookAt = transform.position + fwd * t;               // where the camera looks now
+            Vector3 offset = b.transform.position - lookAt; offset.y = 0;
+            transform.position += offset;
+            focused = true;
+            return;
+        }
+    }
+
     void Update()
     {
+        FocusOnOwnTownCenter();
         var kb = Keyboard.current; var mouse = Mouse.current;
         if (kb == null) return;
 
