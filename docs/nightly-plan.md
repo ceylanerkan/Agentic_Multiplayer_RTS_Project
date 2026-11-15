@@ -61,9 +61,9 @@ engine-free `RTS.Core` keeps its asmdef.
 - [x] (done 2026-11-15, uncompiled; needs Unity) HUD: resources, population, age.
 
 ## Night 6 – 2026-11-17: UI panels and combat
-- [ ] Selection panel (info, HP), build menu, train and research buttons with cost and disabled state, queue
+- [x] (done 2026-11-15, uncompiled; needs Unity) Selection panel (info, HP), build menu, train and research buttons with cost and disabled state, queue
       progress.
-- [ ] Combat on the host with `DamageCalculator`: cooldown, range, counters, death and despawn. Targets: explicit
+- [x] (done 2026-11-15, uncompiled; needs Unity) Combat on the host with `DamageCalculator`: cooldown, range, counters, death and despawn. Targets: explicit
       attack, auto-attack in range while idle, and buildings.
 - You: two-instance test of gather, build, train and fight. Record a short clip as M3 evidence.
 

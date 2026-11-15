@@ -73,12 +73,12 @@ public class NetworkPlayerState : NetworkBehaviour
     }
 
     /// <summary>Host only: recompute capacity from completed Town Centers and Houses.</summary>
-    public void RecalculateCapacity()
+    public void RecalculateCapacity(NetworkBuilding exclude = null)
     {
         int tc = 0, houses = 0;
         foreach (var b in NetworkBuilding.All)
         {
-            if (b.Owner != Owner || !b.Completed) continue;
+            if (b == exclude || b.Owner != Owner || !b.Completed) continue;
             if (b.TypeKey.ToString() == "town_center") tc++; else if (b.TypeKey.ToString() == "house") houses++;
         }
         PopCapacity = GameConstants.Capacity(tc, houses);

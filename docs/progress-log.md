@@ -12,6 +12,9 @@
   and a queue (units and research), `CommandRelay` train/research/build RPCs use them, Villagers build
   (`VillagerGatherer.StartBuild`), `BuildPlacement` ghost, `HudUI`. Fixed bug: building HP was read as 0 (hp is
   top-level in buildings.json); unit speed now comes from units.json. Tests: 25/25 pass.
+- Night 6 chunk: `UnitCombat` (explicit/auto targets, cooldown, damage via `DamageCalculator`), `TechBonus` (Iron Weapons),
+  `TakeDamage` on units/buildings (death frees pop/slot/capacity), `SelectionPanel` (info + buttons made from game data,
+  disabled with the validator's reason). Small decisions: attack cooldown 1.0 s, reach = range + 1.2 (unit) / +3 (building).
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

@@ -5,6 +5,9 @@ namespace RTS.Core.Rules
     {
         public const int StartWood = 200, StartFood = 200, StartGold = 100;
         public const int StartVillagers = 3;
+        public const float AttackCooldown = 1.0f;   // seconds between attacks; not in the knowledge base yet (small decision)
+        public const float UnitReach = 1.2f;        // added to range: units and buildings have a size
+        public const float BuildingReach = 3.0f;
         public const int TownCenterCapacity = 5, HouseCapacity = 5, MaxPopulation = 50;
 
         /// <summary>5 per Town Center plus 5 per completed House, never above 50.</summary>

@@ -40,6 +40,7 @@ public class CommandRelay : NetworkBehaviour
         if (unit == null) return;
         var g = unit.GetComponent<VillagerGatherer>();
         if (g != null) g.Cancel(); // an explicit move stops gathering
+        unit.AttackTarget = default; // and attacking
         unit.MoveTo(pos);
     }
 

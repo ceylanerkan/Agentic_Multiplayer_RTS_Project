@@ -23,6 +23,8 @@ public class VillagerGatherer : NetworkBehaviour
     NetworkBuilding site;   // building under construction
     string resource;
 
+    public bool Busy { get { return phase != Phase.Idle; } }
+
     public override void Spawned() { unit = GetComponent<NetworkUnit>(); }
 
     /// <summary>Host only (called from CommandRelay after the ownership check).</summary>

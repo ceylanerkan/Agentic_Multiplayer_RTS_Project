@@ -28,6 +28,18 @@ public class NetworkUnit : NetworkBehaviour
     }
 
     public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; }
+    /// <summary>Host only. Death frees the population slot and removes the object.</summary>
+    public void TakeDamage(float amount)
+    {
+        if (!HasStateAuthority || Hp <= 0) return;
+        Hp -= amount;
+        if (Hp > 0) return;
+        Hp = 0;
+        var st = GameSpawner.Instance.StateOf(Owner);
+        if (st != null && st.PopUsed > 0) st.PopUsed -= 1;
+        Runner.Despawn(Object);
+    }
+
     public void StopMoving() { HasMoveTarget = false; }
 
     public override void FixedUpdateNetwork()

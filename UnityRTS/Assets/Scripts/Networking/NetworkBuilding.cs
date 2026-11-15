@@ -50,6 +50,20 @@ public class NetworkBuilding : NetworkBehaviour
         if (st != null) st.RecalculateCapacity(); // a finished House raises the population capacity
     }
 
+    /// <summary>Host only. A destroyed building frees its slot and population capacity.</summary>
+    public void TakeDamage(float amount)
+    {
+        if (!HasStateAuthority || Hp <= 0) return;
+        Hp -= amount;
+        if (Hp > 0) return;
+        Hp = 0;
+        foreach (var slot in BuildSlot.All)
+            if ((slot.transform.position - transform.position).sqrMagnitude < 1f) slot.occupied = false;
+        var st = GameSpawner.Instance.StateOf(Owner);
+        if (st != null) st.RecalculateCapacity(this); // this building is still in All until Despawned runs
+        Runner.Despawn(Object);
+    }
+
     // ---- production queue (host only) ----
     public string WhyNotQueue(string key, bool isResearch) { return queue.WhyNot(key, isResearch); }
 
