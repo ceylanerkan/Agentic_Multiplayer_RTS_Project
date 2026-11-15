@@ -80,3 +80,17 @@ def test_invalid_plans_are_rejected_with_repair_then_502(tmp_path):
         r = client.post("/ask", json={"snapshot": SNAP, "question": "q"}, headers=a)
         assert r.status_code == 502, bad
     assert any(x["event"] == "invalid_plan_or_agent_failure" for x in lines(tmp_path / "security.jsonl"))
+
+
+def test_llm_failure_gives_502_without_leaking_details(tmp_path):
+    from gateway.llm import LLM
+
+    class Broken(LLM):
+        def step(self, system, history, tools):
+            raise RuntimeError("quota exceeded for key AIzaSECRET123")
+
+    client = TestClient(create_app(SessionStore(":memory:"), Broken(), tmp_path))
+    h = {"X-Session-Token": client.post("/session").json()["token"]}
+    r = client.post("/ask", json={"snapshot": SNAP, "question": "q"}, headers=h)
+    assert r.status_code == 502 and "RuntimeError" in r.json()["detail"]
+    assert "AIzaSECRET123" not in r.text and "AIzaSECRET123" not in (tmp_path / "security.jsonl").read_text()

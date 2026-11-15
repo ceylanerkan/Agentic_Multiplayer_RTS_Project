@@ -80,6 +80,10 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
         except AgentError as e:
             sec_log.write(session=short_id(token), event="invalid_plan_or_agent_failure", detail=str(e)[:200])
             raise HTTPException(502, f"AI could not produce a valid plan: {e}")
+        except Exception as e:  # network error, quota, bad API key, ...: Unity shows a short message instead of an HTTP 500
+            # Only the exception type goes to the log and the client: the message of an API error may contain request details.
+            sec_log.write(session=short_id(token), event="llm_error", detail=type(e).__name__)
+            raise HTTPException(502, f"AI service error ({type(e).__name__}). Check the gateway console, the API key and the quota.")
         last_plan[token] = (question, plan)
         return {"plan": plan, "tools_used": used, "needs_approval": bool(plan["actions"])}
 
