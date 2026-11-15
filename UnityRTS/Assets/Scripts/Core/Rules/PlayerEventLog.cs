@@ -17,6 +17,13 @@ namespace RTS.Core.Rules
     /// </summary>
     public class PlayerEventLog
     {
+        // Fixed order: the network sends the index instead of the text (an RPC may carry at most 512 bytes, and a NetworkString<_32> already uses 132).
+        public static readonly string[] TypeList =
+        {
+            "UNDER_ATTACK", "UNIT_LOST", "UNIT_TRAINED", "BUILDING_COMPLETED", "BUILDING_LOST",
+            "TECH_RESEARCHED", "ENEMY_SIGHTED", "RESOURCE_DEPLETED"
+        };
+
         public static readonly HashSet<string> ValidTypes = new HashSet<string>
         {
             "UNDER_ATTACK", "UNIT_LOST", "UNIT_TRAINED", "BUILDING_COMPLETED", "BUILDING_LOST",

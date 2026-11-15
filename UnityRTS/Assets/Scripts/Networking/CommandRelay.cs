@@ -33,13 +33,21 @@ public class CommandRelay : NetworkBehaviour
     public void SendResearch(string techKey, NetworkId building) { RPC_Research(techKey, building); }
 
     /// <summary>Host only: deliver an event to the player this relay belongs to (see GameEvents).</summary>
-    public void SendEventToOwner(string type, string zone, string detail) { RPC_Event(type, zone, detail); }
-
-    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
-    void RPC_Event(NetworkString<_32> type, NetworkString<_32> zone, NetworkString<_128> detail)
+    public void SendEventToOwner(string type, string zone, string detail)
     {
-        string z = zone.ToString();
-        GameEvents.Local.Add(type.ToString(), z.Length == 0 ? null : z, detail.ToString(), Time.time);
+        int t = System.Array.IndexOf(PlayerEventLog.TypeList, type);
+        if (t < 0) return;
+        if (detail != null && detail.Length > 31) detail = detail.Substring(0, 31); // NetworkString<_32> holds 31 characters
+        RPC_Event(t, System.Array.IndexOf(ZoneLookup.AllZones, zone), detail ?? ""); // zone -1 = unknown
+    }
+
+    // Sends indices, not texts: a NetworkString<_128> alone would already exceed the 512 byte RPC limit.
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    void RPC_Event(int typeIndex, int zoneIndex, NetworkString<_32> detail)
+    {
+        if (typeIndex < 0 || typeIndex >= PlayerEventLog.TypeList.Length) return;
+        string zone = zoneIndex >= 0 && zoneIndex < ZoneLookup.AllZones.Length ? ZoneLookup.AllZones[zoneIndex] : null;
+        GameEvents.Local.Add(PlayerEventLog.TypeList[typeIndex], zone, detail.ToString(), Time.time);
     }
 
     // ---- host side ----
@@ -54,7 +62,7 @@ public class CommandRelay : NetworkBehaviour
         unit.MoveTo(pos);
     }
 
-    // Stores the target; the combat loop that uses it comes on night 6.
+    // Stores the target; UnitCombat walks to it and attacks.
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     void RPC_Attack(NetworkId unitId, NetworkId targetId)
     {

@@ -46,6 +46,7 @@
 - Editor automation: `Editor/RtsSetupTools.cs` (menu: create placeholder prefabs; set up the open Game scene with map, zones, slots, resources,
   spawner, systems, camera; create the Game UI with all fields assigned; command 0 creates the Menu and Game scenes, fills the Build Settings and runs the rest). Compiles against the stubs. `.env` is now loaded by the gateway and `run_eval.py` (it was not before).
 - `GameSpawner.StandOnGround`: spawned objects are lifted by their collider half height (capsules no longer half in the floor).
+- Fix: `RPC_Event` sent three `NetworkString`s (> 512 byte RPC limit); now sends type and zone as indices (`PlayerEventLog.TypeList`) and a 31 character detail. C# tests: 46/46.
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 
 ## 2026-11-12 (run 2, night 1)

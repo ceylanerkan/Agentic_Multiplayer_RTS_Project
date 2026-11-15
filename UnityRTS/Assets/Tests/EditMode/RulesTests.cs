@@ -504,5 +504,13 @@ namespace RTS.Tests
             float archerVsBoat = DamageCalculator.Multiplier(data.Units["archer"], data.Units["raider_boat"], false);
             Assert.AreEqual(1.5f, boatVsShip); Assert.AreEqual(1.5f, shipVsArcher); Assert.AreEqual(1.5f, archerVsBoat);
         }
+
+        [Test]
+        public void EventLog_TypeListMatchesValidTypes()
+        {
+            Assert.AreEqual(PlayerEventLog.ValidTypes.Count, PlayerEventLog.TypeList.Length);
+            foreach (var t in PlayerEventLog.TypeList) Assert.IsTrue(PlayerEventLog.ValidTypes.Contains(t));
+            Assert.AreEqual(10, ZoneLookup.AllZones.Length);
+        }
     }
 }
