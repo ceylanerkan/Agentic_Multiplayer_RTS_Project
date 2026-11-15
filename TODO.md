@@ -61,3 +61,10 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 ## Agent work still open
 - [ ] Night 16-18 of `docs/nightly-plan.md` (fix day, consistency pass, last run) and fixes from UNITY_FEEDBACK.md.
 - [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
+
+## Submission checklist (deadline 2026-11-30)
+- [ ] Repository: `git status` clean, no `.env`, no `PhotonAppSettings.asset`, no API keys (`git grep -i "AIza"` is empty).
+- [ ] `pytest ai evaluation` passes; EditMode tests pass in Unity.
+- [ ] Report PDF: author, instructor approval, all `[TODO live]` filled, figures added.
+- [ ] Slides, backup video, Windows build tested on the demo machine, Gemini key and quota checked the day before.
+- [ ] Demo rehearsal with `docs/demo-script.md` (all 9 scenarios) and `docs/defense-notes.md`.
