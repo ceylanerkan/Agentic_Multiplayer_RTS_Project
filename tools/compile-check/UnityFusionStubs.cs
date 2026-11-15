@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 namespace UnityEngine
 {
-    public class Object { public static void Destroy(Object o) { } public static T[] FindObjectsByType<T>(FindObjectsSortMode m) where T : Object { return new T[0]; }
+    public class Object { public static void Destroy(Object o) { } public static void DestroyImmediate(Object o) { } public static T[] FindObjectsByType<T>(FindObjectsSortMode m) where T : Object { return new T[0]; }
         public static implicit operator bool(Object o) { return o != null; } public string name; }
     public enum FindObjectsSortMode { None }
     public class Component : Object { public GameObject gameObject; public Transform transform;
@@ -16,9 +16,9 @@ namespace UnityEngine
         public T GetComponent<T>() { return default(T); } public T[] GetComponentsInChildren<T>() { return new T[0]; }
         public T AddComponent<T>() { return default(T); } public void SetActive(bool b) { }
         public static GameObject CreatePrimitive(PrimitiveType t) { return null; } }
-    public enum PrimitiveType { Cube, Cylinder, Quad }
+    public enum PrimitiveType { Cube, Cylinder, Quad, Capsule, Sphere }
     public class Transform : Component { public Vector3 position, localScale; public Quaternion rotation; public Vector3 forward;
-        public void SetParent(Transform p, bool w) { } }
+        public void SetParent(Transform p, bool w) { } public void SetParent(Transform p) { } }
     public class RectTransform : Transform { public Vector2 anchorMin, anchorMax, offsetMin, offsetMax; }
     public struct Vector2 { public float x, y; public Vector2(float x, float y) { this.x = x; this.y = y; }
         public static Vector2 zero, one; public float magnitude { get { return 0; } }
@@ -36,7 +36,7 @@ namespace UnityEngine
     public struct RaycastHit { public Collider collider; public Vector3 point; }
     public class Collider : Component { }
     public static class Physics { public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
-    public class Camera : Component { public static Camera main; public Ray ScreenPointToRay(Vector3 p) { return default(Ray); } public Vector3 WorldToScreenPoint(Vector3 p) { return p; } }
+    public class Camera : Component { public static Camera main;  public Ray ScreenPointToRay(Vector3 p) { return default(Ray); } public Vector3 WorldToScreenPoint(Vector3 p) { return p; } }
     public static class Mathf { public static float Max(float a, float b) { return a; } public static int Max(int a, int b) { return a; } public static float Min(float a, float b) { return a; } public static float Abs(float a) { return a; }
         public static float Clamp(float a, float b, float c) { return a; } public static int RoundToInt(float f) { return 0; } public static int CeilToInt(float f) { return 0; } }
     public static class Time { public static float time, unscaledTime, unscaledDeltaTime, deltaTime; }
@@ -90,3 +90,19 @@ namespace Fusion
     public interface IPlayerJoined { void PlayerJoined(PlayerRef p); }
 }
 public class GameLauncher : UnityEngine.MonoBehaviour { public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
+
+namespace UnityEngine { public class Object2 { } }
+namespace Fusion { public class NetworkTransform : UnityEngine.MonoBehaviour { } }
+namespace UnityEditor
+{
+    using UnityEngine;
+    public class MenuItemAttribute : System.Attribute { public MenuItemAttribute(string s) { } }
+    public class SerializedProperty { public string stringValue; public float floatValue; public Vector2 vector2Value; public UnityEngine.Object objectReferenceValue; public int arraySize;
+        public SerializedProperty FindPropertyRelative(string n) { return null; } public SerializedProperty GetArrayElementAtIndex(int i) { return null; } }
+    public class SerializedObject { public SerializedObject(UnityEngine.Object o) { } public SerializedProperty FindProperty(string n) { return null; } public void ApplyModifiedPropertiesWithoutUndo() { } }
+    public static class AssetDatabase { public static bool IsValidFolder(string p) { return true; } public static void CreateFolder(string a, string b) { } public static T LoadAssetAtPath<T>(string p) where T : UnityEngine.Object { return null; }
+        public static void CreateAsset(UnityEngine.Object o, string p) { } public static void SaveAssets() { } public static void Refresh() { } }
+    public static class PrefabUtility { public static GameObject SaveAsPrefabAsset(GameObject g, string p) { return g; } public static UnityEngine.Object InstantiatePrefab(UnityEngine.Object o, Transform t) { return null; } }
+}
+namespace UnityEditor.SceneManagement { public static class EditorSceneManager { public static void MarkSceneDirty(UnityEngine.SceneManagement.Scene s) { } public static UnityEngine.SceneManagement.Scene GetActiveScene() { return default(UnityEngine.SceneManagement.Scene); } } }
+namespace UnityEngine.SceneManagement { public struct Scene { } }
