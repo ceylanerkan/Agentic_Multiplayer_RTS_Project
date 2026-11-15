@@ -55,6 +55,7 @@
   reading `[Networked]` values of just-despawned objects after a kill / depleted node (`TakeDamage` and `Take` now return a bool), destroyed
   buildings never freeing their slot (y offset), queued units keeping reserved population, stale static event log / `CommandRelay.Local`,
   `TechIndex` returning 0 for unknown keys, UNDER_ATTACK RPC spam (5 s throttle). Possible missed `PlayerJoined` (scene loads after joining): `GameSpawner.Update` now spawns a base for any active player without one.
+- `BuildSlot.occupied` now also looks at the networked buildings, so the ghost and the Dock button are correct on clients (review finding 9).
 - Added an opening-build-order scenario test (47/47 C# tests). Fusion member names verified against `Fusion.Runtime.xml` in the repo.
 - Risks: all new MonoBehaviour/NetworkBehaviour code is uncompiled (needs Unity).
 

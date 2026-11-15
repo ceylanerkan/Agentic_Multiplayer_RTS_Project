@@ -11,7 +11,26 @@ public class BuildSlot : MonoBehaviour
     public static readonly List<BuildSlot> All = new List<BuildSlot>();
 
     public bool coastal;
-    [HideInInspector] public bool occupied;
+    [HideInInspector] public bool reserved;   // host: set at once when a BUILD command picks this slot
+
+    /// <summary>
+    /// True when the slot is reserved or a building stands on it. The building check uses the networked buildings, so it is
+    /// also correct on clients (the build ghost and the Dock button use it); setting it writes the host-side reservation.
+    /// </summary>
+    public bool occupied
+    {
+        get
+        {
+            if (reserved) return true;
+            foreach (var b in NetworkBuilding.All)
+            {
+                Vector3 d = b.transform.position - transform.position; d.y = 0;
+                if (d.sqrMagnitude < 1f) return true;
+            }
+            return false;
+        }
+        set { reserved = value; }
+    }
 
     public string Zone { get { return ZoneMap.Instance != null ? ZoneMap.Instance.ZoneAt(transform.position) : null; } }
 

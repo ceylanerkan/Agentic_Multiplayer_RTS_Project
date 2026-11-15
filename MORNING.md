@@ -36,7 +36,6 @@ Yok.
 - Yeni Unity/Fusion scriptleri gerçek Unity'de derlenmedi. Kullandığım Fusion üyelerinin hepsinin var olduğunu repodaki `Fusion.Runtime.xml` ile doğruladım (`NetworkId.IsValid/Raw`, `Runner.Despawn/Spawn/TryFindObject`, `NetworkTransform`, `IPlayerJoined`, `RpcTargets.InputAuthority`, `NetworkString` dönüşümü). Doğrulayamadığım: `[Rpc(StateAuthority → InputAuthority)]`'nin host kendi oyuncusuna gönderirken davranışı (host için RPC kullanmıyorum, doğrudan ekliyorum) ve Fusion'ın weaver'ının bazı kalıplara tepkisi.
 - `Shader.Find("Universal Render Pipeline/Unlit")` build'de ayıklanabilir (halka, hayalet, fog için); gerekirse `Sprites/Default`'a düşer. Build'de sorun olursa haber ver.
 - `FogOfWar` her 0.25 s'de 96×77 piksel boyar; yavaş gelirse `resolution`'ı düşür.
-- Client'ta `BuildSlot.occupied` bilgisi eski olabilir (host doğru olanı kontrol eder); hayalet bazen yanlışlıkla yeşil olabilir.
 - Host'un kendi `PlayerJoined` çağrısı Game sahnesi yüklenmeden önce gelirse host'a üs verilmeyebilir (GameSpawner sahne nesnesi). Bunun için `GameSpawner.Update` her karede eksik oyuncuya üs verir (yedek yol); yine de host'ta TC + 3 Villager çıkıyor mu kontrol et.
 - Gemini ile canlı çalıştırma hiç yapılmadı (`GeminiLLM` gerçek API'de test edilmedi).
 
