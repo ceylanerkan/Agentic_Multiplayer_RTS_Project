@@ -48,8 +48,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
       `MCP_TRANSPORT=stdio` with a file `SESSION_DB_PATH` too.
 - [ ] `GEMINI_API_KEY=... python evaluation/run_eval.py --real` (waits 4 s between prompts for the free-tier rate limit; `--delay N` changes it): keep `results.json`, `results.csv`, `results_table.md`; fill the `[TODO live]`
       cells in `docs/report/report.md` and the "Live (Gemini)" column of `evaluation/security-tests.md`.
-- [ ] MCP Inspector screenshots of the 7 tools with valid and invalid input
-      (`RTS_SESSION_ID=<id> npx @modelcontextprotocol/inspector python ai/mcp-server/server.py`).
+- [ ] MCP Inspector screenshots of the 7 tools with valid and invalid input: `python ai/mcp-server/make_session.py late_game` prints the exact
+      `npx @modelcontextprotocol/inspector ...` command for a ready session.
 
 ## [You] 4. Deliverables
 - [ ] Windows build (IL2CPP); test two instances on the demo machine.
