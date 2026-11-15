@@ -60,6 +60,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     public NetworkUnit SpawnUnit(PlayerRef owner, string key, Vector3 pos)
     {
         var obj = Runner.Spawn(Find(unitPrefabs, key), pos, Quaternion.identity, owner);
+        StandOnGround(obj);
         var u = obj.GetComponent<NetworkUnit>();
         u.InitHost(owner, key);
         return u;
@@ -68,10 +69,24 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     public NetworkBuilding SpawnBuilding(PlayerRef owner, string key, Vector3 pos, bool completed)
     {
         var obj = Runner.Spawn(Find(buildingPrefabs, key), pos, Quaternion.identity, owner);
+        StandOnGround(obj);
         var b = obj.GetComponent<NetworkBuilding>();
         b.InitHost(owner, key, completed);
         if (completed && players.TryGetValue(owner, out var st)) st.RecalculateCapacity();
         return b;
+    }
+
+    /// <summary>
+    /// Put a freshly spawned object on the ground: cast a ray down from above its position and lift it by its collider's half height,
+    /// so capsules and cubes do not sink into the floor. Ships land on the sea surface because the ray hits the sea object. Host only, before the first tick.
+    /// </summary>
+    static void StandOnGround(NetworkObject obj)
+    {
+        var col = obj.GetComponentInChildren<Collider>();
+        Vector3 p = obj.transform.position;
+        float ground = 0f;
+        if (Physics.Raycast(p + Vector3.up * 100f, Vector3.down, out var hit, 300f)) ground = hit.point.y;
+        obj.transform.position = new Vector3(p.x, ground + (col != null ? col.bounds.extents.y : 0f), p.z);
     }
 
     static NetworkObject Find(Entry[] list, string key)

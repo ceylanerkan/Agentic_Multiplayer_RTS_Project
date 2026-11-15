@@ -8,7 +8,7 @@ namespace UnityEngine
     public enum FindObjectsSortMode { None }
     public class Component : Object { public GameObject gameObject; public Transform transform;
         public T GetComponent<T>() { return default(T); } public T GetComponentInParent<T>() { return default(T); }
-        public T[] GetComponentsInChildren<T>() { return new T[0]; } }
+        public T[] GetComponentsInChildren<T>() { return new T[0]; } public T GetComponentInChildren<T>() { return default(T); } }
     public class Behaviour : Component { public bool enabled; }
     public class MonoBehaviour : Behaviour { }
     public class GameObject : Object { public Transform transform; public bool activeSelf;
@@ -24,7 +24,7 @@ namespace UnityEngine
         public static Vector2 zero, one; public float magnitude { get { return 0; } }
         public static Vector2 operator -(Vector2 a, Vector2 b) { return a; } public static implicit operator Vector3(Vector2 v) { return default(Vector3); } }
     public struct Vector3 { public float x, y, z; public Vector3(float x, float y, float z) { this.x = x; this.y = y; this.z = z; }
-        public static Vector3 up, zero; public float magnitude { get { return 0; } } public float sqrMagnitude { get { return 0; } } public Vector3 normalized { get { return this; } }
+        public static Vector3 up, down, zero; public float magnitude { get { return 0; } } public float sqrMagnitude { get { return 0; } } public Vector3 normalized { get { return this; } }
         public static Vector3 operator +(Vector3 a, Vector3 b) { return a; } public static Vector3 operator -(Vector3 a, Vector3 b) { return a; }
         public static Vector3 operator *(Vector3 a, float b) { return a; } public static Vector3 operator *(float b, Vector3 a) { return a; } }
     public struct Quaternion { public static Quaternion identity; public static Quaternion Euler(float x, float y, float z) { return default(Quaternion); } }
@@ -34,8 +34,9 @@ namespace UnityEngine
     public struct Ray { public Vector3 GetPoint(float d) { return default(Vector3); } }
     public struct Plane { public Plane(Vector3 n, Vector3 p) { } public bool Raycast(Ray r, out float d) { d = 0; return true; } }
     public struct RaycastHit { public Collider collider; public Vector3 point; }
-    public class Collider : Component { }
-    public static class Physics { public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
+    public class Collider : Component { public Bounds bounds; }
+    public struct Bounds { public Vector3 extents; }
+    public static class Physics { public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } public static bool Raycast(Vector3 o, Vector3 dir, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
     public class Camera : Component { public static Camera main;  public Ray ScreenPointToRay(Vector3 p) { return default(Ray); } public Vector3 WorldToScreenPoint(Vector3 p) { return p; } }
     public static class Mathf { public static float Max(float a, float b) { return a; } public static int Max(int a, int b) { return a; } public static float Min(float a, float b) { return a; } public static float Abs(float a) { return a; }
         public static float Clamp(float a, float b, float c) { return a; } public static int RoundToInt(float f) { return 0; } public static int CeilToInt(float f) { return 0; } }

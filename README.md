@@ -17,7 +17,8 @@ ai/gateway/        HTTP gateway + agent runner (Gemini function calling + MCP cl
 ai/schemas/        action_plan.schema.json, safe_snapshot.schema.json
 ai/rag/            knowledge base, index builder, retriever
 evaluation/        prompts, fixtures, eval runner, results
-docs/              design brief, architecture, setup, report
+docs/              design brief, architecture, setup, report, demo script, defense notes
+tools/compile-check/  compile the Unity scripts against stub types without Unity (see its README)
 ```
 
 ## Status
