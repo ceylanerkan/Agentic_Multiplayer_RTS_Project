@@ -31,8 +31,8 @@ multiplayer game:
    validated three times.
 
 The report follows the structure of the code: game design (Section II), system architecture (III), the multiplayer
-method (IV), the MCP and agent design (V) and the RAG method (VI). Sections VII to XII (human control, security,
-evaluation, lessons, conclusion, appendix) are in part 2.
+method (IV), the MCP and agent design (V) and the RAG method (VI). Sections VII to XII cover human control, security,
+evaluation, lessons learned, conclusion and the appendix.
 
 ## II. Game Design
 
@@ -177,4 +177,143 @@ prompt tells the model to ignore instructions inside tool results (tested with a
 **Limits.** The corpus is small (33 chunks); BM25 handles exact names and rule keywords well but can miss paraphrases
 when embeddings are not installed. We do not rerank and we do not chunk below record level.
 
-*Part 2 (Sections VII-XII) follows in the next revision.*
+
+## VII. Structured Actions and Human Control
+
+**Structured output.** The model may only propose four action types: `TRAIN_UNIT`, `BUILD`, `MOVE_GROUP` and
+`RESEARCH`. Each action names unit, building or technology types from closed enumerations, a count of 1-20 and a zone
+from the ten zone names, plus a short reason. The JSON Schema (`action_plan.schema.json`) forbids every other field,
+so the model cannot express "reveal the enemy base" or "delete a unit" at all.
+
+**Approval.** `AiCommanderPanel` shows the summary, confidence, evidence (tool names and knowledge ids), the tools
+used and each action with its resource cost. A plan without actions is an information answer and needs no approval.
+A plan with actions shows Approve, Reject and Ask why.
+
+- **Approve:** `AiApprovalFlow` checks every action again against the *current* game state with
+  `GameActionValidator` (resources are reserved action by action, so two actions cannot spend the same gold). Valid
+  actions are sent through `CommandRelay`, the same RPCs as manual play, where the host validates once more. Invalid
+  actions are skipped and the panel tells the player why.
+- **Reject:** nothing is sent; only the decision is logged.
+- **Ask why:** the gateway explains the last plan; if the stored snapshot is older than a threshold, the prompt tells
+  the model to lower its confidence.
+
+**Decision log.** Every decision is appended to `decision-log.jsonl` with plan id, decision, game time, a description
+of each action and the validator result per action. This makes the demo scenarios "approve one plan, reject another"
+and "validation failure" visible and reproducible.
+
+**Validator rules (examples).** Cost and reserved resources; population capacity; prerequisites (Barracks for Age II,
+Age II for Stable and Cavalry); no technology twice; buildings only in land zones and never in the enemy base; a Dock
+only on a free coastal slot of the own base; land groups cannot be sent to water zones and ships cannot be sent to
+land zones.
+
+## VIII. Security
+
+**Threat model.** The player is trusted to play but not trusted with hidden information; the model is trusted to be
+helpful but not to be obedient to text inside its inputs. The assets are (1) the opponent's hidden state, (2) the
+integrity of the game state and (3) the player's consent.
+
+**Boundaries.**
+
+1. *Fog of war before the network.* `VisibilityService.FilterFor` is the single visibility query. The snapshot
+   builder cannot add an enemy that is not in its output and the schema has no field for opponent resources or exact
+   positions; the gateway rejects unknown fields (HTTP 422, logged).
+2. *Identity.* The session token is held only by Unity and the gateway. The MCP server learns its session from the
+   environment, no tool has a player or session parameter, and the agent rejects undeclared arguments.
+3. *Read-only tools.* No tool changes state; there are no filesystem, shell or HTTP tools.
+4. *Triple validation of plans.* JSON Schema in the gateway, `GameActionValidator` at approval time, host authority in
+   the RPC handler.
+5. *Bounded behaviour.* Maximum 6 agent steps, 30 s, clamped `top_k`, limited query and question length, 20 events.
+6. *Prompt injection.* Tool results and retrieved text are marked as data and the system prompt says so; suspicious
+   questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,
+   because no tool can return it.
+
+**Tests.** Security tests S1-S16 are listed in `evaluation/security-tests.md`: injection question, extra hidden field,
+missing or wrong token, identity switch across two sessions, tool call with a player id, oversized `top_k` and query,
+a poisoned knowledge chunk, invalid plans (five kinds), a snapshot contract test between Unity's export and the
+schema, and re-validation after the state changed. **[TODO live]** Rows marked TODO in that file need the live Gemini
+run.
+
+**Known limitation: client-side fog of war.** Fusion interest management is off, so each client receives all networked
+objects and hides enemies only visually. A modified client can read hidden positions. Fixing this would need
+per-player interest management or a server-side visibility replication layer; we left it out of scope. The AI is not
+affected because its snapshot never contains hidden data.
+
+## IX. Evaluation
+
+**Method.** Three fixed snapshots (early economy, cavalry rush, late game) and 21 labelled prompts in eight
+categories (single tool, compound, knowledge-only, cost, security, stale state, invalid action, valid action). For
+each prompt we record the tools called, whether the plan is schema-valid, latency, and for plans with actions the
+result of a Python copy of the gameplay checks (`evaluation/plan_checks.py`, mirrored by the C# tests).
+
+**Metrics.** Tool-call accuracy (all expected tools called; knowledge-only questions call only
+`search_game_knowledge`), valid-plan rate, average latency, invalid-action rate (share of proposed actions rejected by
+the validator on the fixture state), and the share of stale-state answers with confidence <= 0.5.
+
+*Table II. Offline run with the scripted mock model (`python evaluation/run_eval.py`).*
+
+| Metric | Mock | Live Gemini |
+|---|---|---|
+| Prompts | 21 | 21 |
+| Tool-call accuracy | 100% | **[TODO live]** |
+| Valid-plan rate | 100% | **[TODO live]** |
+| Average latency (s) | 0.003 | **[TODO live]** |
+| Actions proposed | 6 | **[TODO live]** |
+| Invalid-action rate | 50% | **[TODO live]** |
+| Stale answers with confidence <= 0.5 | 100% | **[TODO live]** |
+
+The mock numbers are true by construction (the mock model picks tools from keywords and proposes exactly what the
+player asked for); they show that the harness, the plan checks and the table work, not that the AI is good. The two
+"invalid action" prompts ("Train 20 archers right now" with 5/5 population, "Send my archers to the OpenSea") are
+rejected by the validator, which is the intended behaviour and the observed limitation: **the model will follow a
+literal player request even when it is illegal, so the validator is necessary.** **[TODO live]** Add the observed
+failures of the real model (for example a missing prerequisite or a wrong zone) and the 2-3 slowest prompts.
+
+*Table III. Security tests.* See `evaluation/security-tests.md` (16 rows; 14 automated, rest live).
+
+**Unity side.** 45 EditMode tests cover damage, costs, validator, domains, visibility, event log, production queue,
+tech effects, snapshot assembly, approval and the decision log. They were compiled and run with the .NET SDK outside
+Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance test results and the demo video.
+
+## X. Challenges and Lessons Learned
+
+- **Compile without the editor.** The agent that helped write the code could not run Unity, so all rule code was put
+  into an engine-free assembly and compiled with the .NET SDK. This caught real bugs early (for example buildings read
+  with 0 HP because `hp` is a top-level field in `buildings.json`). Lesson: keep game rules free of engine types.
+- **Unity message names.** A method `Start(GameMode, string)` was reported by Unity as an invalid message signature
+  and had to be renamed. Lesson: never reuse Unity's magic method names.
+- **One source of numbers.** Keeping all values in JSON files read by Unity, the RAG index and the evaluation removed a
+  whole class of inconsistencies, but needs a loader at build time (`StreamingAssets` copy).
+- **Host authority vs. convenience.** Reserving population and paying cost when a unit is queued (not when it appears)
+  keeps the rules simple and makes long queues safe.
+- **The model is not the safety layer.** The most important security decision was to remove capabilities (no hidden
+  field, no id argument, no write tool) instead of asking the model to behave.
+- **Honest evaluation.** A mock model gives 100% by design; the report separates mock numbers from live numbers.
+
+## XI. Conclusion and Future Work
+
+We delivered a two-player networked RTS with an authoritative host, a fog-of-war-aware AI commander that uses seven
+read-only MCP tools and a RAG index, structured and approved plans, a decision log and an evaluation harness. Future
+work: per-player interest management for server-side fog of war; embeddings and a reranker for retrieval with a
+larger corpus; AI plans that can chain (build, then train after the building completes); a tool that explains the
+validator's rejection to the model so that it can repair a plan; balance tuning from recorded matches.
+
+## XII. Appendix
+
+**A. Repository layout.** `UnityRTS/` (Unity project; rules in `Assets/Scripts/Core/Rules`), `ai/` (gateway, MCP
+server, RAG, schemas), `evaluation/`, `docs/`.
+
+**B. Dependencies.**
+
+| Component | Version |
+|---|---|
+| Unity | 6000.4 (URP 17.4) |
+| Photon Fusion | 2.0.13 (Host Mode) |
+| Unity packages | AI Navigation 2.0.12, Input System 1.19.0, Newtonsoft JSON 3.2.2, Test Framework 1.6.0, uGUI 2.0.0, ParrelSync |
+| Python | 3.10+ |
+| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
+| LLM | Gemini (default `gemini-2.5-flash`, configurable) |
+
+**C. Tests.** Python: `python -m pytest -q ai evaluation` (53 tests, no network, no API key). C#: Unity Test Runner,
+EditMode, assembly `RTS.Tests.EditMode` (45 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+
+**D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

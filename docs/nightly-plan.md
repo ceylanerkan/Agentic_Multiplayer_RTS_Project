@@ -110,7 +110,7 @@ engine-free `RTS.Core` keeps its asmdef.
       Multiplayer Method, MCP and Agent Design, RAG Method. Add the networking part to `docs/architecture.md`.
 
 ## Night 14 – 2026-11-25: report, part 2
-- [ ] Structured Actions and Human Control, Security (with the client-side fog-of-war limitation), Evaluation
+- [x] (done 2026-11-15; live numbers are [TODO live] placeholders) Structured Actions and Human Control, Security (with the client-side fog-of-war limitation), Evaluation
       (tables, with placeholders where live numbers are missing), Challenges and Lessons Learned, Conclusion and
       Future Work, Appendix, and the dependency list.
 - You: Windows build (IL2CPP), and two instances on the demo machine.
