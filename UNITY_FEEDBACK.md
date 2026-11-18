@@ -69,3 +69,10 @@ UnityEngine.Canvas:SendWillRenderCanvases()
   İpucu: projede `HorizontalLayoutGroup`'u sadece `RtsSetupTools.cs:208`'deki `HudBar` kullanıyor; içindeki 5 TMP
   `Label()` ile yaratılıyor ve font/material açıkça atanmıyor. TMP Essential Resources projede var
   (`Assets/TextMesh Pro`, varsayılan font LiberationSans SDF).
+- Test 4 olmadı:
+  - Oyun açılıyor ama başlamıyor.
+  - Grafikler çok kötü, neyin ne olduğu belli olmuyor.
+  - Yazılar da aynı şekilde sorunlu.
+  - Hangi en-boy oranında (aspect) açılması gerektiği belli değil; her şey küçük görünüyor.
+  - İstek: oyunun başlamamasını düzelt. Hedef çözünürlüğü/aspect'i belirle ve Game view'da ne seçmem gerektiğini
+    `MORNING.md`'ye yaz. Birimler, binalar ve kaynaklar birbirinden kolayca ayırt edilsin; yazılar okunur olsun.
