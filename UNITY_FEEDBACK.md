@@ -70,7 +70,10 @@ UnityEngine.Canvas:SendWillRenderCanvases()
   `Label()` ile yaratılıyor ve font/material açıkça atanmıyor. TMP Essential Resources projede var
   (`Assets/TextMesh Pro`, varsayılan font LiberationSans SDF).
 - Test 4 olmadı:
-  - Oyun açılıyor ama başlamıyor.
+  - Oyun açılıyor ama başlamıyor: Play'e basınca Menu açılmıyor, direkt Game sahnesine atıyor ve oyun başlamamış
+    oluyor. İpucu: `RtsSetupTools.cs` (satır 67-70) en son Game sahnesini açık bırakıyor; Play mode Build
+    Settings'teki ilk sahneyi değil, açık olan sahneyi oynatıyor. Play'e hangi sahnede basılırsa basılsın Menu'den
+    başlasın (ör. `EditorSceneManager.playModeStartScene`).
   - Grafikler çok kötü, neyin ne olduğu belli olmuyor.
   - Yazılar da aynı şekilde sorunlu.
   - Hangi en-boy oranında (aspect) açılması gerektiği belli değil; her şey küçük görünüyor.
