@@ -10,7 +10,7 @@ An in-game **AI Strategic Commander** answers strategy questions and proposes st
 player must approve before anything happens.
 
 All values below are our own design (not Age of Empires data). The canonical numbers live in
-`ai/rag/knowledge/*.json` and are mirrored by Unity ScriptableObjects.
+`ai/rag/knowledge/*.json` and Unity reads the same files at run time (`GameDataProvider`), so the numbers cannot differ.
 
 ## 2. Rules summary
 

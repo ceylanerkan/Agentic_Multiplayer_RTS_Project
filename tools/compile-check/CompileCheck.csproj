@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><EnableDefaultCompileItems>false</EnableDefaultCompileItems><TargetFramework>net8.0</TargetFramework><Nullable>disable</Nullable><LangVersion>9</LangVersion><NoWarn>CS0649;CS0169;CS0414;CS0108;CS0114</NoWarn></PropertyGroup>
+<ItemGroup><PackageReference Include="Newtonsoft.Json" Version="13.0.3"/></ItemGroup>
+<ItemGroup>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Core/**/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)UnityFusionStubs.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Networking/*.cs" Exclude="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Networking/GameLauncher.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Buildings/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Resources/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Units/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Combat/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Camera/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/MenuUI.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Editor/RtsSetupTools.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Data/*.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/AI/AiSnapshotBuilder.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/AI/AiApprovalFlow.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/SelectionManager.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/UnitCommandInput.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/SelectionPanel.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/BuildPlacement.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/HudUI.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/GameOverUI.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/AiCommanderPanel.cs"/>
+</ItemGroup></Project>

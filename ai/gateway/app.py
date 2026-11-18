@@ -1,6 +1,6 @@
 """FastAPI gateway. Unity holds the session token; the LLM never sees it or any player id.
 
-Run: uvicorn ai.gateway.app:app --port 8765   (needs GEMINI_API_KEY; tests inject a ScriptedLLM instead)
+Run (from the repository root): uvicorn --factory ai.gateway.app:create_app --port 8765   (needs GEMINI_API_KEY; tests inject a ScriptedLLM instead)
 """
 import os
 import re
@@ -36,7 +36,11 @@ class Why(BaseModel):
     question: str = "Why did you propose this plan?"
 
 
+from common.env import load_env  # noqa: E402
+
+
 def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
+    load_env()  # .env in the repository root (GEMINI_API_KEY, MCP_TRANSPORT, ...)
     store = store or SessionStore(os.environ.get("SESSION_DB_PATH", "ai/data/sessions.sqlite3"))
     log_dir = Path(log_dir or os.environ.get("LOG_DIR", "ai/logs"))
     tool_log, sec_log = JsonlLog(log_dir / "tool_calls.jsonl"), JsonlLog(log_dir / "security.jsonl")
@@ -62,13 +66,24 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
             raise HTTPException(422, "question too long")
         if INJECTION.search(question):
             sec_log.write(session=short_id(token), event="suspected_injection", question=question[:200])
-        agent = Agent(get_llm(), build_server(store, token, retriever), tool_log,
-                      int(os.environ.get("AGENT_MAX_STEPS", 6)), float(os.environ.get("AGENT_TIMEOUT_S", 30)))
+        steps, timeout = int(os.environ.get("AGENT_MAX_STEPS", 6)), float(os.environ.get("AGENT_TIMEOUT_S", 30))
         try:
-            plan, used = agent.run(short_id(token), question, note)
+            if os.environ.get("MCP_TRANSPORT", "inprocess") == "stdio":
+                # Demo mode: the MCP server runs as a subprocess and the agent speaks the real MCP protocol over stdio.
+                # It needs a file database (the subprocess reads the snapshot from it), not ":memory:".
+                from gateway.mcp_stdio import StdioMcp
+                db = os.environ.get("SESSION_DB_PATH", "ai/data/sessions.sqlite3")
+                with StdioMcp(token, db) as mcp:
+                    plan, used = Agent(get_llm(), mcp, tool_log, steps, timeout).run(short_id(token), question, note)
+            else:
+                plan, used = Agent(get_llm(), build_server(store, token, retriever), tool_log, steps, timeout).run(short_id(token), question, note)
         except AgentError as e:
             sec_log.write(session=short_id(token), event="invalid_plan_or_agent_failure", detail=str(e)[:200])
             raise HTTPException(502, f"AI could not produce a valid plan: {e}")
+        except Exception as e:  # network error, quota, bad API key, ...: Unity shows a short message instead of an HTTP 500
+            # Only the exception type goes to the log and the client: the message of an API error may contain request details.
+            sec_log.write(session=short_id(token), event="llm_error", detail=type(e).__name__)
+            raise HTTPException(502, f"AI service error ({type(e).__name__}). Check the gateway console, the API key and the quota.")
         last_plan[token] = (question, plan)
         return {"plan": plan, "tools_used": used, "needs_approval": bool(plan["actions"])}
 

@@ -15,6 +15,12 @@ namespace RTS.Core.Rules
         public List<string> Requires = new List<string>();
         public List<string> Strengths = new List<string>();
         public bool Buildable = true; // false for the Town Center
+        public float TimeSeconds;     // train_time_s (units), build_time_s (buildings), research_time_s (technologies)
+        public float Speed;           // units only
+        public float LineOfSight;     // units (stats) and buildings (top level); used by fog of war
+        public List<string> Trains = new List<string>();     // buildings: unit keys
+        public List<string> Researches = new List<string>(); // buildings: technology keys
+        public string TrainedAt, ResearchedAt;                // units / technologies: building key
     }
 
     /// <summary>Loads the knowledge JSON text, so Unity and the AI always use the same numbers.</summary>
@@ -46,6 +52,17 @@ namespace RTS.Core.Rules
                 rec.Attack = (float)stats["attack"]; rec.Armor = (float)stats["armor"];
                 rec.Range = (float)stats["range"]; rec.Hp = (float)stats["hp"];
             }
+            // Buildings keep hp at the top level, units keep it under "stats".
+            if (stats == null && r["hp"] != null) rec.Hp = (float)r["hp"];
+            if (stats != null && stats["line_of_sight"] != null) rec.LineOfSight = (float)stats["line_of_sight"];
+            if (stats == null && r["line_of_sight"] != null) rec.LineOfSight = (float)r["line_of_sight"];
+            if (stats != null && stats["speed"] != null) rec.Speed = (float)stats["speed"];
+            foreach (var name in new[] { "train_time_s", "build_time_s", "research_time_s" })
+                if (r[name] != null && r[name].Type != JTokenType.Null) rec.TimeSeconds = (float)r[name];
+            if (r["trains"] != null) foreach (var x in r["trains"]) rec.Trains.Add((string)x);
+            if (r["researches"] != null) foreach (var x in r["researches"]) rec.Researches.Add((string)x);
+            if (r["trained_at"] != null) rec.TrainedAt = (string)r["trained_at"];
+            if (r["researched_at"] != null) rec.ResearchedAt = (string)r["researched_at"];
             if (r["requires"] != null) foreach (var x in r["requires"]) rec.Requires.Add((string)x);
             if (r["strengths"] != null) foreach (var x in r["strengths"]) rec.Strengths.Add((string)x);
             if (r["buildable"] != null) rec.Buildable = (bool)r["buildable"];

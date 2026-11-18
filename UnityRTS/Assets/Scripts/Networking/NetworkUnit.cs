@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fusion;
+using RTS.Core.Rules;
 using UnityEngine;
 
 /// <summary>
@@ -15,8 +16,8 @@ public class NetworkUnit : NetworkBehaviour
     [Networked] public float Hp { get; set; }
     [Networked] public Vector3 MoveTarget { get; set; }
     [Networked] public NetworkBool HasMoveTarget { get; set; }
+    [Networked] public NetworkId AttackTarget { get; set; } // default (0) = none; used by combat on night 6
 
-    const float MoveSpeed = 3.5f; // placeholder until unit speeds are in the knowledge JSON
 
     public override void Spawned() { All.Add(this); }
     public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
@@ -28,14 +29,42 @@ public class NetworkUnit : NetworkBehaviour
     }
 
     public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; }
+    /// <summary>Host only. Death frees the population slot and removes the object.</summary>
+    /// <returns>true when this hit killed the unit (do not read its networked values afterwards)</returns>
+    public bool TakeDamage(float amount)
+    {
+        if (!HasStateAuthority || Hp <= 0) return false;
+        Hp -= amount;
+        GameEvents.Report(Owner, "UNDER_ATTACK", transform.position, TypeKey.ToString());
+        if (Hp > 0) return false;
+        Hp = 0;
+        GameEvents.Report(Owner, "UNIT_LOST", transform.position, TypeKey.ToString());
+        var st = GameSpawner.Instance.StateOf(Owner);
+        if (st != null && st.PopUsed > 0) st.PopUsed -= 1;
+        Runner.Despawn(Object);
+        return true;
+    }
+
+    public void StopMoving() { HasMoveTarget = false; }
 
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority || !HasMoveTarget) return;
         Vector3 pos = transform.position;
         Vector3 to = MoveTarget - pos; to.y = 0;
-        float step = MoveSpeed * Runner.DeltaTime;
+        float step = GameDataProvider.Get().Units[TypeKey.ToString()].Speed * Runner.DeltaTime; // speed from units.json
         if (to.magnitude <= step) { transform.position = new Vector3(MoveTarget.x, pos.y, MoveTarget.z); HasMoveTarget = false; }
-        else transform.position = pos + to.normalized * step;
+        else
+        {
+            Vector3 next = pos + to.normalized * step;
+            // Domain rule: land units never enter water zones, ships never enter land zones (the zone map decides).
+            // This is the simple version; a baked NavMesh per agent type can replace it later.
+            if (ZoneMap.Instance != null)
+            {
+                bool water = ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(next));
+                if (!DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], water)) { HasMoveTarget = false; return; }
+            }
+            transform.position = next;
+        }
     }
 }

@@ -17,3 +17,11 @@ Errors are returned as `{"error": "..."}` (no exception), so the agent can expla
 
 Retrieved text is reference data, not instructions. The retriever (`ai/rag/retriever.py`) is BM25, plus
 sentence-transformers embeddings if `python ai/rag/build_index.py` has been run.
+
+## How the agent reaches the server
+- Default: in-process (`build_server(...)` object, fast, used by most tests).
+- Real MCP over stdio: set `MCP_TRANSPORT=stdio` (and a file `SESSION_DB_PATH`). The gateway then starts `server.py` as a subprocess per
+  question (`ai/gateway/mcp_stdio.py`, `StdioMcp`) and talks the MCP protocol through its stdin/stdout. Tests: `ai/gateway/tests/test_mcp_stdio.py`.
+- MCP Inspector: `python ai/mcp-server/make_session.py late_game` prints the command (session id and database path included).
+- The gateway rejects tool arguments a tool does not declare (for example `player_id`, `session_id`), so such attempts show up as `error` in `tool_calls.jsonl`.
+

@@ -43,86 +43,87 @@ engine-free `RTS.Core` keeps its asmdef.
   smoke test with ParrelSync.
 
 ## Night 3 – 2026-11-14: map and economy
-- [ ] `ZoneMap`: maps a world position to one of the 10 zone names, so that every point belongs to a zone.
+- [x] (done 2026-11-15, uncompiled; needs Unity) `ZoneMap`: maps a world position to one of the 10 zone names, so that every point belongs to a zone.
       `BuildSlot` per zone, with a coastal flag.
-- [ ] `ResourceNode` (finite, networked amount, despawned when empty) and the Villager gather loop on the host.
-- [ ] Population capacity from Houses and the Town Center, the hard cap, and training blocked at the cap.
+- [x] (done 2026-11-15, uncompiled; needs Unity) `ResourceNode` (finite, networked amount, despawned when empty) and the Villager gather loop on the host.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Population capacity from Houses and the Town Center, the hard cap, and training blocked at the cap.
 - You: build the map (ground, 7 land and 3 water zone volumes, resource nodes, build slots) and bake the NavMesh.
 
 ## Night 4 – 2026-11-15: player control
-- [ ] Selection: click, drag box, shift to add, and a highlight.
-- [ ] Right-click commands (move, gather, attack, build), sent through `CommandRelay`.
-- [ ] RTS camera (pan and zoom) with the Input System, and group movement with formation offsets.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Selection: click, drag box, shift to add, and a highlight.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Right-click commands (move, gather, attack, build), sent through `CommandRelay`.
+- [x] (done 2026-11-15, uncompiled; needs Unity) RTS camera (pan and zoom) with the Input System, and group movement with formation offsets.
 
 ## Night 5 – 2026-11-16: buildings and production
-- [ ] Building placement ghost (valid or invalid on build slots) and Villager construction with build time.
-- [ ] Production queue with train time, and the research queue. The Town Center cannot train while it researches
+- [x] (done 2026-11-15, uncompiled; needs Unity) Building placement ghost (valid or invalid on build slots) and Villager construction with build time.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Production queue with train time, and the research queue. The Town Center cannot train while it researches
       Age II.
-- [ ] HUD: resources, population, age.
+- [x] (done 2026-11-15, uncompiled; needs Unity) HUD: resources, population, age.
 
 ## Night 6 – 2026-11-17: UI panels and combat
-- [ ] Selection panel (info, HP), build menu, train and research buttons with cost and disabled state, queue
+- [x] (done 2026-11-15, uncompiled; needs Unity) Selection panel (info, HP), build menu, train and research buttons with cost and disabled state, queue
       progress.
-- [ ] Combat on the host with `DamageCalculator`: cooldown, range, counters, death and despawn. Targets: explicit
+- [x] (done 2026-11-15, uncompiled; needs Unity) Combat on the host with `DamageCalculator`: cooldown, range, counters, death and despawn. Targets: explicit
       attack, auto-attack in range while idle, and buildings.
 - You: two-instance test of gather, build, train and fight. Record a short clip as M3 evidence.
 
 ## Night 7 – 2026-11-18: technologies, Scout, win condition
-- [ ] Technology effects: Age II unlocks, Iron Weapons, Fletching, Horse Collar, for existing and future units.
-- [ ] Scout unit.
-- [ ] Win condition: when a Town Center is destroyed, the match ends over the network and both players see a
+- [x] (done 2026-11-15, uncompiled; needs Unity) Technology effects: Age II unlocks, Iron Weapons, Fletching, Horse Collar, for existing and future units.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Scout unit.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Win condition: when a Town Center is destroyed, the match ends over the network and both players see a
       Victory or Defeat screen.
 
 ## Night 8 – 2026-11-19: fog of war and events
-- [ ] `VisibilityService.FilterFor(player)`: a pure core in `RTS.Core` with EditMode tests, plus a Unity adapter
+- [x] (done 2026-11-15, uncompiled; needs Unity) `VisibilityService.FilterFor(player)`: a pure core in `RTS.Core` with EditMode tests, plus a Unity adapter
       that hides enemy renderers outside line of sight and draws a simple fog overlay.
-- [ ] Recent-event log per player (the 8 event types, with zone and time), holding only what the player may know.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Recent-event log per player (the 8 event types, with zone and time), holding only what the player may know.
 
 ## Night 9 – 2026-11-20: AI in Unity
-- [ ] `AiSnapshotBuilder`: own units and buildings grouped by type and zone, enemies only from `FilterFor`. Add a
+- [x] (done 2026-11-15, Unity parts uncompiled) `AiSnapshotBuilder`: own units and buildings grouped by type and zone, enemies only from `FilterFor`. Add a
       snapshot export, and a pytest contract test that validates an exported snapshot against the schema.
-- [ ] `AiCommanderPanel`: question, loading state, summary, actions with costs, confidence, evidence, and Approve,
+- [x] (done 2026-11-15, Unity parts uncompiled) `AiCommanderPanel`: question, loading state, summary, actions with costs, confidence, evidence, and Approve,
       Reject and Ask why buttons. Read-only answers need no approval.
 
 ## Night 10 – 2026-11-21: approval flow and security
-- [ ] Approval: run `GameActionValidator` again on the current state and send approved actions through
+- [x] (done 2026-11-15, Unity parts uncompiled) Approval: run `GameActionValidator` again on the current state and send approved actions through
       `CommandRelay`. Reject changes nothing. Decision log: plan id, decision, validator result per action.
-- [ ] Domain checks in `GameActionValidator` (land and water zones, Dock only on your own coastal slot), with
+- [x] (done 2026-11-15, Unity parts uncompiled) Domain checks in `GameActionValidator` (land and water zones, Dock only on your own coastal slot), with
       EditMode tests.
-- [ ] Security tests, in pytest where possible: hidden extra field, identity switch, oversized `top_k`, injected
+- [x] (done 2026-11-15) Security tests, in pytest where possible: hidden extra field, identity switch, oversized `top_k`, injected
       knowledge chunk, invalid plans. Update `evaluation/security-tests.md`.
 
 ## Night 11 – 2026-11-22: real MCP client and evaluation numbers
-- [ ] Run the agent loop through a real stdio MCP client, with the server as a subprocess. Test it with the
+- [x] (done 2026-11-15) Run the agent loop through a real stdio MCP client, with the server as a subprocess. Test it with the
       scripted LLM: a compound question calls at least 3 tools, and a knowledge-only question calls only
       `search_game_knowledge`.
-- [ ] `prompts.jsonl`: add a stale-state case and an invalid-action case, and check the category mix.
-- [ ] Invalid-action rate through a Python copy of the gameplay checks, plus CSV export and a summary table.
+- [x] (done 2026-11-15) `prompts.jsonl`: add a stale-state case and an invalid-action case, and check the category mix.
+- [x] (done 2026-11-15) Invalid-action rate through a Python copy of the gameplay checks, plus CSV export and a summary table.
 - You: live Gemini run (`run_eval.py --real`), and keep the results.
 
 ## Night 12 – 2026-11-23: siege and naval (the first to cut if behind)
-- [ ] Catapult: range, slow rate of fire, bonus against buildings.
-- [ ] Ships: Dock on a coastal slot, Raider Boat and Warship, a water-only NavMesh agent type, the domain rule in
+- [x] (done 2026-11-15, uncompiled; needs Unity) Catapult: range, slow rate of fire, bonus against buildings.
+- [x] (done 2026-11-15, uncompiled; needs Unity) Ships: Dock on a coastal slot, Raider Boat and Warship, a water-only NavMesh agent type, the domain rule in
       combat, and fog of war on the sea.
 
 ## Night 13 – 2026-11-24: report, part 1
-- [ ] `docs/report/report.md` in IEEE structure: Abstract, Introduction, Game Design, System Architecture,
+- [x] (done 2026-11-15) `docs/report/report.md` in IEEE structure: Abstract, Introduction, Game Design, System Architecture,
       Multiplayer Method, MCP and Agent Design, RAG Method. Add the networking part to `docs/architecture.md`.
 
 ## Night 14 – 2026-11-25: report, part 2
-- [ ] Structured Actions and Human Control, Security (with the client-side fog-of-war limitation), Evaluation
+- [x] (done 2026-11-15; live numbers are [TODO live] placeholders) Structured Actions and Human Control, Security (with the client-side fog-of-war limitation), Evaluation
       (tables, with placeholders where live numbers are missing), Challenges and Lessons Learned, Conclusion and
       Future Work, Appendix, and the dependency list.
 - You: Windows build (IL2CPP), and two instances on the demo machine.
 
 ## Night 15 – 2026-11-26: demo and defense material
-- [ ] `docs/demo-script.md`: click-by-click steps for the 9 required scenarios (listed below), with what to say.
-- [ ] `docs/slides-outline.md` and `docs/defense-notes.md`: authority model, 3 MCP tools, the RAG pipeline, the
+- [x] (done 2026-11-15) `docs/demo-script.md`: click-by-click steps for the 9 required scenarios (listed below), with what to say.
+- [x] (done 2026-11-15) `docs/slides-outline.md` and `docs/defense-notes.md`: authority model, 3 MCP tools, the RAG pipeline, the
       validator, one security test.
 - You: record the backup video while following the demo script.
 
 ## Night 16 – 2026-11-27: fix day
 - [ ] Fix everything open in `UNITY_FEEDBACK.md`, then review the code for bugs and missing tests.
+      (partly done 2026-11-15: 2026-11-14 feedback handled, first review pass + compile check done; waiting for the first real Unity feedback on the new code)
 - You: slides.
 
 ## Night 17 – 2026-11-28: final consistency pass

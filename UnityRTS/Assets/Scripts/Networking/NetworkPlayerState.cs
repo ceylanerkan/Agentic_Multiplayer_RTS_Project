@@ -15,7 +15,13 @@ public class NetworkPlayerState : NetworkBehaviour
     [Networked] public int PopUsed { get; set; }
     [Networked] public int PopCapacity { get; set; }
     [Networked] public int Age { get; set; }
+    [Networked] public int Result { get; set; }          // 0 = match running, 1 = this player won, 2 = this player lost
     [Networked] public int TechMask { get; set; }        // bit i = i-th technology of GameData.Techs
+
+    // Every peer keeps the list of player states, so StateOf(owner) also works on clients (fog of war and the AI snapshot run there).
+    public static readonly List<NetworkPlayerState> All = new List<NetworkPlayerState>();
+    public override void Spawned() { All.Add(this); }
+    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
 
     public PlayerRef Owner => Object.InputAuthority;
 
@@ -24,7 +30,7 @@ public class NetworkPlayerState : NetworkBehaviour
     {
         Slot = slot; Age = 1;
         Wood = GameConstants.StartWood; Food = GameConstants.StartFood; Gold = GameConstants.StartGold;
-        PopUsed = 0; PopCapacity = GameConstants.TownCenterCapacity; TechMask = 0;
+        Result = 0; PopUsed = 0; PopCapacity = GameConstants.TownCenterCapacity; TechMask = 0;
     }
 
     public int Get(string resource)
@@ -43,20 +49,20 @@ public class NetworkPlayerState : NetworkBehaviour
         foreach (var kv in cost) Add(kv.Key, -kv.Value * count);
     }
 
-    public bool HasTech(string key) { return (TechMask & (1 << TechIndex(key))) != 0; }
-    public void GrantTech(string key) { TechMask |= 1 << TechIndex(key); }
+    public bool HasTech(string key) { int i = TechIndex(key); return i >= 0 && (TechMask & (1 << i)) != 0; }
+    public void GrantTech(string key) { int i = TechIndex(key); if (i >= 0) TechMask |= 1 << i; }
 
     static int TechIndex(string key)
     {
         int i = 0;
         foreach (var k in GameDataProvider.Get().Techs.Keys) { if (k == key) return i; i++; }
-        return 0;
+        return -1; // unknown technology
     }
 
     /// <summary>Snapshot for GameActionValidator. Completed buildings come from the NetworkBuilding registry.</summary>
     public PlayerState ToCore()
     {
-        var s = new PlayerState { PopulationUsed = PopUsed, PopulationCapacity = PopCapacity, Age = Age };
+        var s = new PlayerState { Slot = Slot, PopulationUsed = PopUsed, PopulationCapacity = PopCapacity, Age = Age };
         s.Resources["wood"] = Wood; s.Resources["food"] = Food; s.Resources["gold"] = Gold;
         foreach (var k in GameDataProvider.Get().Techs.Keys) if (HasTech(k)) s.Techs.Add(k);
         foreach (var b in NetworkBuilding.All)
@@ -65,16 +71,20 @@ public class NetworkPlayerState : NetworkBehaviour
             string key = b.TypeKey.ToString();
             int n; s.CompletedBuildings.TryGetValue(key, out n); s.CompletedBuildings[key] = n + 1;
         }
+        // Docks need a free coastal slot in the player's own base.
+        string ownBase = Slot == 1 ? "P1Base" : "P2Base";
+        foreach (var slot in BuildSlot.All)
+            if (slot.coastal && !slot.occupied && slot.Zone == ownBase) s.CoastalSlotZones.Add(ownBase);
         return s;
     }
 
     /// <summary>Host only: recompute capacity from completed Town Centers and Houses.</summary>
-    public void RecalculateCapacity()
+    public void RecalculateCapacity(NetworkBuilding exclude = null)
     {
         int tc = 0, houses = 0;
         foreach (var b in NetworkBuilding.All)
         {
-            if (b.Owner != Owner || !b.Completed) continue;
+            if (b == exclude || b.Owner != Owner || !b.Completed) continue;
             if (b.TypeKey.ToString() == "town_center") tc++; else if (b.TypeKey.ToString() == "house") houses++;
         }
         PopCapacity = GameConstants.Capacity(tc, houses);

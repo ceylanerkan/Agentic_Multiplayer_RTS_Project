@@ -17,7 +17,8 @@ ai/gateway/        HTTP gateway + agent runner (Gemini function calling + MCP cl
 ai/schemas/        action_plan.schema.json, safe_snapshot.schema.json
 ai/rag/            knowledge base, index builder, retriever
 evaluation/        prompts, fixtures, eval runner, results
-docs/              design brief, architecture, setup, report
+docs/              design brief, architecture, setup, report, demo script, defense notes
+tools/compile-check/  compile the Unity scripts against stub types without Unity (see its README)
 ```
 
 ## Status
@@ -26,11 +27,11 @@ Detailed list of the remaining work: [TODO.md](TODO.md).
 - [x] M1 design brief, knowledge base, schemas: see [docs/design-brief.md](docs/design-brief.md)
 - [x] Unity project setup: Unity 6 (URP), Photon Fusion 2.0.13, ParrelSync, Newtonsoft JSON, AI Navigation,
       Run In Background, Photon App ID git-ignored
-- [ ] M2 networked core RTS: Host/Join lobby, selection, move/attack/gather/build/train commands, HUD
-- [ ] M3 combat, tech, fog of war, event log, win condition, two-instance test video/log
-- [ ] M4 MCP server (7 tools + tests), agent with tool log, RAG index, AI gateway
-- [ ] M5 Unity AI integration, approval, validator, security tests
-- [ ] M6 evaluation, IEEE report, slides, Windows build, backup demo video
+- [~] M2 networked core RTS: code written (lobby, selection, commands, HUD, economy, production); needs editor wiring and play tests
+- [~] M3 combat, tech, fog of war, event log, win condition: code written; two-instance test video/log still to do
+- [x] M4 MCP server (7 tools + tests), agent with tool log, RAG index, AI gateway (live Gemini run still to do)
+- [~] M5 Unity AI integration, approval, validator, security tests: code and Python tests done; Unity play test to do
+- [~] M6 evaluation harness and report draft done (`docs/report/report.md`, demo script, slides outline); live numbers, slides, build, video to do
 
 ## Setup
 See [docs/setup.md](docs/setup.md). Secrets (Gemini API key, Photon App ID) are never committed; copy

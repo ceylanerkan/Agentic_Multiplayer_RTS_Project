@@ -27,8 +27,25 @@
 cd ai
 python -m venv .venv
 .venv\Scripts\activate          # Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-copy ..\.env.example ..\.env     # then put your GEMINI_API_KEY in .env
-python rag/build_index.py
+pip install -r requirements.txt   # sentence-transformers is large; without it retrieval uses BM25 only
+copy ..\.env.example ..\.env     # then put your GEMINI_API_KEY in .env (the gateway and run_eval load it)
+python rag/build_index.py        # optional: embeddings for hybrid retrieval
 ```
 A Gemini API key can be created at https://aistudio.google.com/apikey (free tier).
+
+## 5. Run and test
+```bash
+# from the repository root
+python -m pytest -q ai evaluation                           # 57 tests, no network, no API key needed
+uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs GEMINI_API_KEY)
+python evaluation/run_eval.py                               # offline mock run; add --real for Gemini
+dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)
+```
+Windows shortcut: double-click `tools/run_gateway.bat` (same command as the uvicorn line).
+Set `MCP_TRANSPORT=stdio` (in `.env`) to run the MCP server as a subprocess with the real MCP protocol.
+C# rule tests: Unity > Window > General > Test Runner > EditMode (`RulesTests`).
+
+## 6. Unity scenes and prefabs
+The scripts need scenes, prefabs and components that only the editor can create. The exact steps (scene objects, prefab
+components, field values) are in [TODO.md](../TODO.md), sections 1-4.
+

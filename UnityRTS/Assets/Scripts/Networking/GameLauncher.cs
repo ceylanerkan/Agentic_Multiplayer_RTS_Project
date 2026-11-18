@@ -109,7 +109,7 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
         {
             runner.RemoveCallbacks(this);
             var r = runner; runner = null;
-            await r.Shutdown();
+            await r.Shutdown(destroyGameObject: false); // the runner sits on this DontDestroyOnLoad object: do not destroy it
             Destroy(r);
             var sm = GetComponent<NetworkSceneManagerDefault>();
             if (sm != null) Destroy(sm);
