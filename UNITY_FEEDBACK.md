@@ -43,3 +43,29 @@ Assets\Scripts\Buildings\ZoneMap.cs(19,27): warning CS0618: 'Object.FindObjectsB
 
 Assets\Scripts\Editor\RtsSetupTools.cs(203,13): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
 ```
+- Test 3 (`Tools > RTS > 0 Create Menu and Game scenes`): Console'da aynı hata 2 kez çıktı, düzelt:
+
+```
+NullReferenceException: Object reference not set to an instance of an object
+TMPro.MaterialReference..ctor (System.Int32 index, TMPro.TMP_FontAsset fontAsset, TMPro.TMP_SpriteAsset spriteAsset, UnityEngine.Material material, System.Single padding) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/TMP/MaterialReferenceManager.cs:526)
+TMPro.TextMeshProUGUI.SetArraySizes (TMPro.TMP_Text+TextProcessingElement[] textProcessingArray) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/TMP/TextMeshProUGUI.cs:1758)
+TMPro.TMP_Text.ParseInputText () (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/TMP/TMP_Text.cs:2048)
+TMPro.TMP_Text.GetPreferredWidth () (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/TMP/TMP_Text.cs:3699)
+TMPro.TMP_Text.get_preferredWidth () (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/TMP/TMP_Text.cs:1511)
+UnityEngine.UI.LayoutUtility+<>c.<GetPreferredWidth>b__4_1 (UnityEngine.UI.ILayoutElement e) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutUtility.cs:68)
+UnityEngine.UI.LayoutUtility.GetLayoutProperty (UnityEngine.RectTransform rect, System.Func`2[T,TResult] property, System.Single defaultValue, UnityEngine.UI.ILayoutElement& source) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutUtility.cs:161)
+UnityEngine.UI.LayoutUtility.GetLayoutProperty (UnityEngine.RectTransform rect, System.Func`2[T,TResult] property, System.Single defaultValue) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutUtility.cs:129)
+UnityEngine.UI.LayoutUtility.GetPreferredWidth (UnityEngine.RectTransform rect) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutUtility.cs:68)
+UnityEngine.UI.LayoutUtility.GetPreferredSize (UnityEngine.RectTransform rect, System.Int32 axis) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutUtility.cs:31)
+UnityEngine.UI.HorizontalOrVerticalLayoutGroup.GetChildSizes (UnityEngine.RectTransform child, System.Int32 axis, System.Boolean controlSize, System.Boolean childForceExpand, System.Single& min, System.Single& preferred, System.Single& flexible) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/HorizontalOrVerticalLayoutGroup.cs:233)
+UnityEngine.UI.HorizontalOrVerticalLayoutGroup.CalcAlongAxis (System.Int32 axis, System.Boolean isVertical) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/HorizontalOrVerticalLayoutGroup.cs:104)
+UnityEngine.UI.HorizontalLayoutGroup.CalculateLayoutInputHorizontal () (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/HorizontalLayoutGroup.cs:19)
+UnityEngine.UI.LayoutRebuilder+<>c.<Rebuild>b__12_0 (UnityEngine.Component e) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutRebuilder.cs:85)
+UnityEngine.UI.LayoutRebuilder.PerformLayoutCalculation (UnityEngine.RectTransform rect, UnityEngine.Events.UnityAction`1[T0] action) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutRebuilder.cs:160)
+UnityEngine.UI.LayoutRebuilder.Rebuild (UnityEngine.UI.CanvasUpdate executing) (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/Layout/LayoutRebuilder.cs:85)
+UnityEngine.UI.CanvasUpdateRegistry.PerformUpdate () (at ./Library/PackageCache/com.unity.ugui@1f2d1ab0d950/Runtime/UGUI/UI/Core/CanvasUpdateRegistry.cs:181)
+UnityEngine.Canvas:SendWillRenderCanvases()
+```
+  İpucu: projede `HorizontalLayoutGroup`'u sadece `RtsSetupTools.cs:208`'deki `HudBar` kullanıyor; içindeki 5 TMP
+  `Label()` ile yaratılıyor ve font/material açıkça atanmıyor. TMP Essential Resources projede var
+  (`Assets/TextMesh Pro`, varsayılan font LiberationSans SDF).
