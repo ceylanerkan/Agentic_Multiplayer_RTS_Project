@@ -34,22 +34,12 @@ build_index + pytest tamam (35 passed)
   Bu sahnelerin ve prefab'ların henüz var olmadığını varsay.
 
 ## 2026-11-18
-- Test 2 (PR #3 merge edildikten sonra Unity derlemesi), Console çıktısı:
+- Bu uyarıları düzelt (PR #3 sonrası Unity derlemesi):
 
 ```
-Assets\Tests\EditMode\RulesTests.cs(370,27): error CS0103: The name 'Newtonsoft' does not exist in the current context
-
-Assets\Tests\EditMode\RulesTests.cs(370,77): error CS0103: The name 'Newtonsoft' does not exist in the current context
-
 Assets\Scripts\Buildings\ZoneMap.cs(19,57): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
 
 Assets\Scripts\Buildings\ZoneMap.cs(19,27): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
 
 Assets\Scripts\Editor\RtsSetupTools.cs(203,13): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
-
-(GetStatus) Cannot get non-existing progress id 8.
 ```
-- Newtonsoft hatası main'de düzeltildi: `RTS.Tests.EditMode.asmdef`'te `overrideReferences: true` olduğu için
-  `precompiledReferences`'a `"Newtonsoft.Json.dll"` eklendi (paket asmdef değil, hazır DLL). Bundan sonra
-  `overrideReferences: true` olan asmdef'lerde hazır DLL'leri `precompiledReferences`'a yaz. CS0618 uyarıları
-  (`FindObjectsSortMode`, `FindFirstObjectByType`) hâlâ duruyor, sen düzelt.
