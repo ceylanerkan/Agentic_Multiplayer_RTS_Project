@@ -49,3 +49,7 @@ Assets\Scripts\Editor\RtsSetupTools.cs(203,13): warning CS0618: 'Object.FindFirs
 
 (GetStatus) Cannot get non-existing progress id 8.
 ```
+- Newtonsoft hatası main'de düzeltildi: `RTS.Tests.EditMode.asmdef`'te `overrideReferences: true` olduğu için
+  `precompiledReferences`'a `"Newtonsoft.Json.dll"` eklendi (paket asmdef değil, hazır DLL). Bundan sonra
+  `overrideReferences: true` olan asmdef'lerde hazır DLL'leri `precompiledReferences`'a yaz. CS0618 uyarıları
+  (`FindObjectsSortMode`, `FindFirstObjectByType`) hâlâ duruyor, sen düzelt.
