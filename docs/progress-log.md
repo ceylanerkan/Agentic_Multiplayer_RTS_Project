@@ -56,7 +56,7 @@
 - New menu `Tools > RTS > Set build window (1280x720, windowed)` (PlayerSettings: windowed, resizable, run in background) for two
   build instances side by side; the student runs it (ProjectSettings stay theirs).
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
-  (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
+  (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError; new test, 65 pytest passed). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
