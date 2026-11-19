@@ -10,7 +10,7 @@
 - Alt paneldeki butonlar artık okunur: açık font, 18 px, `raider_boat` yerine "Raider Boat". Host tek başınayken üst barda "waiting for player 2..." yazıyor.
 - AI paneline soru yazarken WASD artık kamerayı kaydırmıyor; uzun AI cevapları panele sığacak şekilde küçülüyor; fare tekerleği zoom'u iki farklı Input System scroll ölçeğinde de çalışıyor.
 - Bağımsız kod incelemesinden 6 hata düzeltildi: kendi yarım binaların fog of war altında görünmüyordu; P2'nin AI snapshot'ı odun toplayan Villager'ları boşta sanıyordu; aynı teknoloji iki binada iki kez ödenebiliyordu; ENEMY_SIGHTED olayı görüş sınırında her 0.25 s'de tekrar ediyordu; başlangıç Villager'ları ve üretilen birimler TC'nin köşesinde (belki çatısında) doğuyordu; yıkılan inşaatta hata riski; suyun öbür tarafındaki hedefe saldır emri alan birim donup kalıyordu (artık emri bırakıp normal davranıyor).
-- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı; C# kural testleri 48/48 (yeni `DisplayNames` testi; EditMode Test Runner 48 göstermeli).
+- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı; C# kural testleri 49/49 (2 yeni test; EditMode Test Runner 49 göstermeli); Python 60 test geçti.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme günü) senin geri bildirimlerinle sürüyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kod incelemesi ve eksik testler.
