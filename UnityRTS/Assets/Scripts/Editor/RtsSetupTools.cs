@@ -54,7 +54,7 @@ public static class RtsSetupTools
         var sc = canvasGo.GetComponent<CanvasScaler>(); sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; sc.referenceResolution = new Vector2(1920, 1080); sc.matchWidthOrHeight = 0.5f;
         new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         var title = Label(canvasGo.transform, "Title", "Agentic RTS", 72, TextAlignmentOptions.Center); Place((RectTransform)title.transform, new Vector2(0, 250), new Vector2(900, 120));
-        var nameField = InputField(canvasGo.transform, new Vector2(0, 100), new Vector2(500, 60));
+        var nameField = InputField(canvasGo.transform, new Vector2(0, 100), new Vector2(500, 60), "Session name (same on both PCs)");
         var host = Button(canvasGo.transform, "Host", new Vector2(-130, 0), new Vector2(240, 70)); var join = Button(canvasGo.transform, "Join", new Vector2(130, 0), new Vector2(240, 70));
         var status = Label(canvasGo.transform, "Status", "", 28, TextAlignmentOptions.Center); Place((RectTransform)status.transform, new Vector2(0, -110), new Vector2(1000, 80));
         var mso = new SerializedObject(canvasGo.GetComponent<MenuUI>());
@@ -245,7 +245,7 @@ public static class RtsSetupTools
         var ai = Panel(canvasGo.transform, "AiCommanderPanel", new Color(0.05f, 0.05f, 0.1f, 0.85f), new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-260, 0), new Vector2(500, 640));
         var title = Label(ai, "Title", "AI Commander", 28, TextAlignmentOptions.Center);
         Place((RectTransform)title.transform, new Vector2(0, 280), new Vector2(480, 40));
-        var input = InputField(ai, new Vector2(0, 225), new Vector2(480, 44));
+        var input = InputField(ai, new Vector2(0, 225), new Vector2(480, 44), "Ask the AI commander...");
         var ask = Button(ai, "Ask", new Vector2(-180, 170), new Vector2(110, 44)); var approve = Button(ai, "Approve", new Vector2(-60, 170), new Vector2(110, 44));
         var reject = Button(ai, "Reject", new Vector2(60, 170), new Vector2(110, 44)); var why = Button(ai, "Ask why", new Vector2(180, 170), new Vector2(110, 44));
         var answer = Label(ai, "Answer", "", 20, TextAlignmentOptions.TopLeft); Place((RectTransform)answer.transform, new Vector2(0, -10), new Vector2(480, 330));
@@ -307,13 +307,13 @@ public static class RtsSetupTools
         return go.GetComponent<Button>();
     }
 
-    static TMP_InputField InputField(Transform parent, Vector2 pos, Vector2 size)
+    static TMP_InputField InputField(Transform parent, Vector2 pos, Vector2 size, string placeholder)
     {
-        var go = new GameObject("Question", typeof(RectTransform), typeof(Image), typeof(TMP_InputField)); go.transform.SetParent(parent, false);
+        var go = new GameObject("InputField", typeof(RectTransform), typeof(Image), typeof(TMP_InputField)); go.transform.SetParent(parent, false);
         go.GetComponent<Image>().color = Color.white; Place((RectTransform)go.transform, pos, size);
         var area = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D)); area.transform.SetParent(go.transform, false);
         var art = (RectTransform)area.transform; art.anchorMin = Vector2.zero; art.anchorMax = Vector2.one; art.offsetMin = new Vector2(8, 4); art.offsetMax = new Vector2(-8, -4);
-        var ph = Label(area.transform, "Placeholder", "Ask the AI commander...", 20, TextAlignmentOptions.Left); ph.color = new Color(0.4f, 0.4f, 0.4f);
+        var ph = Label(area.transform, "Placeholder", placeholder, 20, TextAlignmentOptions.Left); ph.color = new Color(0.4f, 0.4f, 0.4f);
         var tx = Label(area.transform, "Text", "", 20, TextAlignmentOptions.Left); tx.color = Color.black;
         foreach (var r in new[] { (RectTransform)ph.transform, (RectTransform)tx.transform }) { r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero; }
         var f = go.GetComponent<TMP_InputField>(); f.textViewport = art; f.textComponent = tx; f.placeholder = ph;
