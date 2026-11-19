@@ -79,3 +79,24 @@ UnityEngine.Canvas:SendWillRenderCanvases()
   - Hangi en-boy oranında (aspect) açılması gerektiği belli değil; her şey küçük görünüyor.
   - İstek: oyunun başlamamasını düzelt. Hedef çözünürlüğü/aspect'i belirle ve Game view'da ne seçmem gerektiğini
     `MORNING.md`'ye yaz. Birimler, binalar ve kaynaklar birbirinden kolayca ayırt edilsin; yazılar okunur olsun.
+
+## 2026-11-19
+- PR #4 merge edildi, main'de pull yapıldı.
+- Test 4 olmadı. ParrelSync klonu açılamadığı için tek başına Host olarak denendi:
+  - AI paneline soru yazınca durum satırında `Match not started yet.` yazıyor.
+  - Villager'lar görünmüyor.
+  - Muhtemel sebep (Claude Code ile kodda bulundu, Unity'de denenmedi): `AiCommanderPanel.Ask` bu mesajı
+    `CommandRelay.Local == null` iken veriyor, yani Player nesnesi hiç spawn olmamış. `GameSpawner` bir
+    `SimulationBehaviour`, Game sahnesindeki `Spawner` nesnesinde duruyor ve hiçbir yerde `NetworkRunner.AddGlobal()`
+    ile runner'a kaydedilmiyor. Fusion'ın belgesine göre (`Assets/Photon/Fusion/Assemblies/Fusion.Runtime.xml`,
+    `T:Fusion.SimulationBehaviour`) böyle bir behaviour sadece runner'ın GameObject'indeyse kendiliğinden kaydoluyor;
+    `NetworkSceneManagerDefault.OnSceneLoaded` da sadece `NetworkObject`'leri kaydediyor. Bu durumda `Runner` null
+    kalır, `GameSpawner.Update` hemen döner ve `PlayerJoined` hiç çağrılmaz: Player, Town Center ve Villager'lar
+    oluşmaz. Düzelt ve tek başına Host iken de TC + 3 Villager'ın oluştuğunu ve AI panelinin çalıştığını sağla.
+  - Bu durumda AI paneli daha açık bir sebep yazsın ("Match not started yet" yerine ne eksik olduğunu söylesin).
+- Game.unity'deki her şey iki kez oluşmuş (2 `Spawner`, 2 `Systems`, 2 HUD, 2 `Zones`...). Rebuild yerine 1/2/3
+  komutları kurulu sahnenin üstünde tekrar çalışmış olabilir. `2 Setup open Game scene` ve `3 Create Game UI`, sahnede
+  zaten kurulum varsa (ör. `MapAndSystems` veya HUD) uyarıp dursun. Bu sahne commit'lenmedi.
+- ParrelSync: klon oluştu (`UnityRTS_clone_0`), ama klon editörü açıldıktan ~22 sn sonra ilk script derlemesi
+  sırasında kapandı (Editor.log'da çökme yok, return code 0). Henüz tekrar denenmedi. `MORNING.md`'ye ParrelSync
+  çalışmazsa iki oyuncuyu test etmenin yolunu (Windows build = Host, editör = Join) adım adım yaz.
