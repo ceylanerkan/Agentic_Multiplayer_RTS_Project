@@ -638,5 +638,19 @@ namespace RTS.Tests
             Assert.AreEqual("SouthField", z.ZoneAt(0 - 5, -35 + 5));
             Assert.AreEqual("WestMine", z.ZoneAt(-65 - 7, -30 + 7));
         }
+
+        [Test]
+        public void PlanSchemaEnums_MatchZonesAndGameData()
+        {
+            // The AI may only name what the game knows: schema enums == C# zones and the keys of the JSON data.
+            string schemaPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../ai/schemas/action_plan.schema.json"));
+            var defs = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(schemaPath))["$defs"];
+            CollectionAssert.AreEquivalent(ZoneLookup.AllZones, defs["zone"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Units.Keys, defs["unit_type"]["enum"].ToObject<List<string>>());
+            var buildable = new List<string>();
+            foreach (var b in data.Buildings.Values) if (b.Buildable) buildable.Add(b.Key);
+            CollectionAssert.AreEquivalent(buildable, defs["building_type"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Techs.Keys, defs["tech_type"]["enum"].ToObject<List<string>>());
+        }
     }
 }
