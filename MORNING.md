@@ -28,6 +28,10 @@ Yok.
 - Disk ve etiket nesnenin çocuğu değil, onu `LateUpdate`'te takip ediyor (binalar düzleştirilmiş küp; çocuk olsalardı esnerdi). Görünürlüğü gövdenin `Renderer`'ından kopyalıyor, böylece fog of war onları da saklıyor.
 - Yeni birim ölçekleri (Villager 1.2 … Warship 2.4), kamera başlangıç yüksekliği 24, zemin rengi zeytin yeşili: hepsi `RtsSetupTools.cs` başındaki tablolarda, istediğin gibi değiştir.
 - `Play from Menu scene` varsayılan açık (EditorPrefs); bir sahneyi tek başına denemek istersen menüden kapat.
+- `ENEMY_SIGHTED` aynı düşman için ancak 10 s görüş dışında kaldıktan sonra tekrar yazılıyor (`FogOfWar.RearmSeconds`, veride yok).
+- Suyun ötesindeki hedefe saldırı emri kıyıda takılırsa emir bırakılıyor (birim durur, sonra kendiliğinden saldırabilir).
+- Birimler binanın yanında (çarpıştırıcı yarı boyu + 1.5 m, güneyde) doğuyor; başlangıç Villager'ları TC'nin önünde sıra halinde.
+- `run_eval.py --out` artık klasör de kabul ediyor.
 
 ## Emin olmadığım yerler
 - `EntityVisuals.cs` ve `PlayFromMenu.cs` gerçek Unity'de derlenmedi (sadece stub'larla). Özellikle TMP'nin `outlineWidth`/`outlineColor` ayarı ve 3D `TextMeshPro`'nun font boyutu (6–9) ekranda çok küçük/büyük çıkabilir; söylersen ayarlarım.
