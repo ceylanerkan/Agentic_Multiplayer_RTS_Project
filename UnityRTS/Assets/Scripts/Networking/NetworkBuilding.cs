@@ -23,6 +23,7 @@ public class NetworkBuilding : NetworkBehaviour
     [Networked] public float CurrentProgress { get; set; }               // 0..1
 
     readonly ProductionQueue queue = new ProductionQueue();
+    int trainedCount;   // host only: picks the spawn spot
     ConstructionState construction;
 
     public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
@@ -114,7 +115,8 @@ public class NetworkBuilding : NetworkBehaviour
         {
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
             float clear = FootprintHalf() + 1.5f;   // next to the building, not inside or on top of it
-            Vector3 spawn = transform.position + new Vector3(clear, 0, -clear);
+            // four spots in a row, so units trained one after another do not stand inside each other
+            Vector3 spawn = transform.position + new Vector3(clear, 0, -clear - (trainedCount++ % 4) * 1.6f);
             if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null)
             {
                 // Ships appear in the player's own harbor (a water zone), not on the shore next to the Dock.
