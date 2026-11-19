@@ -82,6 +82,9 @@ namespace RTS.Tests
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_ships", TargetZone = "Center" }, Fresh()).Ok);
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "OpenSea" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, Fresh()).Ok);
+            Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "idle_villagers", TargetZone = "EastForest" }, Fresh()).Ok);
+            foreach (var bad in new[] { null, "dragons", "villager" }) // unknown groups are rejected by the validator too, not only by the schema
+                Assert.AreEqual("unknown unit_group", validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = bad, TargetZone = "Center" }, Fresh()).Reason);
         }
     
         [Test] public void PlayerSlots_LowestIdIsP1()

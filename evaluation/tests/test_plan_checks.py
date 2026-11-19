@@ -61,3 +61,10 @@ def test_python_and_csharp_validators_give_the_same_reasons():
     assert len(reasons) >= 10
     missing = [r for r in reasons if f'"{r}"' not in cs]
     assert missing == [], f"reasons only in plan_checks.py: {missing}"
+
+
+def test_move_group_needs_a_known_group():
+    ok = {"action_type": "MOVE_GROUP", "unit_group": "spearman", "target_zone": "Center", "reason": "x"}
+    assert pc.validate_action(ok, state()) is None
+    for bad in (None, "dragons", "villager"):  # villagers move through "idle_villagers" only
+        assert pc.validate_action(dict(ok, unit_group=bad), state()) == "unknown unit_group"

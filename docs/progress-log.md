@@ -59,6 +59,8 @@
   the other side of the TC.
 - Pytest: every unit and building key in the knowledge JSON has a prefab row in `RtsSetupTools.cs` (else `GameSpawner` throws). 66 passed.
 - EditMode test: the plan schema's zone, unit, building and tech enums equal `ZoneLookup.AllZones` and the JSON keys; the same for the snapshot schema (+ the 8 event types). C#: 53/53.
+- Validator gap: MOVE_GROUP with a missing or unknown `unit_group` passed `GameActionValidator` (treated as land units); only the schema
+  stopped it. Now "unknown unit_group" in C# and in `plan_checks.py` (+ tests; mock eval numbers unchanged). C# 53/53, pytest 67 passed.
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError; new test, 65 pytest passed). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

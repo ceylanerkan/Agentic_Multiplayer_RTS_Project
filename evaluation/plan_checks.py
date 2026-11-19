@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 KNOW = Path(__file__).resolve().parents[1] / "ai" / "rag" / "knowledge"
+GROUPS = {"all_military", "all_ships", "idle_villagers"}  # plus every unit type except villager (schema)
 LAND = {"P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center"}
 WATER = {"P1Harbor", "P2Harbor", "OpenSea"}
 
@@ -79,6 +80,9 @@ def validate_action(a, state, reserved=None, slot=1, coastal_zones=("P1Base",)):
         zone = a.get("target_zone")
         if zone not in LAND and zone not in WATER:
             return "unknown target_zone"
+        group = a.get("unit_group")
+        if group not in GROUPS and (group not in DATA["units"] or group == "villager"):
+            return "unknown unit_group"
         ships = a.get("unit_group") in ("all_ships", "raider_boat", "warship")
         if ships and zone not in WATER:
             return "ships can only move to water zones"

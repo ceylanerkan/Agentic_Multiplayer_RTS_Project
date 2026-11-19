@@ -38,6 +38,8 @@ namespace RTS.Core.Rules
     {
         static readonly HashSet<string> LandZones = new HashSet<string> { "P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center" };
         static readonly HashSet<string> WaterZones = new HashSet<string> { "P1Harbor", "P2Harbor", "OpenSea" };
+        // the unit_group values of action_plan.schema.json; a unit type is also a group (all units of that type)
+        static readonly HashSet<string> Groups = new HashSet<string> { "all_military", "all_ships", "idle_villagers" };
         readonly GameData data;
 
         public GameActionValidator(GameData data) { this.data = data; }
@@ -91,6 +93,9 @@ namespace RTS.Core.Rules
         ValidationResult Move(PlanAction a, PlayerState s)
         {
             if (a.TargetZone == null || (!LandZones.Contains(a.TargetZone) && !WaterZones.Contains(a.TargetZone))) return ValidationResult.Fail("unknown target_zone");
+            // checked here too, not only by the schema: an unknown group would otherwise be treated as land units
+            if (a.UnitGroup == null || (!Groups.Contains(a.UnitGroup) && (!data.Units.ContainsKey(a.UnitGroup) || a.UnitGroup == "villager")))
+                return ValidationResult.Fail("unknown unit_group");
             bool ships = a.UnitGroup == "all_ships" || a.UnitGroup == "raider_boat" || a.UnitGroup == "warship";
             if (ships && !WaterZones.Contains(a.TargetZone)) return ValidationResult.Fail("ships can only move to water zones");
             if (!ships && WaterZones.Contains(a.TargetZone)) return ValidationResult.Fail("land units cannot enter water zones");
