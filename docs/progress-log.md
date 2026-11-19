@@ -62,6 +62,8 @@
 - Validator gap: MOVE_GROUP with a missing or unknown `unit_group` passed `GameActionValidator` (treated as land units); only the schema
   stopped it. Now "unknown unit_group" in C# and in `plan_checks.py` (+ tests; mock eval numbers unchanged). C# 53/53, pytest 67 passed.
 - `evaluation/security-tests.md`: new row S17 (question length, validator group check); report says S1-S17.
+- `AiApprovalFlow` TRAIN_UNIT: an approved count above one queue's free space (max 5) was sent to a single building and the host
+  silently dropped the rest while the panel said "sent"; now spread over all suitable buildings, and "Queued N of M (queues full)" is shown.
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError; new test, 65 pytest passed). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

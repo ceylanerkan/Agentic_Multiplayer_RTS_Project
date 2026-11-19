@@ -32,6 +32,7 @@ Yok.
 - Suyun ötesindeki hedefe saldırı emri kıyıda takılırsa emir bırakılıyor (birim durur, sonra kendiliğinden saldırabilir).
 - Birimler binanın yanında (çarpıştırıcı yarı boyu + 1.5 m, güneyde) doğuyor; başlangıç Villager'ları TC'nin önünde sıra halinde.
 - `run_eval.py --out` artık klasör de kabul ediyor.
+- AI planı "6 Spearman üret" derse birimler uygun tüm binaların kuyruklarına dağıtılıyor; sığmazsa durum satırında "Queued N of M" yazıyor (önce fazlası sessizce kayboluyordu).
 - `GameActionValidator`: bilinmeyen/eksik `unit_group` ile MOVE_GROUP artık reddediliyor (önce sadece şema durduruyordu); Python kopyası da aynı.
 
 ## Emin olmadığım yerler
