@@ -24,6 +24,12 @@ public class SelectionPanel : MonoBehaviour
     float nextRefresh;
     GameActionValidator validator;
 
+    void Start()
+    {
+        // "5 units: 2 Villager 1 Spearman 2 Archer" must fit the info box
+        if (info != null) { info.enableAutoSizing = true; info.fontSizeMin = 12; info.fontSizeMax = info.fontSize; }
+    }
+
     void Update()
     {
         var sel = SelectionManager.Instance; var relay = CommandRelay.Local;
