@@ -28,7 +28,13 @@ public class NetworkUnit : NetworkBehaviour
         Hp = GameDataProvider.Get().Units[typeKey].Hp;
     }
 
-    public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; }
+    /// <summary>Host only: the last move was stopped by the land/water rule (UnitCombat then drops an unreachable target).</summary>
+    public bool BlockedByShore { get; private set; }
+
+    public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; BlockedByShore = false; }
+
+    /// <summary>Host only: a new attack order; a shore block from an older move must not cancel it.</summary>
+    public void Attack(NetworkId target) { AttackTarget = target; BlockedByShore = false; }
     /// <summary>Host only. Death frees the population slot and removes the object.</summary>
     /// <returns>true when this hit killed the unit (do not read its networked values afterwards)</returns>
     public bool TakeDamage(float amount)
@@ -62,7 +68,7 @@ public class NetworkUnit : NetworkBehaviour
             if (ZoneMap.Instance != null)
             {
                 bool water = ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(next));
-                if (!DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], water)) { HasMoveTarget = false; return; }
+                if (!DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], water)) { HasMoveTarget = false; BlockedByShore = true; return; }
             }
             transform.position = next;
         }

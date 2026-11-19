@@ -74,7 +74,7 @@ public class CommandRelay : NetworkBehaviour
         PlayerRef owner = tu != null ? tu.Owner : (tb != null ? tb.Owner : PlayerRef.None);
         if (owner == PlayerRef.None || owner == Object.InputAuthority) return; // only enemy objects can be attacked
         var g = unit.GetComponent<VillagerGatherer>(); if (g != null) g.Cancel();
-        unit.AttackTarget = targetId;
+        unit.Attack(targetId);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
