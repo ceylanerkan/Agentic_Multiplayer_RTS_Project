@@ -67,6 +67,7 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 - [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (two code reviews and the 2026-11-18
       feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
 - [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
+      Graphics stay placeholders on purpose (team discs + labels give the readability); say so in the demo.
 
 ## Submission checklist (deadline 2026-11-30)
 - [ ] Repository: `git status` clean, no `.env`, no `PhotonAppSettings.asset`, no API keys (`git grep -i "AIza"` is empty).
