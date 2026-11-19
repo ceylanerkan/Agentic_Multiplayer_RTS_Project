@@ -25,6 +25,7 @@ public class UnitCommandInput : MonoBehaviour
         var sel = SelectionManager.Instance; var relay = CommandRelay.Local;
         if (mouse == null || cam == null || sel == null || relay == null) return;
         if (!mouse.rightButton.wasPressedThisFrame || sel.Units.Count == 0) return;
+        if (BuildPlacement.OwnsClick) return; // right-click while placing only cancels the placement
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
         if (!Physics.Raycast(cam.ScreenPointToRay(mouse.position.ReadValue()), out var hit, 500f)) return;
 

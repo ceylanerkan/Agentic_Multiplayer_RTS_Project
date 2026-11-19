@@ -124,11 +124,13 @@ engine-free `RTS.Core` keeps its asmdef.
 ## Night 16 – 2026-11-27: fix day
 - [ ] Fix everything open in `UNITY_FEEDBACK.md`, then review the code for bugs and missing tests.
       (partly done 2026-11-15: 2026-11-14 feedback handled, first review pass + compile check done; waiting for the first real Unity feedback on the new code)
+      (2026-11-19: 2026-11-18 feedback handled: warnings, TMP font NRE, Play from Menu, readable visuals; waiting for the next Unity test)
 - You: slides.
 
 ## Night 17 – 2026-11-28: final consistency pass
 - [ ] `docs/setup.md` works from a clean clone, the repository has no secrets, and the README status, the report
       numbers and `TODO.md` match the code.
+      (partly done 2026-11-19: no secrets tracked, README status checked, Python deps + pytest 60 passed; setup.md got the Play-from-Menu/rebuild notes; final pass after the last Unity feedback)
 
 ## Night 18 – 2026-11-29: last run
 - [ ] Only fixes from `UNITY_FEEDBACK.md`. `MORNING.md` ends with a submission checklist.

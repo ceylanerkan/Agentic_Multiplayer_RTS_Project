@@ -47,3 +47,24 @@ def test_domain_rules_mirror_csharp_tests():
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "archer", "target_zone": "OpenSea"}, s)
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "Center"}, s)
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "OpenSea"}, s) is None
+
+
+def test_python_and_csharp_validators_give_the_same_reasons():
+    # plan_checks.py is a copy of GameActionValidator.cs for the evaluation; every fixed rejection reason
+    # in the copy must exist in the C# original, so the two cannot drift apart unnoticed.
+    import re
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2]
+    py = (root / "evaluation/plan_checks.py").read_text(encoding="utf-8")
+    cs = (root / "UnityRTS/Assets/Scripts/Core/Rules/GameActionValidator.cs").read_text(encoding="utf-8")
+    reasons = re.findall(r'return "([^"]+)"', py)
+    assert len(reasons) >= 10
+    missing = [r for r in reasons if f'"{r}"' not in cs]
+    assert missing == [], f"reasons only in plan_checks.py: {missing}"
+
+
+def test_move_group_needs_a_known_group():
+    ok = {"action_type": "MOVE_GROUP", "unit_group": "spearman", "target_zone": "Center", "reason": "x"}
+    assert pc.validate_action(ok, state()) is None
+    for bad in (None, "dragons", "villager"):  # villagers move through "idle_villagers" only
+        assert pc.validate_action(dict(ok, unit_group=bad), state()) == "unknown unit_group"

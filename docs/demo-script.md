@@ -13,16 +13,17 @@ Controls: **WASD / arrows** move the camera, **mouse wheel** zooms, **left click
 
 ## 1. Multiplayer RTS
 - Say: "Two instances, one match. The host owns all state; the client sends commands."
-- Show both screens: each player has a Town Center and 3 Villagers (their own colour). Box-select the Villagers on A and
+- Show both screens (the HUD says P1 or P2): each player has a Town Center and 3 Villagers. Each screen shows its own objects with a blue disc and the opponent's
+  with a red one, and every label shows name and HP. Box-select the Villagers on A and
   right-click the ground: they move in a grid formation, and the same movement appears on B's screen.
 - Later in the match (scenario 2 army): select 3-4 Spearmen on A, right-click an enemy unit: the fight is visible on both
   screens, HP in the selection panel drops identically.
 
 ## 2. Resource and production
 - Select a Villager, right-click a tree in `EastForest`: it walks, gathers 10, walks back, the **Wood** counter in the HUD rises.
-- Select a Villager, click **Build house** in the selection panel, move the green ghost onto a build slot, click. The
-  Villager builds it (progress in the panel). Population capacity goes 5 -> 10 in the HUD.
-- Select the Town Center, click **Train villager**: the queue progress appears; the Villager spawns when it finishes.
+- Select a Villager, click **Build House** in the selection panel, move the green ghost onto a build slot, click. The
+  Villager builds it (progress in the panel and on the building's label). Population capacity goes 5 -> 10 in the HUD.
+- Select the Town Center, click **Train Villager**: the queue progress appears; the Villager spawns when it finishes.
 
 ## 3. Dynamic MCP tool calling
 - Open the AI panel. Ask the compound question: *"The enemy cavalry is at NorthGate. What should I do, and can I afford it?"*

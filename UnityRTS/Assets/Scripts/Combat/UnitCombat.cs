@@ -60,7 +60,11 @@ public class UnitCombat : NetworkBehaviour
 
         if (d.magnitude > reach)
         {
-            if (explicitTarget) unit.MoveTo(targetPos); // chase; auto targets are only hit when already in reach
+            if (!explicitTarget) return;
+            // Chasing stopped at the shore (archer vs. a ship out of range, or a target across water): give the order up,
+            // otherwise the unit stands frozen re-ordering the same blocked move and never auto-attacks again.
+            if (unit.BlockedByShore) { unit.AttackTarget = default; return; }
+            unit.MoveTo(targetPos); // chase; auto targets are only hit when already in reach
             return;
         }
         if (explicitTarget) unit.StopMoving();

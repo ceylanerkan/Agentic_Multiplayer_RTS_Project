@@ -19,7 +19,7 @@ public class ResourceNode : NetworkBehaviour
 
     public override void Spawned()
     {
-        All.Add(this);
+        All.Add(this); EntityVisuals.Attach(gameObject);
         if (HasStateAuthority) Amount = startAmount;
     }
 

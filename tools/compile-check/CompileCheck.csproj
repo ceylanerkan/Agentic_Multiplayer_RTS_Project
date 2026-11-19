@@ -19,6 +19,8 @@
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/SelectionPanel.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/BuildPlacement.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/HudUI.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/EntityVisuals.cs"/>
+<Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/Editor/PlayFromMenu.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/GameOverUI.cs"/>
 <Compile Include="$(MSBuildThisFileDirectory)../../UnityRTS/Assets/Scripts/UI/AiCommanderPanel.cs"/>
 </ItemGroup></Project>

@@ -41,3 +41,9 @@ def test_mock_run_metrics_csv_and_table(tmp_path):
     assert s["tool_accuracy"] == 1.0
     assert (tmp_path / "r.csv").read_text().splitlines()[0].startswith("id,category")
     assert "| Invalid-action rate | 50% |" in (tmp_path / "r_table.md").read_text()
+
+
+def test_out_may_be_a_folder(tmp_path):
+    # `--out results/` used to crash with IsADirectoryError; now the three files are written inside the folder
+    subprocess.run([sys.executable, str(E / "run_eval.py"), "--out", str(tmp_path)], check=True, capture_output=True)
+    assert {"results.json", "results.csv", "results_table.md"} <= {p.name for p in tmp_path.iterdir()}

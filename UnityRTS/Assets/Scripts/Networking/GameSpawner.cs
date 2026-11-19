@@ -58,9 +58,11 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
         state.InitHost(slot);
         players[player] = state;
 
-        SpawnBuilding(player, "town_center", baseCentre.position, true);
+        var tc = SpawnBuilding(player, "town_center", baseCentre.position, true);
+        // in front of the TC, clear of its collider (a fixed offset of 3 put the first Villager on the TC's corner, maybe its roof)
+        float clear = tc.FootprintHalf() + 1.5f;
         for (int i = 0; i < RTS.Core.Rules.GameConstants.StartVillagers; i++)
-            SpawnUnit(player, "villager", baseCentre.position + new Vector3(3 + i, 0, -3));
+            SpawnUnit(player, "villager", baseCentre.position + new Vector3(-i * 1.8f, 0, -clear)); // trained units appear at +x
         state.PopUsed = RTS.Core.Rules.GameConstants.StartVillagers;
         state.RecalculateCapacity();
     }
@@ -82,6 +84,13 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
         b.InitHost(owner, key, completed);
         if (completed && players.TryGetValue(owner, out var st)) st.RecalculateCapacity();
         return b;
+    }
+
+    /// <summary>Size of a building prefab (for the placement ghost); 3 m cube if the key is unknown.</summary>
+    public Vector3 BuildingSize(string key)
+    {
+        foreach (var e in buildingPrefabs) if (e.key == key && e.prefab != null) return e.prefab.transform.localScale;
+        return new Vector3(3f, 2f, 3f);
     }
 
     /// <summary>

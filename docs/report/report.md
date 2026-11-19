@@ -55,6 +55,12 @@ units attack only their own domain, ranged units shoot across the shoreline.
 (+1 range and line of sight for Archers), Horse Collar (+20% food gathering). The Town Center cannot train while it
 researches Age II.
 
+**Presentation.** The graphics are deliberately simple placeholders, because the course is about the networked and
+agentic parts: units are capsules, buildings flat boxes, resources cylinders (trees) and spheres (bushes, gold).
+Readability comes from information instead of art: every unit and building has a team disc (own blue, enemy red, from
+each player's own point of view) and a label with its name and HP or construction progress; resources show their
+remaining amount. The target resolution is 1920x1080 and the UI scales with the window.
+
 **Single source of numbers.** All values live in `ai/rag/knowledge/*.json`. Unity reads the same files at run time
 (`GameDataProvider`), the AI retrieves them as knowledge, and the evaluation reads them for its own rule checks, so
 the game and the AI cannot disagree about a cost or a statistic.
@@ -83,7 +89,7 @@ domains, visibility, production queue, win condition, approval checks) are plain
 MonoBehaviours and NetworkBehaviours are thin adapters that read the networked objects and call the core.
 
 **Python side.** `ai/gateway` (FastAPI, agent loop, logs), `ai/mcp-server` (seven tools), `ai/rag` (knowledge index
-and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 57 pytest cases.
+and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 67 pytest cases.
 
 **Data flow of one question.** (1) The player types a question. (2) `AiSnapshotBuilder` collects own units and
 buildings and the enemies returned by `VisibilityService.FilterFor`. (3) The gateway validates the snapshot against
@@ -204,7 +210,7 @@ and "validation failure" visible and reproducible.
 **Validator rules (examples).** Cost and reserved resources; population capacity; prerequisites (Barracks for Age II,
 Age II for Stable and Cavalry); no technology twice; buildings only in land zones and never in the enemy base; a Dock
 only on a free coastal slot of the own base; land groups cannot be sent to water zones and ships cannot be sent to
-land zones.
+land zones; every name (unit, building, technology, group, zone) must be one the game knows, independently of the schema.
 
 ## VIII. Security
 
@@ -221,13 +227,14 @@ integrity of the game state and (3) the player's consent.
    environment, no tool has a player or session parameter, and the agent rejects undeclared arguments.
 3. *Read-only tools.* No tool changes state; there are no filesystem, shell or HTTP tools.
 4. *Triple validation of plans.* JSON Schema in the gateway, `GameActionValidator` at approval time, host authority in
-   the RPC handler.
+   the RPC handler. The host also checks what a client cannot see: a technology already queued in another building is
+   refused (it would be paid twice), and a building can only go on a free build slot in the validated zone.
 5. *Bounded behaviour.* Maximum 6 agent steps, 30 s, clamped `top_k`, limited query and question length, 20 events.
 6. *Prompt injection.* Tool results and retrieved text are marked as data and the system prompt says so; suspicious
    questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,
    because no tool can return it.
 
-**Tests.** Security tests S1-S16 are listed in `evaluation/security-tests.md`: injection question, extra hidden field,
+**Tests.** Security tests S1-S17 are listed in `evaluation/security-tests.md`: injection question, extra hidden field,
 missing or wrong token, identity switch across two sessions, tool call with a player id, oversized `top_k` and query,
 a poisoned knowledge chunk, invalid plans (five kinds), a snapshot contract test between Unity's export and the
 schema, and re-validation after the state changed. **[TODO live]** Rows marked TODO in that file need the live Gemini
@@ -268,10 +275,11 @@ rejected by the validator, which is the intended behaviour and the observed limi
 literal player request even when it is illegal, so the validator is necessary.** **[TODO live]** Add the observed
 failures of the real model (for example a missing prerequisite or a wrong zone) and the 2-3 slowest prompts.
 
-*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S16; most are automated, the live Gemini column is open).
+*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S17; most are automated, the live Gemini column is open).
 
-**Unity side.** 47 EditMode tests cover damage, costs, validator, domains, visibility, event log, production queue,
-tech effects, snapshot assembly, approval and the decision log. They were compiled and run with the .NET SDK outside
+**Unity side.** 53 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
+event log, production queue, tech effects, snapshot assembly, approval, the decision log and the contract between the
+C# AI types and `action_plan.schema.json`. They were compiled and run with the .NET SDK outside
 Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance test results and the demo video.
 
 ## X. Challenges and Lessons Learned
@@ -281,6 +289,12 @@ Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance
   with 0 HP because `hp` is a top-level field in `buildings.json`). Lesson: keep game rules free of engine types.
 - **Unity message names.** A method `Start(GameMode, string)` was reported by Unity as an invalid message signature
   and had to be renamed. Lesson: never reuse Unity's magic method names.
+- **Generated scenes need the same care as code.** The scenes and placeholder prefabs are created by an editor script.
+  Its first version created TextMeshPro texts without a font asset, which threw in the UI layout pass and left every
+  label invisible, and pressing Play in the open Game scene skipped the network launcher. The fixes were to set the font
+  before the text and to force play mode to start in the Menu scene. A first play test also showed that identical
+  grey placeholders were hard to read, so each unit and building now has a team disc and a name/HP label.
+  Lesson: test the generated content in the editor as early as the code.
 - **One source of numbers.** Keeping all values in JSON files read by Unity, the RAG index and the evaluation removed a
   whole class of inconsistencies, but needs a loader at build time (`StreamingAssets` copy).
 - **Host authority vs. convenience.** Reserving population and paying cost when a unit is queued (not when it appears)
@@ -313,7 +327,7 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
-**C. Tests.** Python: `python -m pytest -q ai evaluation` (57 tests, no network, no API key). C#: Unity Test Runner,
-EditMode, assembly `RTS.Tests.EditMode` (47 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+**C. Tests.** Python: `python -m pytest -q ai evaluation` (67 tests, no network, no API key). C#: Unity Test Runner,
+EditMode, assembly `RTS.Tests.EditMode` (53 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

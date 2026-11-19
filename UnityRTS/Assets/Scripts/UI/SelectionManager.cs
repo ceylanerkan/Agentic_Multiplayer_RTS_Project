@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 /// own units inside, Shift adds to the selection. Selected objects get a flat ring as highlight.
 /// Purely local (no network): only commands are sent to the host.
 /// </summary>
+[DefaultExecutionOrder(-50)] // prune despawned units before SelectionPanel / UnitCommandInput read the list
 public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance { get; private set; }
@@ -37,12 +38,14 @@ public class SelectionManager : MonoBehaviour
 
     void Update()
     {
+        PruneDestroyed();
         var mouse = Mouse.current; var kb = Keyboard.current;
         if (mouse == null || cam == null || CommandRelay.Local == null) return;
         bool shift = kb != null && kb.shiftKey.isPressed;
         Vector2 pos = mouse.position.ReadValue();
 
-        if (mouse.leftButton.wasPressedThisFrame && !OverUi()) { dragStart = pos; dragging = true; }
+        // a left click that places a building belongs to BuildPlacement (it may run before or after this script)
+        if (mouse.leftButton.wasPressedThisFrame && !OverUi() && !BuildPlacement.OwnsClick) { dragStart = pos; dragging = true; }
 
         if (dragging && mouse.leftButton.wasReleasedThisFrame)
         {
@@ -54,6 +57,8 @@ public class SelectionManager : MonoBehaviour
         PruneDestroyed();
         UpdateRings();
     }
+
+    void OnDestroy() { if (ringMaterial != null) Destroy(ringMaterial); }
 
     bool OverUi() { return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(); }
 
@@ -86,8 +91,9 @@ public class SelectionManager : MonoBehaviour
 
     void PruneDestroyed()
     {
-        Units.RemoveAll(u => u == null);
-        if (Building == null) Building = null; // Unity null check: turns a destroyed reference into a real null
+        // Fusion despawns at once but Unity destroys at the end of the frame: also drop objects whose NetworkObject is no longer valid
+        Units.RemoveAll(u => u == null || u.Object == null || !u.Object.IsValid);
+        if (Building == null || Building.Object == null || !Building.Object.IsValid) Building = null;
     }
 
     // ---- highlight: one flat ring under each selected object ----
@@ -108,10 +114,16 @@ public class SelectionManager : MonoBehaviour
                 ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 Destroy(ring.GetComponent<Collider>()); // a ring must never block raycasts
                 ring.GetComponent<Renderer>().sharedMaterial = ringMaterial;
-                ring.transform.localScale = new Vector3(go.GetComponent<NetworkBuilding>() != null ? 6f : 1.6f, 0.02f, go.GetComponent<NetworkBuilding>() != null ? 6f : 1.6f);
+                // a little wider than the team disc of EntityVisuals (2.6 x radius), so a green border shows around it
+                var col = go.GetComponent<Collider>();
+                float radius = col != null ? Mathf.Max(col.bounds.extents.x, col.bounds.extents.z) : 1f;
+                ring.transform.localScale = new Vector3(radius * 3.4f, 0.02f, radius * 3.4f);
                 rings[go] = ring;
             }
-            ring.transform.position = go.transform.position + Vector3.up * 0.05f;
+            // at the feet, just below the team disc: the object's pivot is its centre, so a ring there was hidden inside the body
+            var c = go.GetComponent<Collider>();
+            float feet = c != null ? go.transform.position.y - c.bounds.extents.y : go.transform.position.y;
+            ring.transform.position = new Vector3(go.transform.position.x, feet + 0.02f, go.transform.position.z);
         }
     }
 

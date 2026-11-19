@@ -6,4 +6,6 @@ It does NOT check real Unity or Fusion APIs (the stubs are written from memory; 
 
     dotnet build tools/compile-check/CompileCheck.csproj
 
-(`GameLauncher.cs`, `MenuUI.cs`, editor scripts and `AiGatewayClient.cs` are not included; the stub declares a small `GameLauncher`.)
+(`GameLauncher.cs` and `AiGatewayClient.cs` are not included: the stub declares a small `GameLauncher`, and the gateway client needs
+`UnityWebRequest`. `MenuUI.cs`, `RtsSetupTools.cs` and `PlayFromMenu.cs` are included with stub editor APIs. Obsolete-API warnings
+(CS0618) are only visible in Unity: the stubs only declare the current APIs.)

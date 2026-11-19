@@ -1,5 +1,82 @@
 # Progress log (newest first)
 
+## 2026-11-19 (run 4, night 16 fix day)
+- UNITY_FEEDBACK.md headings handled: "2026-11-18" (3 obsolete-API warnings, TMP NullReferenceException, Test 4: Play starts in Game,
+  unreadable visuals and text, no target resolution).
+- Fixes: `ZoneMap` uses `FindObjectsByType<T>()`, `RtsSetupTools` uses `FindAnyObjectByType`. Cause of the NRE: every generated TMP text
+  had `m_fontAsset: {fileID: 0}` (checked in Game.unity); `RtsSetupTools.Label` now assigns LiberationSans SDF before the text.
+  New `Editor/PlayFromMenu.cs` (`EditorSceneManager.playModeStartScene` = Menu, toggle `Tools > RTS > Play from Menu scene`).
+  New command `Tools > RTS > Rebuild generated scenes and prefabs` (confirm dialog). New `UI/EntityVisuals.cs`, attached at run time by
+  `NetworkUnit`/`NetworkBuilding`/`ResourceNode.Spawned`: team disc (blue mine / red enemy) + billboard label with name and HP / build % /
+  amount, hidden together with the body by fog of war. Bigger units, distinct resource shapes, opaque UI panels, bigger fonts,
+  `CanvasScaler.matchWidthOrHeight = 0.5`. Target resolution: 1920x1080 (16:9), 1280x720 for two windows.
+- Review chunk: the selection ring was placed at the object's pivot (its centre, lifted by `StandOnGround`), i.e. hidden inside the
+  capsule; now at the feet and sized from the collider, just below the team disc. A building-placement click also deselected the
+  Villagers, and a right-click that cancels placement also moved the units: `BuildPlacement.OwnsClick` now guards
+  `SelectionManager` and `UnitCommandInput`. Gather loop and numbers re-checked against `rules.md` (no change needed).
+- Readability: `SelectionPanel` buttons get an explicit font, 18 px text, display names ("Raider Boat" instead of `raider_boat`) in
+  buttons and the info text; HUD shows "waiting for P2" while the host is alone (HUD labels and panel buttons auto-size so long texts fit). C# rule tests (throwaway net8.0 + NUnit): 47/47 pass; later 48/48 with the new `DisplayNames` test (core helper used by labels and buttons).
+- `RtsCamera`: WASD no longer pans while a TMP input field is focused (typing a question moved the camera); mouse wheel accepts both
+  120-per-notch and normalised (~1) scroll values (with /120 only, a normalised value is below the 0.01 threshold and zoom is dead).
+  `AiCommanderPanel`: answer and status texts auto-size (min 12) instead of overflowing the panel.
+- Resource nodes are lifted by half their mesh height (fixed y = 0.5 buried most of a tree); placement ghost has the real building's size
+  (`GameSpawner.BuildingSize`). `docs/setup.md`: Play from Menu, resolution, rebuild command.
+- Independent review (read-only subagent), 8 findings; fixed after checking each against the code:
+  (1) unfinished buildings were left out of `VisibilityAdapter.Collect`, so fog of war hid the player's own building sites (and
+  enemy sites were never visible): now listed with Los 0 (+ EditMode test, 49/49); (2) `VillagerGatherer.Busy` was host-only, so
+  P2's AI snapshot showed gathering Villagers as idle: `[Networked] BusyNet`; (3) builders read a despawned site in the same frame:
+  `SiteAlive()` checks `Object.IsValid`; (4) the same technology could be queued and paid in two buildings: host checks every own
+  queue; (6) ENEMY_SIGHTED re-armed instantly at the edge of sight and flooded the event log: re-armed after 10 s out of sight;
+  (7) start Villagers / trained units spawned on the Town Center's corner (maybe its roof): offset by the collider half size + 1.5.
+  Also: Menu session field had the AI panel's placeholder; report "Lessons learned" gained the editor play-test lesson.
+  (5) a unit ordered to attack across water (or an archer vs. a ship out of range) froze re-ordering the blocked chase and stopped
+  auto-attacking: `NetworkUnit.BlockedByShore` (host only, reset by `MoveTo` / new `Attack`) makes `UnitCombat` drop the order;
+  (8) `TechBonus.TechsOf` caches one set per tech mask instead of a new HashSet per unit per tick. Not changed: FogOfWar's
+  `GetComponentsInChildren` every 0.25 s (small) and the no-BuildSlot fallback in `CommandRelay` (the generated scene always has slots).
+- Night 17 (partial): `git grep` finds no API keys; `.env` and `PhotonAppSettings.asset` are not tracked and never were; README status
+  matches. Python from a fresh `pip install` (without the optional sentence-transformers, whose download hung here): `pytest ai evaluation` 60 passed.
+- New pytest: a question over 500 characters gets 422 and a security-log line before the LLM is called (the limit itself is allowed). 61 passed.
+- New `ai/mcp-server/tests/test_retriever.py`: every JSON record and every `## [id]` section of rules.md becomes exactly one chunk with a
+  unique source id; BM25-only search is ranked, clamped to top_k 5 and returns nothing for nonsense. 63 passed.
+- New EditMode test: every property of `ai/schemas/action_plan.schema.json` (plan and action) has a `[JsonProperty]` in `AiPlan` /
+  `PlanActionDto`, and a gateway-shaped `/ask` reply parses into a TRAIN_UNIT action. C#: 50/50.
+- `CommandRelay.RPC_Build` without any BuildSlot in the scene now checks that the client's position lies in the validated zone
+  (before it used the position as is; low risk, the generated scene always has slots).
+- Parity pytest: every rejection reason in `evaluation/plan_checks.py` must exist in `GameActionValidator.cs` (catches drift). 64 passed.
+- EditMode test for the generated map layout: all 12 base slots and 4 coastal slots lie in the own base zone (Dock rule), harbours are
+  water, the coast is at z = 45, resource clusters lie in their named zones. C#: 51/51.
+- Second independent review (UI, editor, camera scripts): no compile/obsolete-API issues found. Fixed: selection kept just-despawned units
+  (reads of `Hp`/`TypeKey` throw) -> prune on `Object.IsValid` with `[DefaultExecutionOrder(-50)]`; exceptions in the AI panel's
+  `_ = Ask()` were lost and left it busy forever -> try/catch + `Debug.LogException`; leaked materials (ghost per placement, ring,
+  label outline copies); `TMP_Settings.defaultFontAsset` throws without TMP Essential Resources -> check `Resources.Load("TMP Settings")`;
+  Rebuild refuses in Play mode and resets `playModeStartScene` after deleting Menu; menu validate no longer re-applies the start scene.
+  Command 1 over existing prefabs now asks before overwriting (references in existing scenes may break; Rebuild is the safe path).
+- `AiGatewayClient`: on HTTP 401 (gateway restarted and forgot the session) it opens a new session and retries once; before, every
+  request failed until the game was restarted. Compiled in a throwaway project with a `UnityWebRequest` stub: 0 errors.
+- New menu `Tools > RTS > Set build window (1280x720, windowed)` (PlayerSettings: windowed, resizable, run in background) for two
+  build instances side by side; the student runs it (ProjectSettings stay theirs).
+- Trained units appear on one of four spots in a row next to the building (they used to stack on one point); start Villagers stand on
+  the other side of the TC.
+- Pytest: every unit and building key in the knowledge JSON has a prefab row in `RtsSetupTools.cs` (else `GameSpawner` throws). 66 passed.
+- EditMode test: the plan schema's zone, unit, building and tech enums equal `ZoneLookup.AllZones` and the JSON keys; the same for the snapshot schema (+ the 8 event types). C#: 53/53.
+- Validator gap: MOVE_GROUP with a missing or unknown `unit_group` passed `GameActionValidator` (treated as land units); only the schema
+  stopped it. Now "unknown unit_group" in C# and in `plan_checks.py` (+ tests; mock eval numbers unchanged). C# 53/53, pytest 67 passed.
+- `evaluation/security-tests.md`: new row S17 (question length, validator group check); report says S1-S17.
+- `AiApprovalFlow` TRAIN_UNIT: an approved count above one queue's free space (max 5) was sent to a single building and the host
+  silently dropped the rest while the panel said "sent"; now spread over all suitable buildings, and "Queued N of M (queues full)" is shown.
+- `SelectionPanel`: Train/Research buttons are also disabled (with the reason) when the building's queue is full or it researches Age II
+  (from the networked `QueueCount`/`CurrentKey`); before, the button stayed enabled and the host silently refused.
+- Research buttons are also disabled while another own building is researching the same technology.
+- Gather, build and help-build orders now clear a Villager's attack order (only a move did; the old target kept being chased).
+- HUD shows the player slot ("P1 | Age I") so the two windows are easy to tell apart in the demo.
+- `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
+  (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError; new test, 65 pytest passed). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
+- Final tests of the run: `tools/compile-check` (stubs extended for the new APIs) 0 errors, 0 warnings; C# rule tests (throwaway net8.0 +
+  NUnit) 53/53; `pytest ai evaluation` 67 passed.
+- Open questions: none.
+- Risks: all of today's Unity scripts (EntityVisuals, PlayFromMenu, the new menu commands, UI fixes, AiGatewayClient retry) are uncompiled
+  in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs; TMP world-label size may need tuning.
+
 ## 2026-11-15 (run 3, night 3)
 - UNITY_FEEDBACK.md headings handled: "2026-11-14" (the `Start()` rename was already fixed on main; no other
   Unity-message method names with parameters in the scripts; compile and RulesTests 13/13 confirmed by the student).

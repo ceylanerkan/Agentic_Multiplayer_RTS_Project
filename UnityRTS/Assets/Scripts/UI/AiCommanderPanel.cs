@@ -27,6 +27,9 @@ public class AiCommanderPanel : MonoBehaviour
     void Start()
     {
         client = new AiGatewayClient(gatewayUrl);
+        // long LLM answers shrink to fit the box instead of running out of the panel
+        foreach (var t in new[] { answerText, statusText })
+            if (t != null) { t.enableAutoSizing = true; t.fontSizeMin = 12; t.fontSizeMax = t.fontSize; }
         askButton.onClick.AddListener(() => _ = Ask());
         whyButton.onClick.AddListener(() => _ = Why());
         approveButton.onClick.AddListener(Approve);
@@ -41,18 +44,34 @@ public class AiCommanderPanel : MonoBehaviour
         var snap = AiSnapshotBuilder.Build();
         if (snap == null) { statusText.text = "Match not started yet."; return; }
         SetBusy(true, "AI is thinking...");
-        var (answer, error) = await client.Ask(snap, q);
-        SetBusy(false, error ?? "");
-        if (answer != null) ShowAnswer(answer);
+        try
+        {
+            var (answer, error) = await client.Ask(snap, q);
+            SetBusy(false, error ?? "");
+            if (answer != null) ShowAnswer(answer);
+        }
+        catch (Exception e)   // "_ = Ask()" would swallow it and leave the panel busy for the rest of the match
+        {
+            Debug.LogException(e);
+            SetBusy(false, "Error: " + e.GetType().Name + " (see Console)");
+        }
     }
 
     async Task Why()
     {
         if (busy || current == null) return;
         SetBusy(true, "Asking why...");
-        var (answer, error) = await client.AskWhy();
-        SetBusy(false, error ?? "");
-        if (answer != null) statusText.text = "Why: " + answer.Plan.Summary; // read-only explanation, no actions to approve
+        try
+        {
+            var (answer, error) = await client.AskWhy();
+            SetBusy(false, error ?? "");
+            if (answer != null) statusText.text = "Why: " + answer.Plan.Summary; // read-only explanation, no actions to approve
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            SetBusy(false, "Error: " + e.GetType().Name + " (see Console)");
+        }
     }
 
     void SetBusy(bool b, string message)

@@ -40,17 +40,23 @@ public class RtsCamera : MonoBehaviour
         if (kb == null) return;
 
         Vector3 move = Vector3.zero;
+        if (!TypingInTextField())   // WASD in the AI question field must not move the camera
+        {
         if (kb.wKey.isPressed || kb.upArrowKey.isPressed) move.z += 1;
         if (kb.sKey.isPressed || kb.downArrowKey.isPressed) move.z -= 1;
         if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) move.x += 1;
         if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) move.x -= 1;
+        }
         // Pan faster when zoomed out, like most RTS games.
         float scale = Mathf.Max(0.5f, transform.position.y / 20f);
         Vector3 pos = transform.position + move.normalized * panSpeed * scale * Time.unscaledDeltaTime;
 
         if (mouse != null)
         {
-            float wheel = mouse.scroll.ReadValue().y / 120f; // 120 = one notch
+            // One notch is 120 on older Input System / Windows setups and about 1 when the Input System normalises scrolling;
+            // accept both, otherwise zoom silently does nothing on one of them.
+            float raw = mouse.scroll.ReadValue().y;
+            float wheel = Mathf.Abs(raw) > 10f ? raw / 120f : raw;
             if (Mathf.Abs(wheel) > 0.01f)
             {
                 Vector3 zoomed = pos + transform.forward * wheel * zoomSpeed;
@@ -60,5 +66,13 @@ public class RtsCamera : MonoBehaviour
         pos.x = Mathf.Clamp(pos.x, mapMin.x, mapMax.x);
         pos.z = Mathf.Clamp(pos.z, mapMin.y, mapMax.y);
         transform.position = pos;
+    }
+
+    static bool TypingInTextField()
+    {
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es == null || es.currentSelectedGameObject == null) return false;
+        var field = es.currentSelectedGameObject.GetComponent<TMPro.TMP_InputField>();
+        return field != null && field.isFocused;
     }
 }

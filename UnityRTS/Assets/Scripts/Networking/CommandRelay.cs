@@ -74,7 +74,7 @@ public class CommandRelay : NetworkBehaviour
         PlayerRef owner = tu != null ? tu.Owner : (tb != null ? tb.Owner : PlayerRef.None);
         if (owner == PlayerRef.None || owner == Object.InputAuthority) return; // only enemy objects can be attacked
         var g = unit.GetComponent<VillagerGatherer>(); if (g != null) g.Cancel();
-        unit.AttackTarget = targetId;
+        unit.Attack(targetId);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -83,6 +83,7 @@ public class CommandRelay : NetworkBehaviour
         var unit = FindOwned<NetworkUnit>(unitId);
         var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null; // only Villagers have a gatherer
         if (g == null || !Runner.TryFindObject(nodeId, out var nodeObj)) return;
+        unit.AttackTarget = default; // gathering replaces an attack order (UnitCombat would keep chasing the old target)
         g.StartGather(nodeObj.GetComponent<ResourceNode>());
     }
 
@@ -92,7 +93,7 @@ public class CommandRelay : NetworkBehaviour
         var a = new PlanAction { ActionType = "BUILD", BuildingType = buildingKey.ToString(), TargetZone = zone.ToString() };
         if (!validator.Validate(a, state.ToCore()).Ok) return;
         // The action only names a zone, so the host picks the place: the free BuildSlot nearest to the requested
-        // position (the ghost the player clicked). Without any slots in the scene the position is used as is.
+        // position (the ghost the player clicked). Without any slots in the scene the position is checked against the zone.
         if (BuildSlot.All.Count > 0)
         {
             var slot = BuildSlot.FindNear(a.TargetZone, a.BuildingType == "dock", pos);
@@ -100,11 +101,14 @@ public class CommandRelay : NetworkBehaviour
             slot.occupied = true;
             pos = slot.transform.position;
         }
+        // No slots (a hand-made test scene): the client's position must at least lie in the validated zone,
+        // so a client cannot put a building in water or in the enemy base.
+        else if (ZoneMap.Instance != null && ZoneMap.Instance.ZoneAt(pos) != a.TargetZone) return;
         state.Spend(GameDataProvider.Get().Buildings[a.BuildingType].Cost, 1);
         var b = GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villagers finish it
         var builder = FindOwned<NetworkUnit>(builderId);
         var g = builder != null ? builder.GetComponent<VillagerGatherer>() : null;
-        if (g != null) g.StartBuild(b);
+        if (g != null) { builder.AttackTarget = default; g.StartBuild(b); }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -113,7 +117,7 @@ public class CommandRelay : NetworkBehaviour
         var unit = FindOwned<NetworkUnit>(unitId);
         var b = FindOwned<NetworkBuilding>(buildingId);
         var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null;
-        if (g != null && b != null && !b.Completed) g.StartBuild(b);
+        if (g != null && b != null && !b.Completed) { unit.AttackTarget = default; g.StartBuild(b); }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -137,6 +141,10 @@ public class CommandRelay : NetworkBehaviour
         var a = new PlanAction { ActionType = "RESEARCH", TechType = techKey.ToString() };
         if (!GameDataProvider.Get().Buildings[b.TypeKey.ToString()].Researches.Contains(a.TechType)) return;
         if (state.HasTech(a.TechType)) return; // already researched
+        // the queue only rejects duplicates inside one building: with two Blacksmiths (or an AI plan approved twice)
+        // the same technology would be queued and paid twice
+        foreach (var other in NetworkBuilding.All)
+            if (other.Owner == Object.InputAuthority && other.IsResearching(a.TechType)) return;
         if (!validator.Validate(a, state.ToCore()).Ok) return;
         if (!b.Enqueue(a.TechType, true)) return;
         state.Spend(GameDataProvider.Get().Techs[a.TechType].Cost, 1);

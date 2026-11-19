@@ -16,7 +16,7 @@ public class ZoneMap : MonoBehaviour
     {
         Instance = this;
         lookup = new ZoneLookup();
-        foreach (var v in FindObjectsByType<ZoneVolume>(FindObjectsSortMode.None))
+        foreach (var v in FindObjectsByType<ZoneVolume>())
         {
             Vector3 p = v.transform.position;
             lookup.Add(v.ZoneName, p.x, p.z);

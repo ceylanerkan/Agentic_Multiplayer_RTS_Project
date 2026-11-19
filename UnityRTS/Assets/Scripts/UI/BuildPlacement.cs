@@ -19,9 +19,16 @@ public class BuildPlacement : MonoBehaviour
     string buildingKey;
     GameObject ghost;
     Renderer ghostRenderer;
+    Material ghostMaterial;
     BuildSlot target;
 
     public bool Active { get { return buildingKey != null; } }
+    /// <summary>Frame in which placement used a mouse click (place or right-click cancel), so SelectionManager and
+    /// UnitCommandInput do not also treat that click as "deselect" or "move".</summary>
+    public int UsedClickFrame { get; private set; } = -1;
+
+    /// <summary>True while placing, and in the frame a click ended placement.</summary>
+    public static bool OwnsClick { get { return Instance != null && (Instance.Active || Instance.UsedClickFrame == Time.frameCount); } }
 
     void Awake() { Instance = this; if (cam == null) cam = Camera.main; }
 
@@ -32,11 +39,16 @@ public class BuildPlacement : MonoBehaviour
         buildingKey = key;
         ghost = GameObject.CreatePrimitive(PrimitiveType.Cube);
         Destroy(ghost.GetComponent<Collider>());
-        ghost.transform.localScale = new Vector3(3f, 2f, 3f);
+        // same footprint as the real building, so the player sees what will fit
+        ghost.transform.localScale = GameSpawner.Instance != null ? GameSpawner.Instance.BuildingSize(key) : new Vector3(3f, 2f, 3f);
         ghostRenderer = ghost.GetComponent<Renderer>();
-        Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
-        if (sh == null) sh = Shader.Find("Sprites/Default");
-        ghostRenderer.material = new Material(sh);
+        if (ghostMaterial == null)   // one material for all placements (a new one each time leaked)
+        {
+            Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
+            if (sh == null) sh = Shader.Find("Sprites/Default");
+            ghostMaterial = new Material(sh);
+        }
+        ghostRenderer.sharedMaterial = ghostMaterial;
     }
 
     public void Cancel()
@@ -51,7 +63,7 @@ public class BuildPlacement : MonoBehaviour
         var mouse = Mouse.current; var kb = Keyboard.current; var relay = CommandRelay.Local;
         if (mouse == null || cam == null || relay == null) return;
         if (kb != null && kb.escapeKey.wasPressedThisFrame) { Cancel(); return; }
-        if (mouse.rightButton.wasPressedThisFrame) { Cancel(); return; }
+        if (mouse.rightButton.wasPressedThisFrame) { UsedClickFrame = Time.frameCount; Cancel(); return; }
 
         var plane = new Plane(Vector3.up, Vector3.zero);
         var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
@@ -62,14 +74,15 @@ public class BuildPlacement : MonoBehaviour
         target = BuildSlot.FindNear(zone, buildingKey == "dock", point);
         bool near = target != null && (target.transform.position - point).magnitude <= snapRadius;
         bool ok = near && CanAfford(relay);
-        ghost.transform.position = (near ? target.transform.position : point) + Vector3.up;
-        ghostRenderer.material.color = ok ? new Color(0.2f, 1f, 0.3f, 0.5f) : new Color(1f, 0.2f, 0.2f, 0.5f);
+        ghost.transform.position = (near ? target.transform.position : point) + Vector3.up * (ghost.transform.localScale.y * 0.5f);
+        ghostMaterial.color = ok ? new Color(0.2f, 1f, 0.3f, 0.5f) : new Color(1f, 0.2f, 0.2f, 0.5f);
 
         if (ok && mouse.leftButton.wasPressedThisFrame && !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
         {
             NetworkUnit builder = FirstSelectedVillager();
             if (builder == null) return; // a Villager must be selected to build
             relay.SendBuild(buildingKey, target.transform.position, zone, builder.Object.Id);
+            UsedClickFrame = Time.frameCount;
             Cancel();
         }
     }
@@ -88,4 +101,6 @@ public class BuildPlacement : MonoBehaviour
         foreach (var u in sel.Units) if (u.GetComponent<VillagerGatherer>() != null) return u;
         return null;
     }
+
+    void OnDestroy() { Cancel(); if (ghostMaterial != null) Destroy(ghostMaterial); }
 }

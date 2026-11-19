@@ -82,6 +82,9 @@ namespace RTS.Tests
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_ships", TargetZone = "Center" }, Fresh()).Ok);
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "OpenSea" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, Fresh()).Ok);
+            Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "idle_villagers", TargetZone = "EastForest" }, Fresh()).Ok);
+            foreach (var bad in new[] { null, "dragons", "villager" }) // unknown groups are rejected by the validator too, not only by the schema
+                Assert.AreEqual("unknown unit_group", validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = bad, TargetZone = "Center" }, Fresh()).Reason);
         }
     
         [Test] public void PlayerSlots_LowestIdIsP1()
@@ -546,6 +549,125 @@ namespace RTS.Tests
             while (queue.Count > 0) { total += 1f; done = queue.Tick(1f) ?? done; }
             Assert.AreEqual(2 * data.Units["villager"].TimeSeconds, total, 1.01f);
             Assert.IsNotNull(done);
+        }
+
+        [Test]
+        public void DisplayNames_TurnKeysIntoScreenNames()
+        {
+            Assert.AreEqual("Raider Boat", DisplayNames.Of("raider_boat"));
+            Assert.AreEqual("Town Center", DisplayNames.Of("town_center"));
+            Assert.AreEqual("Villager", DisplayNames.Of("villager"));
+            Assert.AreEqual("", DisplayNames.Of(null));
+            // every unit, building and technology key gets a non-empty name without underscores
+            foreach (var d in data.Units.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
+            foreach (var d in data.Buildings.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
+            foreach (var d in data.Techs.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
+        }
+
+        [Test]
+        public void Visibility_UnfinishedBuilding_IsSeenByOwnerButSeesNothing()
+        {
+            // an own building site (Los 0, as VisibilityAdapter lists unfinished buildings) next to a hidden enemy
+            var site = new MapObject { Id = 1, Owner = 1, Type = "house", IsBuilding = true, X = 0, Z = 0, Los = 0 };
+            var enemy = new MapObject { Id = 2, Owner = 2, Type = "spearman", X = 3, Z = 0, Los = 6 };
+            var all = new List<MapObject> { site, enemy };
+            var v1 = VisibilityService.FilterFor(1, all);
+            Assert.IsTrue(v1.Exists(o => o.Id == 1));    // the owner sees the site (it was hidden by fog of war before)
+            Assert.IsFalse(v1.Exists(o => o.Id == 2));   // the site reveals nothing
+            Assert.IsTrue(VisibilityService.FilterFor(2, all).Exists(o => o.Id == 1)); // the enemy can see the site
+        }
+
+        [Test]
+        public void AiDtos_MatchTheActionPlanSchema_AndParseAGatewayReply()
+        {
+            // Contract: every field the schema allows has a [JsonProperty] in the C# DTO, otherwise Unity silently drops it.
+            string schemaPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../ai/schemas/action_plan.schema.json"));
+            var schema = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(schemaPath));
+            CollectionAssert.IsSubsetOf(Names(schema["properties"]), JsonNames(typeof(AiPlan)));
+            CollectionAssert.IsSubsetOf(Names(schema["$defs"]["action"]["properties"]), JsonNames(typeof(PlanActionDto)));
+
+            // a reply shaped like the gateway's /ask response
+            const string reply = "{\"plan\": {\"summary\": \"Train spearmen.\", \"confidence\": 0.7, \"evidence\": [\"get_visible_enemies\", \"unit_spearman_v1\"]," +
+                "\"actions\": [{\"action_type\": \"TRAIN_UNIT\", \"unit_type\": \"spearman\", \"count\": 2, \"reason\": \"counter cavalry\"}]}," +
+                "\"tools_used\": [\"get_visible_enemies\", \"search_game_knowledge\"], \"needs_approval\": true}";
+            var a = AiAnswer.Parse(reply);
+            Assert.IsTrue(a.NeedsApproval);
+            Assert.AreEqual(0.7f, a.Plan.Confidence, 1e-4);
+            Assert.AreEqual(2, a.ToolsUsed.Count);
+            var act = a.Plan.Actions[0].ToPlanAction();
+            Assert.AreEqual("TRAIN_UNIT", act.ActionType);
+            Assert.AreEqual("spearman", act.UnitType);
+        }
+
+        static List<string> Names(Newtonsoft.Json.Linq.JToken props)
+        {
+            var list = new List<string>();
+            foreach (var p in ((Newtonsoft.Json.Linq.JObject)props).Properties()) list.Add(p.Name);
+            return list;
+        }
+
+        static List<string> JsonNames(System.Type t)
+        {
+            var list = new List<string>();
+            foreach (var f in t.GetFields())
+                foreach (var attr in f.GetCustomAttributes(typeof(Newtonsoft.Json.JsonPropertyAttribute), false))
+                    list.Add(((Newtonsoft.Json.JsonPropertyAttribute)attr).PropertyName);
+            return list;
+        }
+
+        [Test]
+        public void GeneratedMapLayout_PutsSlotsAndResourcesInTheRightZones()
+        {
+            // Same zone centres as Editor/RtsSetupTools.cs (SetupScene). If you move them there, update them here.
+            var z = new ZoneLookup();
+            z.Add("P1Base", -65, 25); z.Add("P2Base", 65, 25); z.Add("Center", 0, 0); z.Add("NorthGate", 0, 30);
+            z.Add("WestMine", -65, -30); z.Add("SouthField", 0, -35); z.Add("EastForest", 65, -30);
+            z.Add("P1Harbor", -65, 65); z.Add("OpenSea", 0, 60); z.Add("P2Harbor", 65, 65);
+            Assert.IsTrue(z.IsComplete());
+
+            foreach (int side in new[] { -1, 1 })
+            {
+                string own = side < 0 ? "P1Base" : "P2Base";
+                float bx = 65 * side, bz = 25;
+                for (int i = 0; i < 6; i++)   // normal slots
+                    Assert.AreEqual(own, z.ZoneAt(bx - 14 + (i % 3) * 14, bz + (i < 3 ? -12 : 0)), "slot " + i);
+                for (int i = 0; i < 2; i++)   // coastal slots must be in the own (land) base, or the Dock can never be built
+                    Assert.AreEqual(own, z.ZoneAt(bx - 8 + i * 16, bz + 15), "coastal slot " + i);
+                Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(bx, 65)));   // ships spawn at the harbour centre
+                Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(bx, 44)));  // the coast is at z = 45
+            }
+            // resource clusters (PlaceNodes: 3 x 3 grid, spacing 6 / 5 / 7)
+            Assert.AreEqual("EastForest", z.ZoneAt(65 + 6, -30 + 6));
+            Assert.AreEqual("SouthField", z.ZoneAt(0 - 5, -35 + 5));
+            Assert.AreEqual("WestMine", z.ZoneAt(-65 - 7, -30 + 7));
+        }
+
+        [Test]
+        public void PlanSchemaEnums_MatchZonesAndGameData()
+        {
+            // The AI may only name what the game knows: schema enums == C# zones and the keys of the JSON data.
+            string schemaPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../ai/schemas/action_plan.schema.json"));
+            var defs = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(schemaPath))["$defs"];
+            CollectionAssert.AreEquivalent(ZoneLookup.AllZones, defs["zone"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Units.Keys, defs["unit_type"]["enum"].ToObject<List<string>>());
+            var buildable = new List<string>();
+            foreach (var b in data.Buildings.Values) if (b.Buildable) buildable.Add(b.Key);
+            CollectionAssert.AreEquivalent(buildable, defs["building_type"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Techs.Keys, defs["tech_type"]["enum"].ToObject<List<string>>());
+        }
+
+        [Test]
+        public void SnapshotSchemaEnums_MatchGameDataAndEventTypes()
+        {
+            // Unity must never export a value the gateway's schema rejects (it would answer HTTP 422 for the whole question).
+            string schemaPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../ai/schemas/safe_snapshot.schema.json"));
+            var schema = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(schemaPath));
+            var p = schema["properties"];
+            CollectionAssert.AreEquivalent(ZoneLookup.AllZones, schema["$defs"]["zone"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Units.Keys, p["own_army"]["items"]["properties"]["type"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Buildings.Keys, p["own_buildings"]["items"]["properties"]["type"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Techs.Keys, p["researched_tech"]["items"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(PlayerEventLog.TypeList, p["recent_events"]["items"]["properties"]["type"]["enum"].ToObject<List<string>>());
         }
     }
 }

@@ -26,7 +26,7 @@ public static class AiApprovalFlow
 
         var results = ApprovalEvaluator.Evaluate(actions, relay.GetComponent<NetworkPlayerState>().ToCore(), validator);
         var entry = new DecisionEntry { PlanId = Log.NextPlanId(), Decision = "approved", GameTime = Time.time };
-        int done = 0, skipped = 0; string firstReason = null;
+        int done = 0, skipped = 0; string firstReason = null; note = null;
         for (int i = 0; i < actions.Count; i++)
         {
             entry.Actions.Add(ActionCosts.Describe(actions[i], data));
@@ -35,8 +35,9 @@ public static class AiApprovalFlow
             else { skipped++; if (firstReason == null) firstReason = results[i].Ok ? "no suitable building or unit" : results[i].Reason; }
         }
         Save(entry);
-        return skipped == 0 ? "Approved " + entry.PlanId + ": " + done + " action(s) sent."
-                            : "Approved " + entry.PlanId + ": " + done + " sent, " + skipped + " skipped (" + firstReason + ").";
+        string result = skipped == 0 ? "Approved " + entry.PlanId + ": " + done + " action(s) sent."
+                                     : "Approved " + entry.PlanId + ": " + done + " sent, " + skipped + " skipped (" + firstReason + ").";
+        return note == null ? result : result + " " + note;
     }
 
     public static string Reject(AiAnswer answer)
@@ -56,6 +57,8 @@ public static class AiApprovalFlow
         catch (System.Exception ex) { Debug.LogWarning("Decision log not written: " + ex.Message); }
     }
 
+    static string note;   // extra remark for the status line (set by Execute)
+
     // ---- executing one validated action ----
     static bool Execute(PlanAction a, CommandRelay relay)
     {
@@ -65,9 +68,19 @@ public static class AiApprovalFlow
         {
             case "TRAIN_UNIT":
             {
-                var b = BestBuilding(me, x => data.Buildings[x.TypeKey.ToString()].Trains.Contains(a.UnitType));
-                if (b == null) return false;
-                for (int i = 0; i < a.Count; i++) relay.SendTrain(a.UnitType, b.Object.Id);
+                // A queue holds ProductionQueue.MaxLength items: spread the units over every suitable building, and say so
+                // when they do not all fit (the host would silently refuse the rest).
+                int left = a.Count, queued = 0;
+                foreach (var b in NetworkBuilding.All)
+                {
+                    if (left == 0) break;
+                    if (b.Owner != me || !b.Completed || !data.Buildings[b.TypeKey.ToString()].Trains.Contains(a.UnitType)) continue;
+                    int space = System.Math.Max(0, System.Math.Min(left, ProductionQueue.MaxLength - b.QueueCount));
+                    for (int i = 0; i < space; i++) relay.SendTrain(a.UnitType, b.Object.Id);
+                    left -= space; queued += space;
+                }
+                if (queued == 0) return false;
+                if (left > 0) note = "Queued " + queued + " of " + a.Count + " " + a.UnitType + " (queues full).";
                 return true;
             }
             case "RESEARCH":
