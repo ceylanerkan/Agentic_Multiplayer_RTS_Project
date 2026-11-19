@@ -26,10 +26,10 @@ public static class RtsSetupTools
 
     static readonly string[,] Units =   // key, prefab name, colour (r,g,b), scale
     {
-        { "villager", "Villager", "0.9,0.8,0.5", "0.8" }, { "spearman", "Spearman", "0.7,0.7,0.7", "1.0" },
-        { "archer", "Archer", "0.3,0.7,0.3", "0.9" }, { "cavalry", "Cavalry", "0.6,0.4,0.2", "1.3" },
-        { "scout", "Scout", "0.9,0.9,0.2", "0.8" }, { "catapult", "Catapult", "0.4,0.3,0.3", "1.5" },
-        { "raider_boat", "RaiderBoat", "0.2,0.5,0.9", "1.2" }, { "warship", "Warship", "0.1,0.3,0.7", "1.8" },
+        { "villager", "Villager", "0.95,0.85,0.55", "1.2" }, { "spearman", "Spearman", "0.75,0.75,0.8", "1.4" },
+        { "archer", "Archer", "0.35,0.8,0.35", "1.3" }, { "cavalry", "Cavalry", "0.65,0.4,0.2", "1.8" },
+        { "scout", "Scout", "1,0.6,0.1", "1.2" }, { "catapult", "Catapult", "0.45,0.3,0.25", "2.0" },
+        { "raider_boat", "RaiderBoat", "0.3,0.85,0.95", "1.8" }, { "warship", "Warship", "0.15,0.25,0.5", "2.4" },
     };
     static readonly string[,] Buildings =
     {
@@ -51,7 +51,7 @@ public static class RtsSetupTools
         new GameObject("Launcher", typeof(GameLauncher));
         var canvasGo = new GameObject("MenuCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(MenuUI));
         canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-        var sc = canvasGo.GetComponent<CanvasScaler>(); sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; sc.referenceResolution = new Vector2(1920, 1080);
+        var sc = canvasGo.GetComponent<CanvasScaler>(); sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; sc.referenceResolution = new Vector2(1920, 1080); sc.matchWidthOrHeight = 0.5f;
         new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         var title = Label(canvasGo.transform, "Title", "Agentic RTS", 72, TextAlignmentOptions.Center); Place((RectTransform)title.transform, new Vector2(0, 250), new Vector2(900, 120));
         var nameField = InputField(canvasGo.transform, new Vector2(0, 100), new Vector2(500, 60));
@@ -70,7 +70,26 @@ public static class RtsSetupTools
         EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
 
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(menuPath, true), new EditorBuildSettingsScene(gamePath, true) };
+        PlayFromMenu.Apply();   // Play now starts in Menu even though Game is the open scene
         Debug.Log("RTS: scenes Menu and Game created and added to the Build Settings (Menu first). Open Menu and press Play, or use ParrelSync.");
+    }
+
+    /// <summary>
+    /// Deletes the generated Menu and Game scenes and Assets/Prefabs, then runs command 0 again. Use it after the agent
+    /// changes this file (new look, fixed fonts); anything you changed by hand in those scenes or prefabs is lost.
+    /// </summary>
+    [MenuItem("Tools/RTS/Rebuild generated scenes and prefabs")]
+    static void Rebuild()
+    {
+        if (!EditorUtility.DisplayDialog("Rebuild RTS scenes and prefabs",
+                "Deletes Assets/Scenes/Menu.unity, Assets/Scenes/Game.unity and Assets/Prefabs, then creates them again. Changes you made by hand there are lost.",
+                "Rebuild", "Cancel")) return;
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);   // the open scene may be one we delete
+        foreach (var path in new[] { "Assets/Scenes/Menu.unity", "Assets/Scenes/Game.unity", PrefabDir })
+            if (File.Exists(path) || AssetDatabase.IsValidFolder(path)) AssetDatabase.DeleteAsset(path);
+        AssetDatabase.Refresh();
+        CreateScenes();
     }
 
     [MenuItem("Tools/RTS/1 Create placeholder prefabs")]
@@ -99,9 +118,10 @@ public static class RtsSetupTools
             go.AddComponent<NetworkObject>(); go.AddComponent<NetworkTransform>(); go.AddComponent<NetworkBuilding>();
             Save(go, Buildings[i, 1]);
         }
-        MakeNode("Tree", "wood", PrimitiveType.Cylinder, "0.1,0.5,0.1", new Vector3(1f, 2f, 1f));
-        MakeNode("BerryBush", "food", PrimitiveType.Sphere, "0.7,0.1,0.3", new Vector3(1.4f, 1f, 1.4f));
-        MakeNode("GoldMine", "gold", PrimitiveType.Cube, "1,0.85,0.1", new Vector3(2f, 1.5f, 2f));
+        // resources: tall dark-green trees, small pink bushes, wide yellow domes; shapes differ from capsule units and box buildings
+        MakeNode("Tree", "wood", PrimitiveType.Cylinder, "0.05,0.35,0.08", new Vector3(1.2f, 3f, 1.2f));
+        MakeNode("BerryBush", "food", PrimitiveType.Sphere, "0.9,0.2,0.55", new Vector3(1.6f, 1.2f, 1.6f));
+        MakeNode("GoldMine", "gold", PrimitiveType.Sphere, "1,0.8,0.05", new Vector3(3f, 1.8f, 3f));
         AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
         Debug.Log("RTS: placeholder prefabs created in " + PrefabDir + ". Check Fusion's Network Prefab Table if a prefab is missing there.");
     }
@@ -115,7 +135,7 @@ public static class RtsSetupTools
         // ground and sea (visual only; zones are the logical map)
         var ground = GameObject.CreatePrimitive(PrimitiveType.Cube); ground.name = "Ground";
         ground.transform.SetParent(root.transform); ground.transform.position = new Vector3(0, -0.5f, -12.5f); ground.transform.localScale = new Vector3(200, 1, 115);
-        ground.GetComponent<Renderer>().sharedMaterial = Mat("GroundMat", "0.35,0.55,0.3");
+        ground.GetComponent<Renderer>().sharedMaterial = Mat("GroundMat", "0.42,0.5,0.32"); // dull olive: units and green trees stand out
         var sea = GameObject.CreatePrimitive(PrimitiveType.Cube); sea.name = "Sea";
         sea.transform.SetParent(root.transform); sea.transform.position = new Vector3(0, -0.6f, 62.5f); sea.transform.localScale = new Vector3(200, 1, 35);
         sea.GetComponent<Renderer>().sharedMaterial = Mat("SeaMat", "0.1,0.3,0.7");
@@ -185,7 +205,7 @@ public static class RtsSetupTools
         if (cam != null)
         {
             if (cam.GetComponent<RtsCamera>() == null) cam.gameObject.AddComponent<RtsCamera>();
-            cam.transform.position = new Vector3(-65, 28, 5); cam.transform.rotation = Quaternion.Euler(55, 0, 0);
+            cam.transform.position = new Vector3(-65, 24, 8); cam.transform.rotation = Quaternion.Euler(55, 0, 0);
         }
         else Debug.LogWarning("RTS: no Main Camera (tag MainCamera) in the scene: add one and an RtsCamera component.");
 
@@ -199,21 +219,21 @@ public static class RtsSetupTools
         var canvasGo = new GameObject("GameCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         var canvas = canvasGo.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = canvasGo.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920, 1080);
-        if (Object.FindFirstObjectByType<EventSystem>() == null)
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1920, 1080); scaler.matchWidthOrHeight = 0.5f;
+        if (Object.FindAnyObjectByType<EventSystem>() == null)
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule)); // new Input System UI module
 
         // HUD: top bar with five texts
-        var bar = Panel(canvasGo.transform, "HudBar", new Color(0, 0, 0, 0.5f), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -22), new Vector2(0, 44));
+        var bar = Panel(canvasGo.transform, "HudBar", new Color(0.05f, 0.05f, 0.1f, 0.85f), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -28), new Vector2(0, 56));
         var h = bar.gameObject.AddComponent<HorizontalLayoutGroup>(); h.childControlWidth = true; h.childControlHeight = true; h.padding = new RectOffset(16, 16, 4, 4); h.spacing = 16;
         var hud = canvasGo.AddComponent<HudUI>(); var hso = new SerializedObject(hud);
         foreach (var f in new[] { "wood", "food", "gold", "population", "age" })
-            hso.FindProperty(f).objectReferenceValue = Label(bar, f, f, 26, TextAlignmentOptions.Center);
+            hso.FindProperty(f).objectReferenceValue = Label(bar, f, f, 32, TextAlignmentOptions.Center);
         hso.ApplyModifiedPropertiesWithoutUndo();
 
         // selection panel: info text + a grid for the generated buttons
-        var sel = Panel(canvasGo.transform, "SelectionPanel", new Color(0, 0, 0, 0.55f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(250, 160), new Vector2(500, 320));
-        var info = Label(sel, "Info", "", 22, TextAlignmentOptions.TopLeft);
+        var sel = Panel(canvasGo.transform, "SelectionPanel", new Color(0.05f, 0.05f, 0.1f, 0.85f), new Vector2(0, 0), new Vector2(0, 0), new Vector2(250, 160), new Vector2(500, 320));
+        var info = Label(sel, "Info", "", 24, TextAlignmentOptions.TopLeft);
         var infoRt = (RectTransform)info.transform; infoRt.anchorMin = new Vector2(0, 1); infoRt.anchorMax = new Vector2(1, 1); infoRt.pivot = new Vector2(0.5f, 1); infoRt.sizeDelta = new Vector2(-16, 80); infoRt.anchoredPosition = new Vector2(0, -8);
         var grid = new GameObject("Buttons", typeof(RectTransform), typeof(GridLayoutGroup)); grid.transform.SetParent(sel, false);
         var grt = (RectTransform)grid.transform; grt.anchorMin = Vector2.zero; grt.anchorMax = Vector2.one; grt.offsetMin = new Vector2(8, 8); grt.offsetMax = new Vector2(-8, -92);
@@ -222,7 +242,7 @@ public static class RtsSetupTools
         sso.FindProperty("info").objectReferenceValue = info; sso.FindProperty("buttonRoot").objectReferenceValue = grt; sso.ApplyModifiedPropertiesWithoutUndo();
 
         // AI commander panel (right side)
-        var ai = Panel(canvasGo.transform, "AiCommanderPanel", new Color(0, 0, 0, 0.6f), new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-260, 0), new Vector2(500, 640));
+        var ai = Panel(canvasGo.transform, "AiCommanderPanel", new Color(0.05f, 0.05f, 0.1f, 0.85f), new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-260, 0), new Vector2(500, 640));
         var title = Label(ai, "Title", "AI Commander", 28, TextAlignmentOptions.Center);
         Place((RectTransform)title.transform, new Vector2(0, 280), new Vector2(480, 40));
         var input = InputField(ai, new Vector2(0, 225), new Vector2(480, 44));
@@ -260,8 +280,19 @@ public static class RtsSetupTools
     static TMP_Text Label(Transform parent, string name, string text, float size, TextAlignmentOptions align)
     {
         var go = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI)); go.transform.SetParent(parent, false);
-        var t = go.GetComponent<TextMeshProUGUI>(); t.text = text; t.fontSize = size; t.alignment = align; t.color = Color.white;
+        var t = go.GetComponent<TextMeshProUGUI>();
+        t.font = DefaultFont();   // set the font BEFORE the text: a TMP text without font throws in the layout pass (UNITY_FEEDBACK 2026-11-18)
+        t.text = text; t.fontSize = size; t.alignment = align; t.color = Color.white;
         return t;
+    }
+
+    /// <summary>TMP's LiberationSans SDF from TMP Essential Resources; TMP_Settings is the fallback.</summary>
+    static TMP_FontAsset DefaultFont()
+    {
+        var f = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+        if (f == null) f = TMP_Settings.defaultFontAsset;
+        if (f == null) Debug.LogError("RTS: no TMP font found. Window > TextMeshPro > Import TMP Essential Resources, then run the command again.");
+        return f;
     }
 
     static void Place(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.anchoredPosition = pos; rt.sizeDelta = size; }
@@ -271,7 +302,7 @@ public static class RtsSetupTools
         var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button)); go.transform.SetParent(parent, false);
         go.GetComponent<Image>().color = new Color(0.85f, 0.85f, 0.85f);
         Place((RectTransform)go.transform, pos, size);
-        var t = Label(go.transform, "Text", label, 20, TextAlignmentOptions.Center); t.color = Color.black;
+        var t = Label(go.transform, "Text", label, 24, TextAlignmentOptions.Center); t.color = Color.black;
         var rt = (RectTransform)t.transform; rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
         return go.GetComponent<Button>();
     }

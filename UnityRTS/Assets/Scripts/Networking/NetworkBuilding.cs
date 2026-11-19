@@ -25,7 +25,7 @@ public class NetworkBuilding : NetworkBehaviour
     readonly ProductionQueue queue = new ProductionQueue();
     ConstructionState construction;
 
-    public override void Spawned() { All.Add(this); }
+    public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
     public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
 
     /// <summary>Host only, right after Runner.Spawn.</summary>

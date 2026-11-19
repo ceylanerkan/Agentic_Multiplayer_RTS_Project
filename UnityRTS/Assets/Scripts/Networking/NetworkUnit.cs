@@ -19,7 +19,7 @@ public class NetworkUnit : NetworkBehaviour
     [Networked] public NetworkId AttackTarget { get; set; } // default (0) = none; used by combat on night 6
 
 
-    public override void Spawned() { All.Add(this); }
+    public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
     public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
 
     public void InitHost(PlayerRef owner, string typeKey)

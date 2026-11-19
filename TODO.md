@@ -9,15 +9,16 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 ## Open decisions
 - [ ] Get written instructor approval for the one-person team (assignment asks for 2 students). Mention it in the report.
 
-## [You] 1. One command for scenes, prefabs, map and UI
-- [ ] Delete `Assets/TutorialInfo` and `Assets/Readme.asset` (URP sample content).
-- [ ] Menu `Tools > RTS > 0 Create Menu and Game scenes` (needs `Assets/Scenes/Menu.unity` and `Game.unity` not to exist yet). It creates:
-      - `Menu`: `Launcher` (`GameLauncher`), canvas with session name field, Host, Join, status text and `MenuUI`, all assigned;
-      - `Game`: everything of commands 1-3 below;
-      - Build Settings: Menu first, Game second.
-      Check the Console afterwards; paste errors into UNITY_FEEDBACK.md. If you prefer to do it in steps, use commands 1-3 yourself.
-- [ ] Test: open `Menu`, Play with a ParrelSync clone: A = Host, B = Join, same session name; both load `Game`; closing the clone returns the other
-      to `Menu` with a message.
+## [You] 1. Rebuild the generated scenes and prefabs (fixes from UNITY_FEEDBACK 2026-11-18)
+- [ ] Delete `Assets/TutorialInfo` and `Assets/Readme.asset` if they are still there, and `Assets/Scenes/SampleScene.unity` (not used).
+- [ ] Menu `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. It deletes `Assets/Scenes/Menu.unity`, `Game.unity` and
+      `Assets/Prefabs` and runs command 0 again: every TMP text now has the LiberationSans SDF font (the NullReferenceException came
+      from texts without a font), bigger units, distinct resource shapes, more opaque UI panels. Console: no red errors expected.
+- [ ] Check `Tools > RTS > Play from Menu scene` is ticked (default). Press Play with the Game scene open: the Menu must appear.
+- [ ] Game view resolution: `Full HD (1920x1080)` (16:9). For two windows on one screen use `1280x720`; the UI scales with the window.
+- [ ] Test: Play with a ParrelSync clone: A = Host, B = Join, same session name; both load `Game`. Every unit and building has a coloured
+      disc and a name label (blue = mine, red = enemy); trees, berry bushes and gold mines show their remaining amount.
+      Closing the clone returns the other to `Menu` with a message.
 
 ### What the commands do (for reference or step by step)
 - [ ] `Tools > RTS > 1 Create placeholder prefabs`: makes `Assets/Prefabs` with `Player`, 8 unit prefabs (capsules), 6 building prefabs

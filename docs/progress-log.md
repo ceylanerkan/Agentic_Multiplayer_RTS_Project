@@ -1,5 +1,19 @@
 # Progress log (newest first)
 
+## 2026-11-19 (run 4, night 16 fix day)
+- UNITY_FEEDBACK.md headings handled: "2026-11-18" (3 obsolete-API warnings, TMP NullReferenceException, Test 4: Play starts in Game,
+  unreadable visuals and text, no target resolution).
+- Fixes: `ZoneMap` uses `FindObjectsByType<T>()`, `RtsSetupTools` uses `FindAnyObjectByType`. Cause of the NRE: every generated TMP text
+  had `m_fontAsset: {fileID: 0}` (checked in Game.unity); `RtsSetupTools.Label` now assigns LiberationSans SDF before the text.
+  New `Editor/PlayFromMenu.cs` (`EditorSceneManager.playModeStartScene` = Menu, toggle `Tools > RTS > Play from Menu scene`).
+  New command `Tools > RTS > Rebuild generated scenes and prefabs` (confirm dialog). New `UI/EntityVisuals.cs`, attached at run time by
+  `NetworkUnit`/`NetworkBuilding`/`ResourceNode.Spawned`: team disc (blue mine / red enemy) + billboard label with name and HP / build % /
+  amount, hidden together with the body by fog of war. Bigger units, distinct resource shapes, opaque UI panels, bigger fonts,
+  `CanvasScaler.matchWidthOrHeight = 0.5`. Target resolution: 1920x1080 (16:9), 1280x720 for two windows.
+- Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
+- Open questions: none.
+- Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
+
 ## 2026-11-15 (run 3, night 3)
 - UNITY_FEEDBACK.md headings handled: "2026-11-14" (the `Start()` rename was already fixed on main; no other
   Unity-message method names with parameters in the scripts; compile and RulesTests 13/13 confirmed by the student).

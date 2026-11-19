@@ -1,43 +1,38 @@
-# Sabah notları – 2026-11-15
+# Sabah notları – 2026-11-19
 
 ## Dün gece ne yaptım
-- Gece 3–12'nin tüm agent maddelerini yazdım (ZoneMap/BuildSlot/ResourceNode/gather, seçim + sağ tık komutları + kamera, üretim kuyruğu + inşaat + HUD, savaş + panel, teknolojiler + zafer ekranı, fog of war + olay günlüğü, AI snapshot + komutan paneli + onay akışı, siege/naval kuralları).
-- Rapor taslağı hazır: `docs/report/report.md` (tüm bölümler; canlı sayı gereken yerler `[TODO live]`), `docs/architecture.md` ağ bölümü, `docs/demo-script.md`, `docs/slides-outline.md`, `docs/defense-notes.md`.
-- Python: gerçek stdio MCP istemcisi (`MCP_TRANSPORT=stdio`), güvenlik testleri S10–S16, snapshot sözleşme testi, değerlendirmeye 5 yeni prompt + invalid-action oranı + CSV/tablo. `pytest ai evaluation`: 57 geçti.
-- C# kural kodu .NET ile derlendi: 47/47 EditMode testi geçti. Unity'ye özel scriptler `tools/compile-check` (sahte Unity/Fusion tipleri) ile derlendi: 0 hata. Bu gerçek Unity derlemesi değil.
-- Bağımsız bir kod incelemesiyle 8 çalışma-zamanı hatası daha bulup düzelttim (Shutdown launcher'ı yok ediyordu, ölen nesnenin değerini okuma, slot/nüfus sızıntıları, event spam; ayrıntı `docs/progress-log.md`).
-- Bulduğum hata: bina HP'si 0 okunuyordu (`buildings.json`'da `hp` üst seviyede); düzeltildi. `UNITY_FEEDBACK.md` 2026-11-14 notları işlendi (`Start` adı zaten main'de düzeltilmişti).
+- `UNITY_FEEDBACK.md` 2026-11-18 başlığını işledim: 3 obsolete uyarısı düzeltildi (`FindObjectsByType<T>()`, `FindAnyObjectByType`).
+- TMP `NullReferenceException`'ın sebebi: üretilen bütün TMP yazılarında font boştu (`Game.unity`'de `m_fontAsset: {fileID: 0}`). `RtsSetupTools` artık yazıdan önce LiberationSans SDF fontunu atıyor. Yazılar bu yüzden de görünmüyordu.
+- Play artık hangi sahne açık olursa olsun `Menu`'den başlıyor (`Editor/PlayFromMenu.cs`, `EditorSceneManager.playModeStartScene`; kapatmak için `Tools > RTS > Play from Menu scene`).
+- Ayırt edilebilirlik: yeni `UI/EntityVisuals.cs` her birimin/binanın altına takım diski (mavi = benim, kırmızı = düşman) ve üstüne isim etiketi koyuyor ("Villager 25/25", "House building 40%", "Wood 180"). Çalışma zamanında ekleniyor, prefab'larda elle iş yok. Fog of war etiketleri de gizliyor.
+- Birimler büyütüldü, kaynaklar farklı şekiller aldı (uzun koyu yeşil ağaç, pembe çalı, geniş sarı altın kubbesi), UI panelleri daha opak, fontlar büyük.
+- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı.
 
 ## Plan durumu
-Gece 1–15'in agent maddeleri bitti (plan tarihlerinin yaklaşık 11 gün önünde; Gece 16–18 kaldı: hata düzeltme, tutarlılık, son çalışma). Sonraki gece: senin geri bildirimine göre düzeltmeler, sonra kod incelemesi/test eklemek.
+Gece 1–15 bitti; Gece 16 (hata düzeltme günü) senin geri bildirimlerinle sürüyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kod incelemesi ve eksik testler.
 
 ## Bugün test et
-1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/3 , sonra `git pull`.
-2. Unity'yi aç, Console'daki derleme hatalarını `UNITY_FEEDBACK.md`'ye yapıştır (yeni scriptler hiç Unity'de derlenmedi; en olası: Fusion API ayrıntıları). EditMode testlerini çalıştır (47 beklenir).
-3. `TODO.md` bölüm 1: `Assets/TutorialInfo` ve `Assets/Readme.asset`'i sil, sonra tek komut: `Tools > RTS > 0 Create Menu and Game scenes` (Menu + Game sahneleri, prefab'lar, harita, zone'lar, slot'lar, kaynaklar, `GameSpawner`, kamera, UI, Build Settings). Console'daki hataları yapıştır.
-4. ParrelSync ile iki örnek: Host/Join, birimleri seç/taşı, ağaca sağ tık (odun artmalı), House inşa et, Villager üret.
-5. Zaman kalırsa: Barracks + Spearman, düşman TC'yi yık (Victory/Defeat), fog of war. Sonuçları `UNITY_FEEDBACK.md`'ye `Test N tamam` / `Test N olmadı: ...` diye yaz.
-6. Python tarafı (isteğe bağlı): `pip install -r ai/requirements.txt`, `pytest ai evaluation`.
+1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pulls (başlık "Autopilot: daily progress"), sonra main'de `git pull`.
+2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le.
+3. Game view'ın üstündeki çözünürlük menüsünden **Full HD (1920x1080)** seç (16:9). ParrelSync ile iki pencere için **1280x720** yeterli; UI pencereye göre ölçekleniyor. Windows build'de de 1920x1080 hedef.
+4. `Game` sahnesi açıkken Play'e bas: `Menu` açılmalı. Session adı yaz, Host. ParrelSync klonunda aynı adla Join. Beklenen: iki tarafta da TC + 3 Villager, altlarında mavi (kendi) / kırmızı (düşman) disk, üstlerinde isim + HP; ağaç/çalı/altın üstünde miktar; üst barda Wood/Food/Gold/Pop/Age okunur.
+5. Villager seç, ağaca sağ tık: ağacın etiketindeki sayı azalmalı, HUD'da Wood artmalı. House inşa et: etikette "building %" görünmeli.
+6. Sorun olursa `UNITY_FEEDBACK.md`'ye: Console hatası (olduğu gibi), `Test 5 tamam` / `Test 5 olmadı: ...`, mümkünse "hâlâ okunmuyor: X" gibi somut not (ekran görüntüsü yolu da yazabilirsin).
 
 ## Senin kararın gerekiyor
 Yok.
 
 ## Gözden geçir
-- Saldırı bekleme süresi 1.0 s, Catapult 3.0 s (veride yok); menzil payı: birim +1.2, bina +3.0 (`GameConstants`).
-- Harita düzeni (kara z < 45, kuzeyde deniz, üsler x = ±65) benim seçimim; menü komutu bunu kurar, istediğin gibi değiştir.
-- Onayda geçerli aksiyonlar uygulanır, geçersizler atlanıp sebebi gösterilir (hepsi-ya-hiç değil).
-- Karada/suda hareket: NavMesh yerine zone haritası kuralı (kara birimi su zone'una girmez, gemi kara zone'una girmez); birimler şimdilik düz çizgide yürür.
-- Doğrulayıcıya yeni kural: düşman üssüne bina yapılamaz (`PlayerState.Slot`).
-- Bir BUILD aksiyonu sadece zone söyler; host o zone'daki en yakın boş `BuildSlot`'u seçer.
-- Olay günlüğü: host hangi olayı kimin bilebileceğine karar verir ve RPC ile sahibine yollar; her peer sadece kendi günlüğünü tutar.
+- Takım renkleri göreli: herkes kendini mavi, rakibini kırmızı görür (P1/P2 sabit renk yerine). Kaynak etiketleri açık sarı.
+- Disk ve etiket nesnenin çocuğu değil, onu `LateUpdate`'te takip ediyor (binalar düzleştirilmiş küp; çocuk olsalardı esnerdi). Görünürlüğü gövdenin `Renderer`'ından kopyalıyor, böylece fog of war onları da saklıyor.
+- Yeni birim ölçekleri (Villager 1.2 … Warship 2.4), kamera başlangıç yüksekliği 24, zemin rengi zeytin yeşili: hepsi `RtsSetupTools.cs` başındaki tablolarda, istediğin gibi değiştir.
+- `Play from Menu scene` varsayılan açık (EditorPrefs); bir sahneyi tek başına denemek istersen menüden kapat.
 
 ## Emin olmadığım yerler
-- `Assets/Scripts/Editor/RtsSetupTools.cs` (dört menü komutu) da derlenmedi; hata verirse Console çıktısını yapıştır, elle adımlar TODO.md'de duruyor.
-- Yeni Unity/Fusion scriptleri gerçek Unity'de derlenmedi. Kullandığım Fusion üyelerinin hepsinin var olduğunu repodaki `Fusion.Runtime.xml` ile doğruladım (`NetworkId.IsValid/Raw`, `Runner.Despawn/Spawn/TryFindObject`, `NetworkTransform`, `IPlayerJoined`, `RpcTargets.InputAuthority`, `NetworkString` dönüşümü). Doğrulayamadığım: `[Rpc(StateAuthority → InputAuthority)]`'nin host kendi oyuncusuna gönderirken davranışı (host için RPC kullanmıyorum, doğrudan ekliyorum) ve Fusion'ın weaver'ının bazı kalıplara tepkisi.
-- `Shader.Find("Universal Render Pipeline/Unlit")` build'de ayıklanabilir (halka, hayalet, fog için); gerekirse `Sprites/Default`'a düşer. Build'de sorun olursa haber ver.
-- `FogOfWar` her 0.25 s'de 96×77 piksel boyar; yavaş gelirse `resolution`'ı düşür.
-- Host'un kendi `PlayerJoined` çağrısı Game sahnesi yüklenmeden önce gelirse host'a üs verilmeyebilir (GameSpawner sahne nesnesi). Bunun için `GameSpawner.Update` her karede eksik oyuncuya üs verir (yedek yol); yine de host'ta TC + 3 Villager çıkıyor mu kontrol et.
-- Gemini ile canlı çalıştırma hiç yapılmadı (`GeminiLLM` gerçek API'de test edilmedi).
+- `EntityVisuals.cs` ve `PlayFromMenu.cs` gerçek Unity'de derlenmedi (sadece stub'larla). Özellikle TMP'nin `outlineWidth`/`outlineColor` ayarı ve 3D `TextMeshPro`'nun font boyutu (6–9) ekranda çok küçük/büyük çıkabilir; söylersen ayarlarım.
+- Rebuild sonrası prefab GUID'leri değişir; Fusion'ın Network Prefab Table'ı genelde kendini yeniler, yenilemezse Fusion menüsünden "Rebuild Prefab Table" çalıştır.
+- Etiketler için `TMP_Settings.defaultFontAsset` kullanılıyor (TMP Settings `Resources` altında, build'e girer); boş gelirse etiketler görünmez, haber ver.
+- Gemini ile canlı çalıştırma hâlâ yapılmadı.
 
 ## Nasıl cevap verirsin
 UNITY_FEEDBACK.md dosyasına bugünün tarihiyle bir başlık aç, cevapları yaz (ör. `Q-1114-1: B`,

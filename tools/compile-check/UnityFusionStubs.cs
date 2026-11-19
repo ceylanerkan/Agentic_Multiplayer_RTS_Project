@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 namespace UnityEngine
 {
-    public class Object { public static void Destroy(Object o) { } public static void DestroyImmediate(Object o) { } public static T[] FindObjectsByType<T>(FindObjectsSortMode m) where T : Object { return new T[0]; } public static T FindFirstObjectByType<T>() where T : Object { return null; }
+    public class Object { public static void Destroy(Object o) { } public static void DestroyImmediate(Object o) { } public static T[] FindObjectsByType<T>() where T : Object { return new T[0]; } public static T FindAnyObjectByType<T>() where T : Object { return null; }
         public static implicit operator bool(Object o) { return o != null; } public string name; }
     public enum FindObjectsSortMode { None }
     public class Component : Object { public GameObject gameObject; public Transform transform;
@@ -47,7 +47,7 @@ namespace UnityEngine
     public static class Gizmos { public static Color color; public static void DrawWireSphere(Vector3 p, float r) { } public static void DrawWireCube(Vector3 p, Vector3 s) { } }
     public static class GUI { public static Color color; public static void DrawTexture(Rect r, Texture t) { } }
     public class Shader { public static Shader Find(string n) { return null; } }
-    public class Material : Object { public Material(Shader s) { } public Color color; public Texture mainTexture; }
+    public class Material : Object { public Material(Shader s) { } public Material(Material m) { } public Color color; public Texture mainTexture; }
     public class Texture : Object { } 
     public class Texture2D : Texture { public static Texture2D whiteTexture; public FilterMode filterMode; public TextureWrapMode wrapMode;
         public Texture2D(int w, int h, TextureFormat f, bool m) { } public void SetPixels32(Color32[] c) { } public void Apply(bool b) { } }
@@ -57,7 +57,7 @@ namespace UnityEngine
     public class RequireComponentAttribute : Attribute { public RequireComponentAttribute(Type t) { } }
 }
 namespace UnityEngine.UI { public class Graphic : Component { public Color color; } public class Image : Graphic { }
-    public class CanvasScaler : Component { public enum ScaleMode { ScaleWithScreenSize } public ScaleMode uiScaleMode; public Vector2 referenceResolution; }
+    public class CanvasScaler : Component { public enum ScaleMode { ScaleWithScreenSize } public ScaleMode uiScaleMode; public Vector2 referenceResolution; public float matchWidthOrHeight; }
     public class GraphicRaycaster : Component { } public class RectOffset { public RectOffset(int a, int b, int c, int d) { } }
     public class HorizontalLayoutGroup : Component { public bool childControlWidth, childControlHeight; public RectOffset padding; public float spacing; }
     public class GridLayoutGroup : Component { public Vector2 cellSize, spacing; } public class RectMask2D : Component { } public class LayoutElement : Component { public float preferredHeight, minHeight; }
@@ -70,8 +70,8 @@ namespace UnityEngine.InputSystem {
         }
     public class Keyboard { public static Keyboard current; public ButtonControl wKey, aKey, sKey, dKey, upArrowKey, downArrowKey, leftArrowKey, rightArrowKey, shiftKey, escapeKey; }
 }
-namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
-    public class TextMeshProUGUI : TMP_Text { } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
+namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
+    public class TextMeshProUGUI : TMP_Text { } public class TextMeshPro : TMP_Text { } public static class TMP_Settings { public static TMP_FontAsset defaultFontAsset; } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
     public class TMP_InputField : UnityEngine.Component { public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
 namespace Fusion
 {
@@ -85,7 +85,7 @@ namespace Fusion
     public class NetworkedAttribute : Attribute { }
     public enum RpcSources { InputAuthority, StateAuthority } public enum RpcTargets { StateAuthority, InputAuthority }
     public class RpcAttribute : Attribute { public RpcAttribute(RpcSources s, RpcTargets t) { } }
-    public class NetworkObject : UnityEngine.MonoBehaviour { public NetworkId Id; public PlayerRef InputAuthority; public bool HasInputAuthority, HasStateAuthority; }
+    public class NetworkObject : UnityEngine.MonoBehaviour { public bool IsValid; public NetworkId Id; public PlayerRef InputAuthority; public bool HasInputAuthority, HasStateAuthority; }
     public class NetworkRunner : UnityEngine.MonoBehaviour { public float DeltaTime; public bool IsServer, IsRunning; public System.Collections.Generic.IEnumerable<PlayerRef> ActivePlayers; public PlayerRef LocalPlayer;
         public NetworkObject Spawn(NetworkObject p, Vector3 pos, Quaternion r, PlayerRef owner) { return null; } public void Despawn(NetworkObject o) { }
         public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; } }
@@ -101,17 +101,17 @@ namespace Fusion { public class NetworkTransform : UnityEngine.MonoBehaviour { }
 namespace UnityEditor
 {
     using UnityEngine;
-    public class MenuItemAttribute : System.Attribute { public MenuItemAttribute(string s) { } }
+    public class MenuItemAttribute : System.Attribute { public MenuItemAttribute(string s) { } public MenuItemAttribute(string s, bool v) { } }
     public class SerializedProperty { public string stringValue; public float floatValue; public Vector2 vector2Value; public UnityEngine.Object objectReferenceValue; public int arraySize;
         public SerializedProperty FindPropertyRelative(string n) { return null; } public SerializedProperty GetArrayElementAtIndex(int i) { return null; } }
     public class SerializedObject { public SerializedObject(UnityEngine.Object o) { } public SerializedProperty FindProperty(string n) { return null; } public void ApplyModifiedPropertiesWithoutUndo() { } }
     public static class AssetDatabase { public static bool IsValidFolder(string p) { return true; } public static void CreateFolder(string a, string b) { } public static T LoadAssetAtPath<T>(string p) where T : UnityEngine.Object { return null; }
-        public static void CreateAsset(UnityEngine.Object o, string p) { } public static void SaveAssets() { } public static void Refresh() { } }
+        public static void CreateAsset(UnityEngine.Object o, string p) { } public static bool DeleteAsset(string p) { return true; } public static void SaveAssets() { } public static void Refresh() { } }
     public static class PrefabUtility { public static GameObject SaveAsPrefabAsset(GameObject g, string p) { return g; } public static UnityEngine.Object InstantiatePrefab(UnityEngine.Object o, Transform t) { return null; } }
 }
 namespace UnityEditor.SceneManagement { public static class EditorSceneManager { public static void MarkSceneDirty(UnityEngine.SceneManagement.Scene s) { } public static UnityEngine.SceneManagement.Scene GetActiveScene() { return default(UnityEngine.SceneManagement.Scene); }
         public static UnityEngine.SceneManagement.Scene NewScene(NewSceneSetup s, NewSceneMode m) { return default(UnityEngine.SceneManagement.Scene); }
-        public static bool SaveScene(UnityEngine.SceneManagement.Scene s, string path = null) { return true; } public static bool SaveCurrentModifiedScenesIfUserWantsTo() { return true; } } }
+        public static UnityEditor.SceneAsset playModeStartScene; public static bool SaveScene(UnityEngine.SceneManagement.Scene s, string path = null) { return true; } public static bool SaveCurrentModifiedScenesIfUserWantsTo() { return true; } } }
 namespace UnityEngine.SceneManagement { public struct Scene { } }
 
 namespace UnityEngine { public class Canvas : Component { public RenderMode renderMode; } public enum RenderMode { ScreenSpaceOverlay } }
@@ -124,5 +124,12 @@ public class AiGatewayClient
     public System.Threading.Tasks.Task<(RTS.Core.Rules.AiAnswer answer, string error)> Ask(RTS.Core.Rules.AiSafeSnapshot snapshot, string question) { return null; }
     public System.Threading.Tasks.Task<(RTS.Core.Rules.AiAnswer answer, string error)> AskWhy() { return null; }
 }
-namespace UnityEditor.SceneManagement { public enum NewSceneSetup { DefaultGameObjects } public enum NewSceneMode { Single } }
+namespace UnityEditor.SceneManagement { public enum NewSceneSetup { DefaultGameObjects, EmptyScene } public enum NewSceneMode { Single } }
 namespace UnityEditor { public class EditorBuildSettingsScene { public EditorBuildSettingsScene(string p, bool e) { } } public static class EditorBuildSettings { public static EditorBuildSettingsScene[] scenes; } }
+namespace UnityEditor { public class SceneAsset : UnityEngine.Object { } public class InitializeOnLoadAttribute : System.Attribute { }
+    public static class EditorUtility { public static bool DisplayDialog(string t, string m, string ok, string cancel) { return true; } }
+    public static class EditorPrefs { public static bool GetBool(string k, bool d) { return d; } public static void SetBool(string k, bool v) { } }
+    public static class EditorApplication { public delegate void CallbackFunction(); public static CallbackFunction delayCall; }
+    public static class Menu { public static void SetChecked(string p, bool c) { } }
+    public partial class MenuItemAttribute2 { } }
+namespace UnityEditor.SceneManagement { public static partial class EditorSceneManagerExt { } }
