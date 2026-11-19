@@ -83,6 +83,7 @@ public class CommandRelay : NetworkBehaviour
         var unit = FindOwned<NetworkUnit>(unitId);
         var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null; // only Villagers have a gatherer
         if (g == null || !Runner.TryFindObject(nodeId, out var nodeObj)) return;
+        unit.AttackTarget = default; // gathering replaces an attack order (UnitCombat would keep chasing the old target)
         g.StartGather(nodeObj.GetComponent<ResourceNode>());
     }
 
@@ -107,7 +108,7 @@ public class CommandRelay : NetworkBehaviour
         var b = GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villagers finish it
         var builder = FindOwned<NetworkUnit>(builderId);
         var g = builder != null ? builder.GetComponent<VillagerGatherer>() : null;
-        if (g != null) g.StartBuild(b);
+        if (g != null) { builder.AttackTarget = default; g.StartBuild(b); }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
@@ -116,7 +117,7 @@ public class CommandRelay : NetworkBehaviour
         var unit = FindOwned<NetworkUnit>(unitId);
         var b = FindOwned<NetworkBuilding>(buildingId);
         var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null;
-        if (g != null && b != null && !b.Completed) g.StartBuild(b);
+        if (g != null && b != null && !b.Completed) { unit.AttackTarget = default; g.StartBuild(b); }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
