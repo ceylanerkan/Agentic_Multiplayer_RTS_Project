@@ -63,7 +63,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 - [ ] Read `docs/defense-notes.md` and practise the five defense topics.
 
 ## Agent work still open
-- [ ] Night 16-18 of `docs/nightly-plan.md` (fix day, consistency pass, last run) and fixes from UNITY_FEEDBACK.md.
+- [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (two code reviews and the 2026-11-18
+      feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
 - [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
 
 ## Submission checklist (deadline 2026-11-30)
