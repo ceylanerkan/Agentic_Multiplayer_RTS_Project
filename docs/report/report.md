@@ -227,7 +227,8 @@ integrity of the game state and (3) the player's consent.
    environment, no tool has a player or session parameter, and the agent rejects undeclared arguments.
 3. *Read-only tools.* No tool changes state; there are no filesystem, shell or HTTP tools.
 4. *Triple validation of plans.* JSON Schema in the gateway, `GameActionValidator` at approval time, host authority in
-   the RPC handler.
+   the RPC handler. The host also checks what a client cannot see: a technology already queued in another building is
+   refused (it would be paid twice), and a building can only go on a free build slot in the validated zone.
 5. *Bounded behaviour.* Maximum 6 agent steps, 30 s, clamped `top_k`, limited query and question length, 20 events.
 6. *Prompt injection.* Tool results and retrieved text are marked as data and the system prompt says so; suspicious
    questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,
