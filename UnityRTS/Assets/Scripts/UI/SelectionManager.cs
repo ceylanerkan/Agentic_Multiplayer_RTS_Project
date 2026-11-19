@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 /// own units inside, Shift adds to the selection. Selected objects get a flat ring as highlight.
 /// Purely local (no network): only commands are sent to the host.
 /// </summary>
+[DefaultExecutionOrder(-50)] // prune despawned units before SelectionPanel / UnitCommandInput read the list
 public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance { get; private set; }
@@ -37,6 +38,7 @@ public class SelectionManager : MonoBehaviour
 
     void Update()
     {
+        PruneDestroyed();
         var mouse = Mouse.current; var kb = Keyboard.current;
         if (mouse == null || cam == null || CommandRelay.Local == null) return;
         bool shift = kb != null && kb.shiftKey.isPressed;
@@ -55,6 +57,8 @@ public class SelectionManager : MonoBehaviour
         PruneDestroyed();
         UpdateRings();
     }
+
+    void OnDestroy() { if (ringMaterial != null) Destroy(ringMaterial); }
 
     bool OverUi() { return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(); }
 
@@ -87,8 +91,9 @@ public class SelectionManager : MonoBehaviour
 
     void PruneDestroyed()
     {
-        Units.RemoveAll(u => u == null);
-        if (Building == null) Building = null; // Unity null check: turns a destroyed reference into a real null
+        // Fusion despawns at once but Unity destroys at the end of the frame: also drop objects whose NetworkObject is no longer valid
+        Units.RemoveAll(u => u == null || u.Object == null || !u.Object.IsValid);
+        if (Building == null || Building.Object == null || !Building.Object.IsValid) Building = null;
     }
 
     // ---- highlight: one flat ring under each selected object ----

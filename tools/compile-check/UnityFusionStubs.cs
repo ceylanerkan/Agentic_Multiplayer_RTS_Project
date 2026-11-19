@@ -41,7 +41,7 @@ namespace UnityEngine
     public static class Mathf { public static float Max(float a, float b) { return a; } public static int Max(int a, int b) { return a; } public static float Min(float a, float b) { return a; } public static float Abs(float a) { return a; }
         public static float Clamp(float a, float b, float c) { return a; } public static int RoundToInt(float f) { return 0; } public static int CeilToInt(float f) { return 0; } }
     public static class Time { public static int frameCount; public static float time, unscaledTime, unscaledDeltaTime, deltaTime; }
-    public static class Debug { public static void Log(object o) { } public static void LogWarning(object o) { } public static void LogError(object o) { } }
+    public static class Debug { public static void LogException(System.Exception e) { } public static void Log(object o) { } public static void LogWarning(object o) { } public static void LogError(object o) { } }
     public static class Application { public static string dataPath, persistentDataPath, streamingAssetsPath; }
     public static class Screen { public static int height; }
     public static class Gizmos { public static Color color; public static void DrawWireSphere(Vector3 p, float r) { } public static void DrawWireCube(Vector3 p, Vector3 s) { } }
@@ -70,8 +70,8 @@ namespace UnityEngine.InputSystem {
         }
     public class Keyboard { public static Keyboard current; public ButtonControl wKey, aKey, sKey, dKey, upArrowKey, downArrowKey, leftArrowKey, rightArrowKey, shiftKey, escapeKey; }
 }
-namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public bool enableAutoSizing; public float fontSizeMin, fontSizeMax; public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
-    public class TextMeshProUGUI : TMP_Text { } public class TextMeshPro : TMP_Text { } public static class TMP_Settings { public static TMP_FontAsset defaultFontAsset; } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
+namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public UnityEngine.Material fontMaterial; public bool enableAutoSizing; public float fontSizeMin, fontSizeMax; public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
+    public class TextMeshProUGUI : TMP_Text { } public class TextMeshPro : TMP_Text { } public class TMP_Settings : UnityEngine.Object { public static TMP_FontAsset defaultFontAsset; } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
     public class TMP_InputField : UnityEngine.Component { public bool isFocused; public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
 namespace Fusion
 {
@@ -129,7 +129,9 @@ namespace UnityEditor { public class EditorBuildSettingsScene { public EditorBui
 namespace UnityEditor { public class SceneAsset : UnityEngine.Object { } public class InitializeOnLoadAttribute : System.Attribute { }
     public static class EditorUtility { public static bool DisplayDialog(string t, string m, string ok, string cancel) { return true; } }
     public static class EditorPrefs { public static bool GetBool(string k, bool d) { return d; } public static void SetBool(string k, bool v) { } }
-    public static class EditorApplication { public delegate void CallbackFunction(); public static CallbackFunction delayCall; }
+    public static class EditorApplication { public static bool isPlaying; public delegate void CallbackFunction(); public static CallbackFunction delayCall; }
     public static class Menu { public static void SetChecked(string p, bool c) { } }
     public partial class MenuItemAttribute2 { } }
 namespace UnityEditor.SceneManagement { public static partial class EditorSceneManagerExt { } }
+namespace UnityEngine { public static class Resources { public static T Load<T>(string p) where T : Object { return null; } }
+    public class DefaultExecutionOrderAttribute : System.Attribute { public DefaultExecutionOrderAttribute(int o) { } } }

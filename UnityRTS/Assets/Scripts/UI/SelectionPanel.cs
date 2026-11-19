@@ -98,7 +98,7 @@ public class SelectionPanel : MonoBehaviour
         textGo.transform.SetParent(go.transform, false);
         var rt = (RectTransform)textGo.transform; rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
         var text = textGo.GetComponent<TextMeshProUGUI>();
-        text.font = font != null ? font : TMP_Settings.defaultFontAsset; // font first: a TMP text without one throws in layout
+        text.font = font != null ? font : EntityVisuals.DefaultFont(); // font first: a TMP text without one throws in layout
         text.fontSize = 18; text.alignment = TextAlignmentOptions.Center; text.color = Color.black;
         var button = go.GetComponent<Button>();
         button.onClick.AddListener(() => onClick());

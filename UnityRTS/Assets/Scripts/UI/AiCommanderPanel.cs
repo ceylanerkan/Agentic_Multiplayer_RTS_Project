@@ -44,18 +44,34 @@ public class AiCommanderPanel : MonoBehaviour
         var snap = AiSnapshotBuilder.Build();
         if (snap == null) { statusText.text = "Match not started yet."; return; }
         SetBusy(true, "AI is thinking...");
-        var (answer, error) = await client.Ask(snap, q);
-        SetBusy(false, error ?? "");
-        if (answer != null) ShowAnswer(answer);
+        try
+        {
+            var (answer, error) = await client.Ask(snap, q);
+            SetBusy(false, error ?? "");
+            if (answer != null) ShowAnswer(answer);
+        }
+        catch (Exception e)   // "_ = Ask()" would swallow it and leave the panel busy for the rest of the match
+        {
+            Debug.LogException(e);
+            SetBusy(false, "Error: " + e.GetType().Name + " (see Console)");
+        }
     }
 
     async Task Why()
     {
         if (busy || current == null) return;
         SetBusy(true, "Asking why...");
-        var (answer, error) = await client.AskWhy();
-        SetBusy(false, error ?? "");
-        if (answer != null) statusText.text = "Why: " + answer.Plan.Summary; // read-only explanation, no actions to approve
+        try
+        {
+            var (answer, error) = await client.AskWhy();
+            SetBusy(false, error ?? "");
+            if (answer != null) statusText.text = "Why: " + answer.Plan.Summary; // read-only explanation, no actions to approve
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            SetBusy(false, "Error: " + e.GetType().Name + " (see Console)");
+        }
     }
 
     void SetBusy(bool b, string message)

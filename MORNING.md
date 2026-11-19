@@ -6,6 +6,7 @@
 - Okunurluk: yeni `UI/EntityVisuals.cs` her birim/binaya takım diski (mavi = benim, kırmızı = düşman) ve isim + HP etiketi, kaynaklara miktar etiketi koyuyor (prefab işi yok). Birimler daha büyük, kaynak şekilleri farklı, UI opak, fontlar ve butonlar büyük, "Raider Boat" gibi okunur isimler, host tekken "waiting for player 2...".
 - Kontrol hataları: seçim halkası kapsülün içinde kalıyordu (artık ayakta); bina yerleştirme tıkı seçimi siliyordu; sağ tıkla iptal birimleri yürütüyordu; AI paneline yazarken WASD kamerayı kaydırıyordu; fare tekerleği bazı Input System ayarlarında zoom yapmıyor olabilirdi.
 - Bağımsız kod incelemesinden 7 düzeltme: kendi yarım binaların fog altında görünmüyordu; P2'nin AI'ı çalışan Villager'ları boşta sanıyordu; aynı teknoloji iki kez ödenebiliyordu; ENEMY_SIGHTED spam'i; birimler TC'nin köşesinde doğuyordu; suyun ötesine saldır emri birimi donduruyordu; yıkılan inşaatta hata riski.
+- İkinci inceleme (UI/editor): yok olmakta olan seçili birimden okuma hatası, AI panelinin hatada sonsuza kadar "busy" kalması, materyal sızıntıları, TMP ayarı eksikse font hatası düzeltildi.
 - Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 51/51 (4 yeni), `pytest ai evaluation` 64 geçti. Rapora "Lessons learned" maddesi eklendi.
 
 ## Plan durumu
@@ -37,6 +38,7 @@ Yok.
 - `EntityVisuals.cs` ve `PlayFromMenu.cs` gerçek Unity'de derlenmedi (sadece stub'larla). Özellikle TMP'nin `outlineWidth`/`outlineColor` ayarı ve 3D `TextMeshPro`'nun font boyutu (6–9) ekranda çok küçük/büyük çıkabilir; söylersen ayarlarım.
 - Rebuild sonrası prefab GUID'leri değişir; Fusion'ın Network Prefab Table'ı genelde kendini yeniler, yenilemezse Fusion menüsünden "Rebuild Prefab Table" çalıştır.
 - Etiketler için `TMP_Settings.defaultFontAsset` kullanılıyor (TMP Settings `Resources` altında, build'e girer); boş gelirse etiketler görünmez, haber ver.
+- `Tools > RTS > 1 Create placeholder prefabs`'ı mevcut prefab'ların üstüne tekrar çalıştırma: `GameSpawner` referansları Missing olabilir. Bunun yerine Rebuild kullan.
 - Gemini ile canlı çalıştırma hâlâ yapılmadı.
 
 ## Nasıl cevap verirsin

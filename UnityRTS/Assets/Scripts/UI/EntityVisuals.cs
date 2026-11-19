@@ -19,6 +19,12 @@ public class EntityVisuals : MonoBehaviour
     float labelHeight, nextText;
     int lastTeam = -1;        // 0 neutral, 1 mine, 2 enemy
 
+    /// <summary>TMP's default font, or null. TMP_Settings itself throws when TMP Essential Resources were never imported.</summary>
+    public static TMP_FontAsset DefaultFont()
+    {
+        return UnityEngine.Resources.Load<TMP_Settings>("TMP Settings") != null ? TMP_Settings.defaultFontAsset : null;
+    }
+
     public static void Attach(GameObject go) { if (go.GetComponent<EntityVisuals>() == null) go.AddComponent<EntityVisuals>(); }
 
     void Start()
@@ -45,7 +51,7 @@ public class EntityVisuals : MonoBehaviour
 
         var l = new GameObject(name + "_Label");
         label = l.AddComponent<TextMeshPro>();
-        if (TMP_Settings.defaultFontAsset != null) label.font = TMP_Settings.defaultFontAsset; // an unset font gives a NullReferenceException
+        var font = DefaultFont(); if (font != null) label.font = font; // an unset font gives a NullReferenceException
         label.fontSize = building != null ? 11f : 8f;   // about 25-35 px high at the default camera distance
         label.alignment = TextAlignmentOptions.Center;
         label.rectTransform.sizeDelta = new Vector2(30f, 5f);  // wide enough that names never wrap
@@ -84,7 +90,7 @@ public class EntityVisuals : MonoBehaviour
     int Team()
     {
         if (node != null || CommandRelay.Local == null) return 0;
-        if ((unit != null && !unit.Object.IsValid) || (building != null && !building.Object.IsValid)) return lastTeam;
+        if ((unit != null && (unit.Object == null || !unit.Object.IsValid)) || (building != null && (building.Object == null || !building.Object.IsValid))) return lastTeam;
         var me = CommandRelay.Local.Object.InputAuthority;
         if (unit != null) return unit.Owner == me ? 1 : 2;
         if (building != null) return building.Owner == me ? 1 : 2;
@@ -109,7 +115,7 @@ public class EntityVisuals : MonoBehaviour
     void OnDestroy()
     {
         if (disc != null) Destroy(disc.gameObject);
-        if (label != null) Destroy(label.gameObject);
+        if (label != null) { Destroy(label.fontMaterial); Destroy(label.gameObject); }   // outlineWidth made a material copy
         if (discMat != null) Destroy(discMat);
     }
 }

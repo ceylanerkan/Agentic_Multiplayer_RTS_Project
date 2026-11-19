@@ -45,6 +45,12 @@
 - Parity pytest: every rejection reason in `evaluation/plan_checks.py` must exist in `GameActionValidator.cs` (catches drift). 64 passed.
 - EditMode test for the generated map layout: all 12 base slots and 4 coastal slots lie in the own base zone (Dock rule), harbours are
   water, the coast is at z = 45, resource clusters lie in their named zones. C#: 51/51.
+- Second independent review (UI, editor, camera scripts): no compile/obsolete-API issues found. Fixed: selection kept just-despawned units
+  (reads of `Hp`/`TypeKey` throw) -> prune on `Object.IsValid` with `[DefaultExecutionOrder(-50)]`; exceptions in the AI panel's
+  `_ = Ask()` were lost and left it busy forever -> try/catch + `Debug.LogException`; leaked materials (ghost per placement, ring,
+  label outline copies); `TMP_Settings.defaultFontAsset` throws without TMP Essential Resources -> check `Resources.Load("TMP Settings")`;
+  Rebuild refuses in Play mode and resets `playModeStartScene` after deleting Menu; menu validate no longer re-applies the start scene.
+  Not changed: running command 1 a second time over existing prefabs (use Rebuild instead; noted in MORNING).
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

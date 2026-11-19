@@ -84,11 +84,13 @@ public static class RtsSetupTools
         if (!EditorUtility.DisplayDialog("Rebuild RTS scenes and prefabs",
                 "Deletes Assets/Scenes/Menu.unity, Assets/Scenes/Game.unity and Assets/Prefabs, then creates them again. Changes you made by hand there are lost.",
                 "Rebuild", "Cancel")) return;
+        if (EditorApplication.isPlaying) { Debug.LogError("RTS: stop Play mode before rebuilding."); return; }
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);   // the open scene may be one we delete
         foreach (var path in new[] { "Assets/Scenes/Menu.unity", "Assets/Scenes/Game.unity", PrefabDir })
             if (File.Exists(path) || AssetDatabase.IsValidFolder(path)) AssetDatabase.DeleteAsset(path);
         AssetDatabase.Refresh();
+        PlayFromMenu.Apply();   // the Menu scene is gone: do not keep pointing play mode at it if CreateScenes stops early
         CreateScenes();
     }
 
@@ -291,7 +293,7 @@ public static class RtsSetupTools
     static TMP_FontAsset DefaultFont()
     {
         var f = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
-        if (f == null) f = TMP_Settings.defaultFontAsset;
+        if (f == null && UnityEngine.Resources.Load<TMP_Settings>("TMP Settings") != null) f = TMP_Settings.defaultFontAsset;
         if (f == null) Debug.LogError("RTS: no TMP font found. Window > TextMeshPro > Import TMP Essential Resources, then run the command again.");
         return f;
     }

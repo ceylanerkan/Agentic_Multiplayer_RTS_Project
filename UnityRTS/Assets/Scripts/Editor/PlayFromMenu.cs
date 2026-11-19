@@ -28,5 +28,5 @@ public static class PlayFromMenu
     static void Toggle() { EditorPrefs.SetBool(PrefKey, !Enabled); Apply(); }
 
     [MenuItem(MenuPath, true)]
-    static bool ToggleValidate() { Menu.SetChecked(MenuPath, Enabled); Apply(); return true; }
+    static bool ToggleValidate() { Menu.SetChecked(MenuPath, Enabled); return true; }
 }
