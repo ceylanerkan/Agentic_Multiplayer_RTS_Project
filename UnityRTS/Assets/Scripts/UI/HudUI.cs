@@ -23,7 +23,8 @@ public class HudUI : MonoBehaviour
         if (food) food.text = "Food " + state.Food;
         if (gold) gold.text = "Gold " + state.Gold;
         if (population) population.text = "Pop " + state.PopUsed + "/" + state.PopCapacity;
-        if (age) age.text = "Age " + (state.Age == 2 ? "II" : "I") + (WaitingForOpponent() ? "  |  waiting for player 2..." : "");
+        // "P1 | Age I": which player this window is, so the two screens are easy to tell apart in the demo video
+        if (age) age.text = (state.Slot > 0 ? "P" + state.Slot + "  |  " : "") + "Age " + (state.Age == 2 ? "II" : "I") + (WaitingForOpponent() ? "  |  waiting for player 2..." : "");
     }
 
     /// <summary>The host is alone in the Game scene until the second player joins; say so, or it looks like nothing started.</summary>
