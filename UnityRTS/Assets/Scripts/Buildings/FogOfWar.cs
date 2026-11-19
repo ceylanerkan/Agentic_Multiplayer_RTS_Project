@@ -52,13 +52,25 @@ public class FogOfWar : MonoBehaviour
         foreach (var u in NetworkUnit.All) SetVisible(u.gameObject, visibleIds.Contains((int)u.Object.Id.Raw));
         foreach (var b in NetworkBuilding.All) SetVisible(b.gameObject, visibleIds.Contains((int)b.Object.Id.Raw));
 
+        if (renderers.Count > 4 * (NetworkUnit.All.Count + NetworkBuilding.All.Count) + 64) PruneDestroyed();
         Paint(me, all);
         ReportSightings(me, all, visibleIds);
     }
 
-    static void SetVisible(GameObject go, bool visible)
+    // renderers per object, looked up once (this runs for every unit and building four times a second)
+    readonly Dictionary<GameObject, Renderer[]> renderers = new Dictionary<GameObject, Renderer[]>();
+
+    void SetVisible(GameObject go, bool visible)
     {
-        foreach (var r in go.GetComponentsInChildren<Renderer>()) r.enabled = visible;
+        if (!renderers.TryGetValue(go, out var rs)) { rs = go.GetComponentsInChildren<Renderer>(); renderers[go] = rs; }
+        foreach (var r in rs) if (r != null) r.enabled = visible;
+    }
+
+    void PruneDestroyed()
+    {
+        var dead = new List<GameObject>();
+        foreach (var go in renderers.Keys) if (go == null) dead.Add(go);
+        foreach (var go in dead) renderers.Remove(go);
     }
 
     void Paint(int me, List<MapObject> all)

@@ -40,6 +40,8 @@
   unique source id; BM25-only search is ranked, clamped to top_k 5 and returns nothing for nonsense. 63 passed.
 - New EditMode test: every property of `ai/schemas/action_plan.schema.json` (plan and action) has a `[JsonProperty]` in `AiPlan` /
   `PlanActionDto`, and a gateway-shaped `/ask` reply parses into a TRAIN_UNIT action. C#: 50/50.
+- `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
+  (21 prompts, valid-plan rate 1.0; note `--out` takes a file path). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
