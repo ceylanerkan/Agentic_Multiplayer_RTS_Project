@@ -51,6 +51,8 @@
   label outline copies); `TMP_Settings.defaultFontAsset` throws without TMP Essential Resources -> check `Resources.Load("TMP Settings")`;
   Rebuild refuses in Play mode and resets `playModeStartScene` after deleting Menu; menu validate no longer re-applies the start scene.
   Command 1 over existing prefabs now asks before overwriting (references in existing scenes may break; Rebuild is the safe path).
+- `AiGatewayClient`: on HTTP 401 (gateway restarted and forgot the session) it opens a new session and retries once; before, every
+  request failed until the game was restarted. Compiled in a throwaway project with a `UnityWebRequest` stub: 0 errors.
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

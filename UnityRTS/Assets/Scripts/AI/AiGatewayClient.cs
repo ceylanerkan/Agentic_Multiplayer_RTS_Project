@@ -23,7 +23,7 @@ public class AiGatewayClient
 
     public async Task<string> CreateSession()
     {
-        var (ok, body) = await Send("/session", "{}", false);
+        var (ok, body, _) = await Send("/session", "{}", false);
         if (!ok) return body;
         token = Newtonsoft.Json.Linq.JObject.Parse(body)["token"].ToString();
         return null; // null = success
@@ -48,13 +48,22 @@ public class AiGatewayClient
             string err = await CreateSession();
             if (err != null) return (null, err);
         }
-        var (ok, body) = await Send(path, json, true);
+        var (ok, body, code) = await Send(path, json, true);
+        if (code == 401)
+        {
+            // The gateway was restarted and forgot our session (e.g. an in-memory session store): open a new one, retry once.
+            token = null;
+            string err = await CreateSession();
+            if (err != null) return (null, err);
+            (ok, body, code) = await Send(path, json, true);
+        }
         if (!ok) return (null, body);
         try { return (AiAnswer.Parse(body), null); }
         catch (Exception e) { return (null, "Bad answer from AI gateway: " + e.Message); }
     }
 
-    async Task<(bool, string)> Send(string path, string json, bool withToken)
+    /// <returns>(success, body or error text, HTTP status code; 0 when the gateway was not reached)</returns>
+    async Task<(bool, string, long)> Send(string path, string json, bool withToken)
     {
         using (var req = new UnityWebRequest(baseUrl + path, "POST"))
         {
@@ -66,8 +75,8 @@ public class AiGatewayClient
             var op = req.SendWebRequest();
             while (!op.isDone) await Task.Yield();
             if (req.result != UnityWebRequest.Result.Success)
-                return (false, "AI gateway error: " + req.error + " " + req.downloadHandler.text);
-            return (true, req.downloadHandler.text);
+                return (false, "AI gateway error: " + req.error + " " + req.downloadHandler.text, req.responseCode);
+            return (true, req.downloadHandler.text, req.responseCode);
         }
     }
 }
