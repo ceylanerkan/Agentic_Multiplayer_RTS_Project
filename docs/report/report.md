@@ -210,7 +210,7 @@ and "validation failure" visible and reproducible.
 **Validator rules (examples).** Cost and reserved resources; population capacity; prerequisites (Barracks for Age II,
 Age II for Stable and Cavalry); no technology twice; buildings only in land zones and never in the enemy base; a Dock
 only on a free coastal slot of the own base; land groups cannot be sent to water zones and ships cannot be sent to
-land zones.
+land zones; every name (unit, building, technology, group, zone) must be one the game knows, independently of the schema.
 
 ## VIII. Security
 
