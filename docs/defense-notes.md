@@ -38,4 +38,8 @@ Alternative: *injection* - a poisoned knowledge chunk is returned only as data, 
 - *What if the snapshot is stale?* "Ask why" tells the model the snapshot is old and to lower its confidence.
 - *Why a mock evaluation?* Offline and repeatable; its 100% is by construction; live numbers are reported separately.
 - *Why plain C# classes in `RTS.Core`?* Testable without the editor (50 tests); MonoBehaviours only adapt.
+- *Why are the team colours and labels not networked?* They are presentation only: each peer computes "mine or enemy" from its own
+  `PlayerRef` (`EntityVisuals`). Nothing the host decides depends on them, so they cost no bandwidth and cannot be cheated with.
+- *Can a client queue the same research twice?* The client's validator cannot see queued research, so the host checks every own
+  queue in `CommandRelay` before it takes the cost: the host is the final check, the client check is only for the buttons.
 - *What did you not finish / what would you change?* Fill in honestly after the last test day (see MORNING.md notes).
