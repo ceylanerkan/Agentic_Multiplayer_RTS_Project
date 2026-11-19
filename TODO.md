@@ -1,7 +1,7 @@
 # TODO: remaining work
 
 This file lists only the work that is still open. Milestone overview and status: [README.md](README.md#status).
-All code for nights 1-12 is written (updated 2026-11-15); what is left is editor work, play testing, live runs and
+All code for nights 1-12 is written (updated 2026-11-19); what is left is editor work, play testing, live runs and
 the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is compiled and tested with the .NET SDK
 (50 C# tests), the Unity-specific scripts are only checked against stubs (`tools/compile-check`), so expect small
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
@@ -20,14 +20,14 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
       disc and a name label (blue = mine, red = enemy); trees, berry bushes and gold mines show their remaining amount.
       Closing the clone returns the other to `Menu` with a message.
 
-### What the commands do (for reference or step by step)
-- [ ] `Tools > RTS > 1 Create placeholder prefabs`: makes `Assets/Prefabs` with `Player`, 8 unit prefabs (capsules), 6 building prefabs
+### What the commands do (reference only; the rebuild runs all of them)
+- `Tools > RTS > 1 Create placeholder prefabs`: makes `Assets/Prefabs` with `Player`, 8 unit prefabs (capsules), 6 building prefabs
       (cubes) and `Tree` / `BerryBush` / `GoldMine` (all with `NetworkObject` and the right scripts). If Fusion's Network Prefab Table does not
       list them, rebuild it from the Fusion menu.
-- [ ] `Tools > RTS > 2 Setup open Game scene`: `MapAndSystems` with ground and sea, the 10 `ZoneVolume` markers + `ZoneMap`, `BuildSlot`s (2 coastal per
+- `Tools > RTS > 2 Setup open Game scene`: `MapAndSystems` with ground and sea, the 10 `ZoneVolume` markers + `ZoneMap`, `BuildSlot`s (2 coastal per
       base), resource nodes, `Spawner` (`GameSpawner`, fully filled), `Systems` (`SelectionManager`, `UnitCommandInput`, `BuildPlacement`,
       `FogOfWar`) and `RtsCamera` on the Main Camera. Layout: land z < 45, sea north of it, bases at x = -65 and +65. Move anything you like.
-- [ ] `Tools > RTS > 3 Create Game UI`: `GameCanvas` with the HUD bar, `SelectionPanel` (info + generated buttons), the AI commander panel
+- `Tools > RTS > 3 Create Game UI`: `GameCanvas` with the HUD bar, `SelectionPanel` (info + generated buttons), the AI commander panel
       (question field, Ask / Approve / Reject / Ask why, answer and status text) and the inactive game over screen with "Back to menu", all fields
       assigned (plain layout; restyle as you like). If the gateway is not at `http://127.0.0.1:8765`, change the URL on `AiCommanderPanel`.
 - Manual fallback: prefab components are `NetworkObject` + `NetworkTransform` + `NetworkUnit` + `UnitCombat` (+ `VillagerGatherer` for the Villager);
@@ -35,11 +35,14 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
   `NetworkPlayerState` + `CommandRelay`.
 
 ## [You] 2. Play tests (report results in UNITY_FEEDBACK.md)
-- [ ] Two instances: each side sees its TC and 3 Villagers; box-select and move; right-click a tree: wood rises in the HUD.
-- [ ] Build a House (Villager selected > Build house > click a slot): construction finishes, capacity 5 -> 10. Select more Villagers and right-click the
+- [ ] Two instances: each side sees its TC and 3 Villagers (blue disc) in front of the TC; box-select (green rings at the feet) and move;
+      right-click a tree: its label counts down and Wood rises in the HUD after each trip to the TC.
+- [ ] Build a House (Villager selected > `Build House` > click a slot; the ghost turns green near a free slot): the site shows
+      "building N%", the Villager stays selected; when done, Pop shows x/10. Select more Villagers and right-click the
       unfinished building: they help and it finishes faster. Train a Villager at the TC.
 - [ ] Build a Barracks, train Spearmen, attack the enemy: HP drops on both screens; destroy the enemy TC: Victory / Defeat on both.
-- [ ] Fog: enemy units outside your sight are hidden, dark overlay on unseen ground; Scout sees farthest.
+- [ ] Fog: enemy units outside your sight are hidden (with their disc and label), dark overlay on unseen ground; your own building sites
+      stay visible; Scout sees farthest.
 - [ ] AI panel (needs the gateway running): ask, approve, reject, "Ask why". Menu Tools > RTS > Export AI snapshot, then `pytest ai`.
 - [ ] Record a short clip of a two-instance fight as M3 evidence.
 
