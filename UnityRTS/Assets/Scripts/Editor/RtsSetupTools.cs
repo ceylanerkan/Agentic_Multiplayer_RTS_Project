@@ -94,6 +94,21 @@ public static class RtsSetupTools
         CreateScenes();
     }
 
+    /// <summary>
+    /// Windows build: a resizable 1280x720 window (16:9), so two instances fit side by side on the demo machine,
+    /// and Run In Background, so the window without focus keeps simulating. The UI scales to any window size.
+    /// </summary>
+    [MenuItem("Tools/RTS/Set build window (1280x720, windowed)")]
+    static void SetBuildWindow()
+    {
+        PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+        PlayerSettings.defaultScreenWidth = 1280; PlayerSettings.defaultScreenHeight = 720;
+        PlayerSettings.resizableWindow = true;
+        PlayerSettings.runInBackground = true;
+        AssetDatabase.SaveAssets();
+        Debug.Log("RTS: build window set to 1280x720, windowed, resizable, run in background.");
+    }
+
     [MenuItem("Tools/RTS/1 Create placeholder prefabs")]
     static void CreatePrefabsMenu()
     {

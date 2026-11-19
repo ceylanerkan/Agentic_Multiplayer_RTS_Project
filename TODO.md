@@ -56,7 +56,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
       `npx @modelcontextprotocol/inspector ...` command for a ready session.
 
 ## [You] 4. Deliverables
-- [ ] Windows build (IL2CPP); test two instances on the demo machine.
+- [ ] Windows build (IL2CPP): first `Tools > RTS > Set build window (1280x720, windowed)`, then build; test two instances side by side
+      on the demo machine.
 - [ ] Record the backup video following `docs/demo-script.md`.
 - [ ] Slides from `docs/slides-outline.md`.
 - [ ] Read `docs/report/report.md` once: fix author, instructor approval, and every `[TODO live]`; export to PDF (IEEE A4).

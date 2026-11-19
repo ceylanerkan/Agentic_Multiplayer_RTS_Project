@@ -14,7 +14,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve Gece 17 (tutarlılık: gizli anah
 ## Bugün test et
 1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/4, sonra main'de `git pull`.
 2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le. `Window > General > Test Runner > EditMode > Run All`: 51 test geçmeli.
-3. Game view'ın üstündeki çözünürlük menüsünden **Full HD (1920x1080)** seç (16:9). ParrelSync ile iki pencere için **1280x720** yeterli; UI pencereye göre ölçekleniyor. Windows build'de de 1920x1080 hedef.
+3. Game view'ın üstündeki çözünürlük menüsünden **Full HD (1920x1080)** seç (16:9). ParrelSync ile iki pencere için **1280x720** yeterli; UI pencereye göre ölçekleniyor. Windows build için `Tools > RTS > Set build window (1280x720, windowed)` çalıştır: iki pencere yan yana sığar (ProjectSettings değişir, main'e commit'le).
 4. `Game` sahnesi açıkken Play'e bas: `Menu` açılmalı. Session adı yaz, Host. ParrelSync klonunda aynı adla Join. Beklenen: iki tarafta da TC + 3 Villager, altlarında mavi (kendi) / kırmızı (düşman) disk, üstlerinde isim + HP; ağaç/çalı/altın üstünde miktar; üst barda Wood/Food/Gold/Pop/Age okunur.
 5. Fare tekerleğiyle zoom yap (çalışmalı); AI paneline "wasd" yaz: kamera kımıldamamalı.
 6. Villager seç (ayağının altında yeşil halka görünmeli), ağaca sağ tık: ağacın etiketindeki sayı azalmalı, HUD'da Wood artmalı. House inşa et: yerleştirdikten sonra Villager seçili kalmalı, etikette "building %" görünmeli. Yerleştirirken sağ tık sadece iptal etmeli, birimleri yürütmemeli.

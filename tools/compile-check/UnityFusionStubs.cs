@@ -135,3 +135,5 @@ namespace UnityEditor { public class SceneAsset : UnityEngine.Object { } public 
 namespace UnityEditor.SceneManagement { public static partial class EditorSceneManagerExt { } }
 namespace UnityEngine { public static class Resources { public static T Load<T>(string p) where T : Object { return null; } }
     public class DefaultExecutionOrderAttribute : System.Attribute { public DefaultExecutionOrderAttribute(int o) { } } }
+namespace UnityEngine { public enum FullScreenMode { ExclusiveFullScreen, FullScreenWindow, MaximizedWindow, Windowed } }
+namespace UnityEditor { public static class PlayerSettings { public static UnityEngine.FullScreenMode fullScreenMode; public static int defaultScreenWidth, defaultScreenHeight; public static bool resizableWindow, runInBackground; } }
