@@ -33,6 +33,8 @@
   auto-attacking: `NetworkUnit.BlockedByShore` (host only, reset by `MoveTo` / new `Attack`) makes `UnitCombat` drop the order;
   (8) `TechBonus.TechsOf` caches one set per tech mask instead of a new HashSet per unit per tick. Not changed: FogOfWar's
   `GetComponentsInChildren` every 0.25 s (small) and the no-BuildSlot fallback in `CommandRelay` (the generated scene always has slots).
+- Night 17 (partial): `git grep` finds no API keys; `.env` and `PhotonAppSettings.asset` are not tracked and never were; README status
+  matches. Python from a fresh `pip install` (without the optional sentence-transformers, whose download hung here): `pytest ai evaluation` 60 passed.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
