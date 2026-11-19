@@ -15,7 +15,7 @@
   Villagers, and a right-click that cancels placement also moved the units: `BuildPlacement.OwnsClick` now guards
   `SelectionManager` and `UnitCommandInput`. Gather loop and numbers re-checked against `rules.md` (no change needed).
 - Readability: `SelectionPanel` buttons get an explicit font, 18 px text, display names ("Raider Boat" instead of `raider_boat`) in
-  buttons and the info text; HUD shows "waiting for player 2..." while the host is alone. C# rule tests (throwaway net8.0 + NUnit): 47/47 pass; later 48/48 with the new `DisplayNames` test (core helper used by labels and buttons).
+  buttons and the info text; HUD shows "waiting for P2" while the host is alone (HUD labels auto-size so the longer age cell fits). C# rule tests (throwaway net8.0 + NUnit): 47/47 pass; later 48/48 with the new `DisplayNames` test (core helper used by labels and buttons).
 - `RtsCamera`: WASD no longer pans while a TMP input field is focused (typing a question moved the camera); mouse wheel accepts both
   120-per-notch and normalised (~1) scroll values (with /120 only, a normalised value is below the 0.01 threshold and zoom is dead).
   `AiCommanderPanel`: answer and status texts auto-size (min 12) instead of overflowing the panel.
