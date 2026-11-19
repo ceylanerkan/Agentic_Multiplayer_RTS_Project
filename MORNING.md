@@ -21,7 +21,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme günü) senin geri bildirimlerinle s�
 4. `Game` sahnesi açıkken Play'e bas: `Menu` açılmalı. Session adı yaz, Host. ParrelSync klonunda aynı adla Join. Beklenen: iki tarafta da TC + 3 Villager, altlarında mavi (kendi) / kırmızı (düşman) disk, üstlerinde isim + HP; ağaç/çalı/altın üstünde miktar; üst barda Wood/Food/Gold/Pop/Age okunur.
 5. Fare tekerleğiyle zoom yap (çalışmalı); AI paneline "wasd" yaz: kamera kımıldamamalı.
 6. Villager seç (ayağının altında yeşil halka görünmeli), ağaca sağ tık: ağacın etiketindeki sayı azalmalı, HUD'da Wood artmalı. House inşa et: yerleştirdikten sonra Villager seçili kalmalı, etikette "building %" görünmeli. Yerleştirirken sağ tık sadece iptal etmeli, birimleri yürütmemeli.
-7. Sorun olursa `UNITY_FEEDBACK.md`'ye: Console hatası (olduğu gibi), `Test 5 tamam` / `Test 5 olmadı: ...`, mümkünse "hâlâ okunmuyor: X" gibi somut not (ekran görüntüsü yolu da yazabilirsin).
+7. Sorun olursa `UNITY_FEEDBACK.md`'ye: Console hatası (olduğu gibi), adım numarasıyla `Test 4 tamam` / `Test 6 olmadı: ...`, mümkünse "hâlâ okunmuyor: X" gibi somut not (ekran görüntüsü yolu da yazabilirsin).
 
 ## Senin kararın gerekiyor
 Yok.
