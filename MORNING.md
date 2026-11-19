@@ -1,23 +1,19 @@
 # Sabah notları – 2026-11-19
 
 ## Dün gece ne yaptım
-- `UNITY_FEEDBACK.md` 2026-11-18 başlığını işledim: 3 obsolete uyarısı düzeltildi (`FindObjectsByType<T>()`, `FindAnyObjectByType`).
-- TMP `NullReferenceException`'ın sebebi: üretilen bütün TMP yazılarında font boştu (`Game.unity`'de `m_fontAsset: {fileID: 0}`). `RtsSetupTools` artık yazıdan önce LiberationSans SDF fontunu atıyor. Yazılar bu yüzden de görünmüyordu.
-- Play artık hangi sahne açık olursa olsun `Menu`'den başlıyor (`Editor/PlayFromMenu.cs`, `EditorSceneManager.playModeStartScene`; kapatmak için `Tools > RTS > Play from Menu scene`).
-- Ayırt edilebilirlik: yeni `UI/EntityVisuals.cs` her birimin/binanın altına takım diski (mavi = benim, kırmızı = düşman) ve üstüne isim etiketi koyuyor ("Villager 25/25", "House building 40%", "Wood 180"). Çalışma zamanında ekleniyor, prefab'larda elle iş yok. Fog of war etiketleri de gizliyor.
-- Birimler büyütüldü, kaynaklar farklı şekiller aldı (uzun koyu yeşil ağaç, pembe çalı, geniş sarı altın kubbesi), UI panelleri daha opak, fontlar büyük.
-- Kod incelemesi: seçim halkası nesnenin ortasında, yani kapsülün içinde kalıyordu (görünmüyordu); artık ayağın altında. Bina yerleştirme tıkı Villager seçimini de siliyordu, yerleştirmeyi sağ tıkla iptal etmek birimleri de yürütüyordu; ikisi düzeltildi.
-- Alt paneldeki butonlar artık okunur: açık font, 18 px, `raider_boat` yerine "Raider Boat". Host tek başınayken üst barda "waiting for player 2..." yazıyor.
-- AI paneline soru yazarken WASD artık kamerayı kaydırmıyor; uzun AI cevapları panele sığacak şekilde küçülüyor; fare tekerleği zoom'u iki farklı Input System scroll ölçeğinde de çalışıyor.
-- Bağımsız kod incelemesinden 6 hata düzeltildi: kendi yarım binaların fog of war altında görünmüyordu; P2'nin AI snapshot'ı odun toplayan Villager'ları boşta sanıyordu; aynı teknoloji iki binada iki kez ödenebiliyordu; ENEMY_SIGHTED olayı görüş sınırında her 0.25 s'de tekrar ediyordu; başlangıç Villager'ları ve üretilen birimler TC'nin köşesinde (belki çatısında) doğuyordu; yıkılan inşaatta hata riski; suyun öbür tarafındaki hedefe saldır emri alan birim donup kalıyordu (artık emri bırakıp normal davranıyor).
-- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı; C# kural testleri 49/49 (2 yeni test; EditMode Test Runner 49 göstermeli); Python 60 test geçti.
+- `UNITY_FEEDBACK.md` 2026-11-18 işlendi: 3 obsolete uyarısı düzeltildi; TMP `NullReferenceException`'ın sebebi üretilen yazılarda fontun boş olmasıydı (`m_fontAsset: {fileID: 0}`), `RtsSetupTools` artık LiberationSans SDF atıyor. Yazılar bu yüzden görünmüyordu.
+- Play artık hangi sahne açıksa açık olsun `Menu`'den başlıyor (`Editor/PlayFromMenu.cs`). Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs`.
+- Okunurluk: yeni `UI/EntityVisuals.cs` her birim/binaya takım diski (mavi = benim, kırmızı = düşman) ve isim + HP etiketi, kaynaklara miktar etiketi koyuyor (prefab işi yok). Birimler daha büyük, kaynak şekilleri farklı, UI opak, fontlar ve butonlar büyük, "Raider Boat" gibi okunur isimler, host tekken "waiting for player 2...".
+- Kontrol hataları: seçim halkası kapsülün içinde kalıyordu (artık ayakta); bina yerleştirme tıkı seçimi siliyordu; sağ tıkla iptal birimleri yürütüyordu; AI paneline yazarken WASD kamerayı kaydırıyordu; fare tekerleği bazı Input System ayarlarında zoom yapmıyor olabilirdi.
+- Bağımsız kod incelemesinden 7 düzeltme: kendi yarım binaların fog altında görünmüyordu; P2'nin AI'ı çalışan Villager'ları boşta sanıyordu; aynı teknoloji iki kez ödenebiliyordu; ENEMY_SIGHTED spam'i; birimler TC'nin köşesinde doğuyordu; suyun ötesine saldır emri birimi donduruyordu; yıkılan inşaatta hata riski.
+- Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 49/49 (2 yeni), `pytest ai evaluation` 60 geçti. Rapora "Lessons learned" maddesi eklendi.
 
 ## Plan durumu
-Gece 1–15 bitti; Gece 16 (hata düzeltme günü) senin geri bildirimlerinle sürüyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kod incelemesi ve eksik testler.
+Gece 1–15 bitti; Gece 16 (hata düzeltme) ve Gece 17 (tutarlılık: gizli anahtar yok, README/test sayıları güncel) kısmen bitti, son Unity geri bildirimini bekliyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme ve testler.
 
 ## Bugün test et
 1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/4, sonra main'de `git pull`.
-2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le.
+2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le. `Window > General > Test Runner > EditMode > Run All`: 49 test geçmeli.
 3. Game view'ın üstündeki çözünürlük menüsünden **Full HD (1920x1080)** seç (16:9). ParrelSync ile iki pencere için **1280x720** yeterli; UI pencereye göre ölçekleniyor. Windows build'de de 1920x1080 hedef.
 4. `Game` sahnesi açıkken Play'e bas: `Menu` açılmalı. Session adı yaz, Host. ParrelSync klonunda aynı adla Join. Beklenen: iki tarafta da TC + 3 Villager, altlarında mavi (kendi) / kırmızı (düşman) disk, üstlerinde isim + HP; ağaç/çalı/altın üstünde miktar; üst barda Wood/Food/Gold/Pop/Age okunur.
 5. Fare tekerleğiyle zoom yap (çalışmalı); AI paneline "wasd" yaz: kamera kımıldamamalı.
