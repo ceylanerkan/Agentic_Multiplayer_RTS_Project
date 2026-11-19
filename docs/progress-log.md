@@ -57,6 +57,7 @@
   build instances side by side; the student runs it (ProjectSettings stay theirs).
 - Trained units appear on one of four spots in a row next to the building (they used to stack on one point); start Villagers stand on
   the other side of the TC.
+- Pytest: every unit and building key in the knowledge JSON has a prefab row in `RtsSetupTools.cs` (else `GameSpawner` throws). 66 passed.
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError; new test, 65 pytest passed). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

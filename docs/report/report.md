@@ -89,7 +89,7 @@ domains, visibility, production queue, win condition, approval checks) are plain
 MonoBehaviours and NetworkBehaviours are thin adapters that read the networked objects and call the core.
 
 **Python side.** `ai/gateway` (FastAPI, agent loop, logs), `ai/mcp-server` (seven tools), `ai/rag` (knowledge index
-and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 65 pytest cases.
+and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 66 pytest cases.
 
 **Data flow of one question.** (1) The player types a question. (2) `AiSnapshotBuilder` collects own units and
 buildings and the enemies returned by `VisibilityService.FilterFor`. (3) The gateway validates the snapshot against
@@ -327,7 +327,7 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
-**C. Tests.** Python: `python -m pytest -q ai evaluation` (65 tests, no network, no API key). C#: Unity Test Runner,
+**C. Tests.** Python: `python -m pytest -q ai evaluation` (66 tests, no network, no API key). C#: Unity Test Runner,
 EditMode, assembly `RTS.Tests.EditMode` (51 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

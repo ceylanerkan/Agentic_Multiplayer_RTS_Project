@@ -27,3 +27,13 @@ def test_gather_numbers_match_rules():
     gs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/GatherState.cs").read_text(encoding="utf-8")
     assert "RatePerSecond = 0.6f" in gs and "CarryMax = 10" in gs
     assert "0.6 resource per second" in RULES and "at most 10" in RULES
+
+
+def test_every_unit_and_building_has_a_generated_prefab():
+    # GameSpawner throws "No prefab with key" when a key from the JSON has no prefab row in RtsSetupTools.cs
+    import json
+    tools = (ROOT / "UnityRTS/Assets/Scripts/Editor/RtsSetupTools.cs").read_text(encoding="utf-8")
+    rows = set(re.findall(r'\{ "([a-z_0-9]+)", "[A-Za-z]+", "[0-9.,]+", "[0-9.]+" \}', tools))
+    for name in ("units", "buildings"):
+        keys = {r["key"] for r in json.loads((ROOT / f"ai/rag/knowledge/{name}.json").read_text(encoding="utf-8"))}
+        assert keys <= rows, f"{name} without a prefab row in RtsSetupTools.cs: {sorted(keys - rows)}"
