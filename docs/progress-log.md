@@ -10,6 +10,10 @@
   `NetworkUnit`/`NetworkBuilding`/`ResourceNode.Spawned`: team disc (blue mine / red enemy) + billboard label with name and HP / build % /
   amount, hidden together with the body by fog of war. Bigger units, distinct resource shapes, opaque UI panels, bigger fonts,
   `CanvasScaler.matchWidthOrHeight = 0.5`. Target resolution: 1920x1080 (16:9), 1280x720 for two windows.
+- Review chunk: the selection ring was placed at the object's pivot (its centre, lifted by `StandOnGround`), i.e. hidden inside the
+  capsule; now at the feet and sized from the collider, just below the team disc. A building-placement click also deselected the
+  Villagers, and a right-click that cancels placement also moved the units: `BuildPlacement.OwnsClick` now guards
+  `SelectionManager` and `UnitCommandInput`. Gather loop and numbers re-checked against `rules.md` (no change needed).
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.

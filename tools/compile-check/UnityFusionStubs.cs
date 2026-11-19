@@ -40,7 +40,7 @@ namespace UnityEngine
     public class Camera : Component { public static Camera main;  public Ray ScreenPointToRay(Vector3 p) { return default(Ray); } public Vector3 WorldToScreenPoint(Vector3 p) { return p; } }
     public static class Mathf { public static float Max(float a, float b) { return a; } public static int Max(int a, int b) { return a; } public static float Min(float a, float b) { return a; } public static float Abs(float a) { return a; }
         public static float Clamp(float a, float b, float c) { return a; } public static int RoundToInt(float f) { return 0; } public static int CeilToInt(float f) { return 0; } }
-    public static class Time { public static float time, unscaledTime, unscaledDeltaTime, deltaTime; }
+    public static class Time { public static int frameCount; public static float time, unscaledTime, unscaledDeltaTime, deltaTime; }
     public static class Debug { public static void Log(object o) { } public static void LogWarning(object o) { } public static void LogError(object o) { } }
     public static class Application { public static string dataPath, persistentDataPath, streamingAssetsPath; }
     public static class Screen { public static int height; }

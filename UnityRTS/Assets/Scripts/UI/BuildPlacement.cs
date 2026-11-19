@@ -22,6 +22,12 @@ public class BuildPlacement : MonoBehaviour
     BuildSlot target;
 
     public bool Active { get { return buildingKey != null; } }
+    /// <summary>Frame in which placement used a mouse click (place or right-click cancel), so SelectionManager and
+    /// UnitCommandInput do not also treat that click as "deselect" or "move".</summary>
+    public int UsedClickFrame { get; private set; } = -1;
+
+    /// <summary>True while placing, and in the frame a click ended placement.</summary>
+    public static bool OwnsClick { get { return Instance != null && (Instance.Active || Instance.UsedClickFrame == Time.frameCount); } }
 
     void Awake() { Instance = this; if (cam == null) cam = Camera.main; }
 
@@ -51,7 +57,7 @@ public class BuildPlacement : MonoBehaviour
         var mouse = Mouse.current; var kb = Keyboard.current; var relay = CommandRelay.Local;
         if (mouse == null || cam == null || relay == null) return;
         if (kb != null && kb.escapeKey.wasPressedThisFrame) { Cancel(); return; }
-        if (mouse.rightButton.wasPressedThisFrame) { Cancel(); return; }
+        if (mouse.rightButton.wasPressedThisFrame) { UsedClickFrame = Time.frameCount; Cancel(); return; }
 
         var plane = new Plane(Vector3.up, Vector3.zero);
         var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
@@ -70,6 +76,7 @@ public class BuildPlacement : MonoBehaviour
             NetworkUnit builder = FirstSelectedVillager();
             if (builder == null) return; // a Villager must be selected to build
             relay.SendBuild(buildingKey, target.transform.position, zone, builder.Object.Id);
+            UsedClickFrame = Time.frameCount;
             Cancel();
         }
     }

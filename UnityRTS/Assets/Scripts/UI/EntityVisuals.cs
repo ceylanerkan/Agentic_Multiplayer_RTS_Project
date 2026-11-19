@@ -46,7 +46,7 @@ public class EntityVisuals : MonoBehaviour
         var l = new GameObject(name + "_Label");
         label = l.AddComponent<TextMeshPro>();
         if (TMP_Settings.defaultFontAsset != null) label.font = TMP_Settings.defaultFontAsset; // an unset font gives a NullReferenceException
-        label.fontSize = building != null ? 9f : 6f;
+        label.fontSize = building != null ? 11f : 8f;   // about 25-35 px high at the default camera distance
         label.alignment = TextAlignmentOptions.Center;
         label.rectTransform.sizeDelta = new Vector2(30f, 5f);  // wide enough that names never wrap
         label.outlineWidth = 0.25f; label.outlineColor = new Color32(0, 0, 0, 255);
@@ -61,7 +61,7 @@ public class EntityVisuals : MonoBehaviour
 
         if (disc != null)
         {
-            disc.position = new Vector3(p.x, p.y - (labelHeight - 1.2f) * 0.5f + 0.05f, p.z);
+            disc.position = new Vector3(p.x, p.y - (labelHeight - 1.2f) * 0.5f + 0.06f, p.z);   // feet; the selection ring lies just below
             discRenderer.enabled = visible;
         }
         label.transform.position = p + Vector3.up * (labelHeight * 0.5f + 0.4f);
