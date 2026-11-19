@@ -6,14 +6,14 @@
 - Okunurluk: yeni `UI/EntityVisuals.cs` her birim/binaya takım diski (mavi = benim, kırmızı = düşman) ve isim + HP etiketi, kaynaklara miktar etiketi koyuyor (prefab işi yok). Birimler daha büyük, kaynak şekilleri farklı, UI opak, fontlar ve butonlar büyük, "Raider Boat" gibi okunur isimler, host tekken "waiting for player 2...".
 - Kontrol hataları: seçim halkası kapsülün içinde kalıyordu (artık ayakta); bina yerleştirme tıkı seçimi siliyordu; sağ tıkla iptal birimleri yürütüyordu; AI paneline yazarken WASD kamerayı kaydırıyordu; fare tekerleği bazı Input System ayarlarında zoom yapmıyor olabilirdi.
 - Bağımsız kod incelemesinden 7 düzeltme: kendi yarım binaların fog altında görünmüyordu; P2'nin AI'ı çalışan Villager'ları boşta sanıyordu; aynı teknoloji iki kez ödenebiliyordu; ENEMY_SIGHTED spam'i; birimler TC'nin köşesinde doğuyordu; suyun ötesine saldır emri birimi donduruyordu; yıkılan inşaatta hata riski.
-- Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 50/50 (3 yeni), `pytest ai evaluation` 64 geçti. Rapora "Lessons learned" maddesi eklendi.
+- Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 51/51 (4 yeni), `pytest ai evaluation` 64 geçti. Rapora "Lessons learned" maddesi eklendi.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve Gece 17 (tutarlılık: gizli anahtar yok, README/test sayıları güncel) kısmen bitti, son Unity geri bildirimini bekliyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme ve testler.
 
 ## Bugün test et
 1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/4, sonra main'de `git pull`.
-2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le. `Window > General > Test Runner > EditMode > Run All`: 50 test geçmeli.
+2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le. `Window > General > Test Runner > EditMode > Run All`: 51 test geçmeli.
 3. Game view'ın üstündeki çözünürlük menüsünden **Full HD (1920x1080)** seç (16:9). ParrelSync ile iki pencere için **1280x720** yeterli; UI pencereye göre ölçekleniyor. Windows build'de de 1920x1080 hedef.
 4. `Game` sahnesi açıkken Play'e bas: `Menu` açılmalı. Session adı yaz, Host. ParrelSync klonunda aynı adla Join. Beklenen: iki tarafta da TC + 3 Villager, altlarında mavi (kendi) / kırmızı (düşman) disk, üstlerinde isim + HP; ağaç/çalı/altın üstünde miktar; üst barda Wood/Food/Gold/Pop/Age okunur.
 5. Fare tekerleğiyle zoom yap (çalışmalı); AI paneline "wasd" yaz: kamera kımıldamamalı.

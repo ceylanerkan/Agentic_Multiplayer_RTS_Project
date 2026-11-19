@@ -141,6 +141,7 @@ public static class RtsSetupTools
         sea.GetComponent<Renderer>().sharedMaterial = Mat("SeaMat", "0.1,0.3,0.7");
 
         // zone centres: nearest centre wins, so the coast lies halfway between a land and a water centre (z = 45)
+        // (RulesTests.GeneratedMapLayout_PutsSlotsAndResourcesInTheRightZones repeats these numbers: change both together)
         var zones = new Dictionary<ZoneVolume.Zone, Vector3>
         {
             { ZoneVolume.Zone.P1Base, new Vector3(-65, 0, 25) }, { ZoneVolume.Zone.P2Base, new Vector3(65, 0, 25) },

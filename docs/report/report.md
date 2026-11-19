@@ -270,7 +270,7 @@ failures of the real model (for example a missing prerequisite or a wrong zone) 
 
 *Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S16; most are automated, the live Gemini column is open).
 
-**Unity side.** 50 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
+**Unity side.** 51 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
 event log, production queue, tech effects, snapshot assembly, approval, the decision log and the contract between the
 C# AI types and `action_plan.schema.json`. They were compiled and run with the .NET SDK outside
 Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance test results and the demo video.
@@ -321,6 +321,6 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
 **C. Tests.** Python: `python -m pytest -q ai evaluation` (64 tests, no network, no API key). C#: Unity Test Runner,
-EditMode, assembly `RTS.Tests.EditMode` (50 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+EditMode, assembly `RTS.Tests.EditMode` (51 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

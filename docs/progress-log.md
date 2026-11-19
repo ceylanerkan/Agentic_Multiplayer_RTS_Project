@@ -43,6 +43,8 @@
 - `CommandRelay.RPC_Build` without any BuildSlot in the scene now checks that the client's position lies in the validated zone
   (before it used the position as is; low risk, the generated scene always has slots).
 - Parity pytest: every rejection reason in `evaluation/plan_checks.py` must exist in `GameActionValidator.cs` (catches drift). 64 passed.
+- EditMode test for the generated map layout: all 12 base slots and 4 coastal slots lie in the own base zone (Dock rule), harbours are
+  water, the coast is at z = 45, resource clusters lie in their named zones. C#: 51/51.
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

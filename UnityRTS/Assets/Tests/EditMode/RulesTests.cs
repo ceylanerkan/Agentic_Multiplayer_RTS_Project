@@ -611,5 +611,32 @@ namespace RTS.Tests
                     list.Add(((Newtonsoft.Json.JsonPropertyAttribute)attr).PropertyName);
             return list;
         }
+
+        [Test]
+        public void GeneratedMapLayout_PutsSlotsAndResourcesInTheRightZones()
+        {
+            // Same zone centres as Editor/RtsSetupTools.cs (SetupScene). If you move them there, update them here.
+            var z = new ZoneLookup();
+            z.Add("P1Base", -65, 25); z.Add("P2Base", 65, 25); z.Add("Center", 0, 0); z.Add("NorthGate", 0, 30);
+            z.Add("WestMine", -65, -30); z.Add("SouthField", 0, -35); z.Add("EastForest", 65, -30);
+            z.Add("P1Harbor", -65, 65); z.Add("OpenSea", 0, 60); z.Add("P2Harbor", 65, 65);
+            Assert.IsTrue(z.IsComplete());
+
+            foreach (int side in new[] { -1, 1 })
+            {
+                string own = side < 0 ? "P1Base" : "P2Base";
+                float bx = 65 * side, bz = 25;
+                for (int i = 0; i < 6; i++)   // normal slots
+                    Assert.AreEqual(own, z.ZoneAt(bx - 14 + (i % 3) * 14, bz + (i < 3 ? -12 : 0)), "slot " + i);
+                for (int i = 0; i < 2; i++)   // coastal slots must be in the own (land) base, or the Dock can never be built
+                    Assert.AreEqual(own, z.ZoneAt(bx - 8 + i * 16, bz + 15), "coastal slot " + i);
+                Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(bx, 65)));   // ships spawn at the harbour centre
+                Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(bx, 44)));  // the coast is at z = 45
+            }
+            // resource clusters (PlaceNodes: 3 x 3 grid, spacing 6 / 5 / 7)
+            Assert.AreEqual("EastForest", z.ZoneAt(65 + 6, -30 + 6));
+            Assert.AreEqual("SouthField", z.ZoneAt(0 - 5, -35 + 5));
+            Assert.AreEqual("WestMine", z.ZoneAt(-65 - 7, -30 + 7));
+        }
     }
 }
