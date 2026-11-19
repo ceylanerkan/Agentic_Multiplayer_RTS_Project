@@ -104,7 +104,7 @@ def markdown_table(summary):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--real", action="store_true")
-    ap.add_argument("--out", default=str(HERE / "results.json"))
+    ap.add_argument("--out", default=str(HERE / "results.json"), help="results file or folder (CSV and table are written next to it)")
     ap.add_argument("--delay", type=float, default=None, help="seconds to wait between prompts (default: 4 with --real because of free-tier rate limits, else 0)")
     args = ap.parse_args()
     load_env()  # GEMINI_API_KEY from .env for --real
@@ -153,6 +153,8 @@ def main():
                "valid_plan_rate": round(sum(r["valid_plan"] for r in rows) / len(rows), 3),
                "avg_latency_s": round(sum(r["latency_s"] for r in rows) / len(rows), 3), "rows": rows}
     out = Path(args.out)
+    if out.is_dir():  # a folder is fine too: write results.json (+ .csv, _table.md) inside it
+        out = out / "results.json"
     out.write_text(json.dumps(summary, indent=1))
     write_csv(out.with_suffix(".csv"), rows)
     out.with_name(out.stem + "_table.md").write_text(markdown_table(summary), encoding="utf-8")
