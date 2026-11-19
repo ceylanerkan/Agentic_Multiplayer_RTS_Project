@@ -573,5 +573,43 @@ namespace RTS.Tests
             Assert.IsFalse(v1.Exists(o => o.Id == 2));   // the site reveals nothing
             Assert.IsTrue(VisibilityService.FilterFor(2, all).Exists(o => o.Id == 1)); // the enemy can see the site
         }
+
+        [Test]
+        public void AiDtos_MatchTheActionPlanSchema_AndParseAGatewayReply()
+        {
+            // Contract: every field the schema allows has a [JsonProperty] in the C# DTO, otherwise Unity silently drops it.
+            string schemaPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../ai/schemas/action_plan.schema.json"));
+            var schema = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(schemaPath));
+            CollectionAssert.IsSubsetOf(Names(schema["properties"]), JsonNames(typeof(AiPlan)));
+            CollectionAssert.IsSubsetOf(Names(schema["$defs"]["action"]["properties"]), JsonNames(typeof(PlanActionDto)));
+
+            // a reply shaped like the gateway's /ask response
+            const string reply = "{\"plan\": {\"summary\": \"Train spearmen.\", \"confidence\": 0.7, \"evidence\": [\"get_visible_enemies\", \"unit_spearman_v1\"]," +
+                "\"actions\": [{\"action_type\": \"TRAIN_UNIT\", \"unit_type\": \"spearman\", \"count\": 2, \"reason\": \"counter cavalry\"}]}," +
+                "\"tools_used\": [\"get_visible_enemies\", \"search_game_knowledge\"], \"needs_approval\": true}";
+            var a = AiAnswer.Parse(reply);
+            Assert.IsTrue(a.NeedsApproval);
+            Assert.AreEqual(0.7f, a.Plan.Confidence, 1e-4);
+            Assert.AreEqual(2, a.ToolsUsed.Count);
+            var act = a.Plan.Actions[0].ToPlanAction();
+            Assert.AreEqual("TRAIN_UNIT", act.ActionType);
+            Assert.AreEqual("spearman", act.UnitType);
+        }
+
+        static List<string> Names(Newtonsoft.Json.Linq.JToken props)
+        {
+            var list = new List<string>();
+            foreach (var p in ((Newtonsoft.Json.Linq.JObject)props).Properties()) list.Add(p.Name);
+            return list;
+        }
+
+        static List<string> JsonNames(System.Type t)
+        {
+            var list = new List<string>();
+            foreach (var f in t.GetFields())
+                foreach (var attr in f.GetCustomAttributes(typeof(Newtonsoft.Json.JsonPropertyAttribute), false))
+                    list.Add(((Newtonsoft.Json.JsonPropertyAttribute)attr).PropertyName);
+            return list;
+        }
     }
 }

@@ -38,6 +38,8 @@
 - New pytest: a question over 500 characters gets 422 and a security-log line before the LLM is called (the limit itself is allowed). 61 passed.
 - New `ai/mcp-server/tests/test_retriever.py`: every JSON record and every `## [id]` section of rules.md becomes exactly one chunk with a
   unique source id; BM25-only search is ranked, clamped to top_k 5 and returns nothing for nonsense. 63 passed.
+- New EditMode test: every property of `ai/schemas/action_plan.schema.json` (plan and action) has a `[JsonProperty]` in `AiPlan` /
+  `PlanActionDto`, and a gateway-shaped `/ask` reply parses into a TRAIN_UNIT action. C#: 50/50.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
