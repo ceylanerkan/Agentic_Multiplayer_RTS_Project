@@ -13,7 +13,7 @@ Controls: **WASD / arrows** move the camera, **mouse wheel** zooms, **left click
 
 ## 1. Multiplayer RTS
 - Say: "Two instances, one match. The host owns all state; the client sends commands."
-- Show both screens: each player has a Town Center and 3 Villagers. Each screen shows its own objects with a blue disc and the opponent's
+- Show both screens (the HUD says P1 or P2): each player has a Town Center and 3 Villagers. Each screen shows its own objects with a blue disc and the opponent's
   with a red one, and every label shows name and HP. Box-select the Villagers on A and
   right-click the ground: they move in a grid formation, and the same movement appears on B's screen.
 - Later in the match (scenario 2 army): select 3-4 Spearmen on A, right-click an enemy unit: the fight is visible on both

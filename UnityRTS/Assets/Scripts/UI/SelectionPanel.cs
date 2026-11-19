@@ -74,6 +74,7 @@ public class SelectionPanel : MonoBehaviour
         else if (sel.Building != null && sel.Building.Completed)
         {
             var b = sel.Building; var bdef = data.Buildings[b.TypeKey.ToString()];
+            var me = relay.Object.InputAuthority;   // not b.Owner: b may be despawned when the button refreshes
             foreach (var uk in bdef.Trains)
             {
                 var k = uk; var udef = data.Units[k];
@@ -84,7 +85,7 @@ public class SelectionPanel : MonoBehaviour
             {
                 var k = tk; var tdef = data.Techs[k];
                 var action = new PlanAction { ActionType = "RESEARCH", TechType = k };
-                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k), () => QueueBlock(b, true));
+                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k), () => QueueBlock(b, true) ?? ResearchingElsewhere(k, me));
             }
         }
     }
@@ -95,6 +96,15 @@ public class SelectionPanel : MonoBehaviour
         if (b == null || b.Object == null || !b.Object.IsValid) return null;
         if (b.QueueCount >= ProductionQueue.MaxLength) return "queue is full";
         if (!research && b.CurrentIsResearch && b.CurrentKey.ToString() == ProductionQueue.BlockingResearch) return "cannot train while researching Age II";
+        return null;
+    }
+
+    // the host refuses a technology that one of the player's buildings is already researching (it would be paid twice)
+    static string ResearchingElsewhere(string tech, Fusion.PlayerRef owner)
+    {
+        foreach (var o in NetworkBuilding.All)
+            if (o.Owner == owner && o.Object != null && o.Object.IsValid && o.CurrentIsResearch && o.CurrentKey.ToString() == tech)
+                return "already being researched";
         return null;
     }
 
