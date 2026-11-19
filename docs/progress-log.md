@@ -50,7 +50,7 @@
   `_ = Ask()` were lost and left it busy forever -> try/catch + `Debug.LogException`; leaked materials (ghost per placement, ring,
   label outline copies); `TMP_Settings.defaultFontAsset` throws without TMP Essential Resources -> check `Resources.Load("TMP Settings")`;
   Rebuild refuses in Play mode and resets `playModeStartScene` after deleting Menu; menu validate no longer re-applies the start scene.
-  Not changed: running command 1 a second time over existing prefabs (use Rebuild instead; noted in MORNING).
+  Command 1 over existing prefabs now asks before overwriting (references in existing scenes may break; Rebuild is the safe path).
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.

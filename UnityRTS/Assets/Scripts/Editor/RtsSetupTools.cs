@@ -95,6 +95,15 @@ public static class RtsSetupTools
     }
 
     [MenuItem("Tools/RTS/1 Create placeholder prefabs")]
+    static void CreatePrefabsMenu()
+    {
+        // Overwriting existing prefabs can leave the GameSpawner references in an existing Game scene "Missing".
+        if (File.Exists(PrefabDir + "/Player.prefab") &&
+            !EditorUtility.DisplayDialog("Prefabs already exist", "Overwrite Assets/Prefabs? References in existing scenes may break; " +
+                "'Tools > RTS > Rebuild generated scenes and prefabs' recreates the scenes too.", "Overwrite", "Cancel")) return;
+        CreatePrefabs();
+    }
+
     static void CreatePrefabs()
     {
         EnsureFolder("Assets", "Prefabs"); EnsureFolder(PrefabDir, "Materials");
