@@ -281,6 +281,12 @@ Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance
   with 0 HP because `hp` is a top-level field in `buildings.json`). Lesson: keep game rules free of engine types.
 - **Unity message names.** A method `Start(GameMode, string)` was reported by Unity as an invalid message signature
   and had to be renamed. Lesson: never reuse Unity's magic method names.
+- **Generated scenes need the same care as code.** The scenes and placeholder prefabs are created by an editor script.
+  Its first version created TextMeshPro texts without a font asset, which threw in the UI layout pass and left every
+  label invisible, and pressing Play in the open Game scene skipped the network launcher. The fixes were to set the font
+  before the text and to force play mode to start in the Menu scene. A first play test also showed that identical
+  grey placeholders were hard to read, so each unit and building now has a team disc and a name/HP label.
+  Lesson: test the generated content in the editor as early as the code.
 - **One source of numbers.** Keeping all values in JSON files read by Unity, the RAG index and the evaluation removed a
   whole class of inconsistencies, but needs a loader at build time (`StreamingAssets` copy).
 - **Host authority vs. convenience.** Reserving population and paying cost when a unit is queued (not when it appears)
