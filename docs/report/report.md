@@ -234,7 +234,7 @@ integrity of the game state and (3) the player's consent.
    questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,
    because no tool can return it.
 
-**Tests.** Security tests S1-S16 are listed in `evaluation/security-tests.md`: injection question, extra hidden field,
+**Tests.** Security tests S1-S17 are listed in `evaluation/security-tests.md`: injection question, extra hidden field,
 missing or wrong token, identity switch across two sessions, tool call with a player id, oversized `top_k` and query,
 a poisoned knowledge chunk, invalid plans (five kinds), a snapshot contract test between Unity's export and the
 schema, and re-validation after the state changed. **[TODO live]** Rows marked TODO in that file need the live Gemini
@@ -275,7 +275,7 @@ rejected by the validator, which is the intended behaviour and the observed limi
 literal player request even when it is illegal, so the validator is necessary.** **[TODO live]** Add the observed
 failures of the real model (for example a missing prerequisite or a wrong zone) and the 2-3 slowest prompts.
 
-*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S16; most are automated, the live Gemini column is open).
+*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S17; most are automated, the live Gemini column is open).
 
 **Unity side.** 53 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
 event log, production queue, tech effects, snapshot assembly, approval, the decision log and the contract between the
