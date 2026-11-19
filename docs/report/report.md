@@ -55,6 +55,12 @@ units attack only their own domain, ranged units shoot across the shoreline.
 (+1 range and line of sight for Archers), Horse Collar (+20% food gathering). The Town Center cannot train while it
 researches Age II.
 
+**Presentation.** The graphics are deliberately simple placeholders, because the course is about the networked and
+agentic parts: units are capsules, buildings flat boxes, resources cylinders (trees) and spheres (bushes, gold).
+Readability comes from information instead of art: every unit and building has a team disc (own blue, enemy red, from
+each player's own point of view) and a label with its name and HP or construction progress; resources show their
+remaining amount. The target resolution is 1920x1080 and the UI scales with the window.
+
 **Single source of numbers.** All values live in `ai/rag/knowledge/*.json`. Unity reads the same files at run time
 (`GameDataProvider`), the AI retrieves them as knowledge, and the evaluation reads them for its own rule checks, so
 the game and the AI cannot disagree about a cost or a statistic.
