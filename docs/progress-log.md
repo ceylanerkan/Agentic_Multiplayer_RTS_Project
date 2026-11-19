@@ -70,9 +70,11 @@
 - HUD shows the player slot ("P1 | Age I") so the two windows are easy to tell apart in the demo.
 - `FogOfWar` caches each object's renderers (pruned when objects are destroyed). Mock `run_eval.py` runs from a clean install
   (21 prompts, valid-plan rate 1.0); `--out` now also accepts a folder (it crashed with IsADirectoryError; new test, 65 pytest passed). TODO [You] play-test steps, `docs/architecture.md` (presentation, editor tooling) updated.
-- Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
+- Final tests of the run: `tools/compile-check` (stubs extended for the new APIs) 0 errors, 0 warnings; C# rule tests (throwaway net8.0 +
+  NUnit) 53/53; `pytest ai evaluation` 67 passed.
 - Open questions: none.
-- Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
+- Risks: all of today's Unity scripts (EntityVisuals, PlayFromMenu, the new menu commands, UI fixes, AiGatewayClient retry) are uncompiled
+  in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs; TMP world-label size may need tuning.
 
 ## 2026-11-15 (run 3, night 3)
 - UNITY_FEEDBACK.md headings handled: "2026-11-14" (the `Start()` rename was already fixed on main; no other
