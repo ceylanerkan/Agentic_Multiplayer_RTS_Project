@@ -62,7 +62,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
         // in front of the TC, clear of its collider (a fixed offset of 3 put the first Villager on the TC's corner, maybe its roof)
         float clear = tc.FootprintHalf() + 1.5f;
         for (int i = 0; i < RTS.Core.Rules.GameConstants.StartVillagers; i++)
-            SpawnUnit(player, "villager", baseCentre.position + new Vector3(i * 1.8f, 0, -clear));
+            SpawnUnit(player, "villager", baseCentre.position + new Vector3(-i * 1.8f, 0, -clear)); // trained units appear at +x
         state.PopUsed = RTS.Core.Rules.GameConstants.StartVillagers;
         state.RecalculateCapacity();
     }
