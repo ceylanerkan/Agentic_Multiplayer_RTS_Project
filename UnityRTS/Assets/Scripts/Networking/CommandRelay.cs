@@ -92,7 +92,7 @@ public class CommandRelay : NetworkBehaviour
         var a = new PlanAction { ActionType = "BUILD", BuildingType = buildingKey.ToString(), TargetZone = zone.ToString() };
         if (!validator.Validate(a, state.ToCore()).Ok) return;
         // The action only names a zone, so the host picks the place: the free BuildSlot nearest to the requested
-        // position (the ghost the player clicked). Without any slots in the scene the position is used as is.
+        // position (the ghost the player clicked). Without any slots in the scene the position is checked against the zone.
         if (BuildSlot.All.Count > 0)
         {
             var slot = BuildSlot.FindNear(a.TargetZone, a.BuildingType == "dock", pos);
@@ -100,6 +100,9 @@ public class CommandRelay : NetworkBehaviour
             slot.occupied = true;
             pos = slot.transform.position;
         }
+        // No slots (a hand-made test scene): the client's position must at least lie in the validated zone,
+        // so a client cannot put a building in water or in the enemy base.
+        else if (ZoneMap.Instance != null && ZoneMap.Instance.ZoneAt(pos) != a.TargetZone) return;
         state.Spend(GameDataProvider.Get().Buildings[a.BuildingType].Cost, 1);
         var b = GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villagers finish it
         var builder = FindOwned<NetworkUnit>(builderId);
