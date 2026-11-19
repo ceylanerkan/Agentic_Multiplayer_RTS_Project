@@ -28,6 +28,13 @@ public class NetworkBuilding : NetworkBehaviour
     public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
     public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
 
+    /// <summary>Half the width of the building on the ground (from its collider), for placing units next to it.</summary>
+    public float FootprintHalf()
+    {
+        var col = GetComponent<Collider>();
+        return col != null ? Mathf.Max(col.bounds.extents.x, col.bounds.extents.z) : 3f;
+    }
+
     /// <summary>Host only, right after Runner.Spawn.</summary>
     public void InitHost(PlayerRef owner, string typeKey, bool completed)
     {
@@ -73,6 +80,8 @@ public class NetworkBuilding : NetworkBehaviour
 
     // ---- production queue (host only) ----
     public string WhyNotQueue(string key, bool isResearch) { return queue.WhyNot(key, isResearch); }
+    /// <summary>Host only: is this technology already in this building's queue?</summary>
+    public bool IsResearching(string techKey) { return queue.IsResearching(techKey); }
 
     public bool Enqueue(string key, bool isResearch)
     {
@@ -104,7 +113,8 @@ public class NetworkBuilding : NetworkBehaviour
         else
         {
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
-            Vector3 spawn = transform.position + new Vector3(3f, 0, 3f);
+            float clear = FootprintHalf() + 1.5f;   // next to the building, not inside or on top of it
+            Vector3 spawn = transform.position + new Vector3(clear, 0, -clear);
             if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null)
             {
                 // Ships appear in the player's own harbor (a water zone), not on the shore next to the Dock.

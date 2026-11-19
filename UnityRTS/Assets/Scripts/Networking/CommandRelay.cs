@@ -137,6 +137,10 @@ public class CommandRelay : NetworkBehaviour
         var a = new PlanAction { ActionType = "RESEARCH", TechType = techKey.ToString() };
         if (!GameDataProvider.Get().Buildings[b.TypeKey.ToString()].Researches.Contains(a.TechType)) return;
         if (state.HasTech(a.TechType)) return; // already researched
+        // the queue only rejects duplicates inside one building: with two Blacksmiths (or an AI plan approved twice)
+        // the same technology would be queued and paid twice
+        foreach (var other in NetworkBuilding.All)
+            if (other.Owner == Object.InputAuthority && other.IsResearching(a.TechType)) return;
         if (!validator.Validate(a, state.ToCore()).Ok) return;
         if (!b.Enqueue(a.TechType, true)) return;
         state.Spend(GameDataProvider.Get().Techs[a.TechType].Cost, 1);

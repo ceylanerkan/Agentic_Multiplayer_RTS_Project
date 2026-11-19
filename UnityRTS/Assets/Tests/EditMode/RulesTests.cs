@@ -560,5 +560,18 @@ namespace RTS.Tests
             foreach (var d in data.Buildings.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
             foreach (var d in data.Techs.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
         }
+
+        [Test]
+        public void Visibility_UnfinishedBuilding_IsSeenByOwnerButSeesNothing()
+        {
+            // an own building site (Los 0, as VisibilityAdapter lists unfinished buildings) next to a hidden enemy
+            var site = new MapObject { Id = 1, Owner = 1, Type = "house", IsBuilding = true, X = 0, Z = 0, Los = 0 };
+            var enemy = new MapObject { Id = 2, Owner = 2, Type = "spearman", X = 3, Z = 0, Los = 6 };
+            var all = new List<MapObject> { site, enemy };
+            var v1 = VisibilityService.FilterFor(1, all);
+            Assert.IsTrue(v1.Exists(o => o.Id == 1));    // the owner sees the site (it was hidden by fog of war before)
+            Assert.IsFalse(v1.Exists(o => o.Id == 2));   // the site reveals nothing
+            Assert.IsTrue(VisibilityService.FilterFor(2, all).Exists(o => o.Id == 1)); // the enemy can see the site
+        }
     }
 }

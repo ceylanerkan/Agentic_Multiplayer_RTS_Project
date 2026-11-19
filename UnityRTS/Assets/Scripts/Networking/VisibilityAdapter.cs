@@ -19,9 +19,12 @@ public static class VisibilityAdapter
         foreach (var b in NetworkBuilding.All)
         {
             var st = GameSpawner.Instance.StateOf(b.Owner);
-            if (st == null || !b.Completed) continue; // an unfinished building does not see anything
+            if (st == null) continue;
             string key = b.TypeKey.ToString();
-            list.Add(new MapObject { Id = (int)b.Object.Id.Raw, Owner = st.Slot, Type = key, IsBuilding = true, X = b.transform.position.x, Z = b.transform.position.z, Los = data.Buildings[key].LineOfSight });
+            // An unfinished building is still listed (it can be seen and attacked) but sees nothing itself (Los 0).
+            // Leaving it out hid the player's own building sites under the fog of war.
+            float los = b.Completed ? data.Buildings[key].LineOfSight : 0f;
+            list.Add(new MapObject { Id = (int)b.Object.Id.Raw, Owner = st.Slot, Type = key, IsBuilding = true, X = b.transform.position.x, Z = b.transform.position.z, Los = los });
         }
         return list;
     }

@@ -23,7 +23,10 @@ public class VillagerGatherer : NetworkBehaviour
     NetworkBuilding site;   // building under construction
     string resource;
 
-    public bool Busy { get { return phase != Phase.Idle; } }
+    // phase lives only on the host; clients (P2's AI snapshot, idle-villager picks) read this networked copy
+    [Networked] public NetworkBool BusyNet { get; set; }   // same public pattern as the other [Networked] properties
+
+    public bool Busy { get { return HasStateAuthority ? phase != Phase.Idle : (bool)BusyNet; } }
 
     public override void Spawned() { unit = GetComponent<NetworkUnit>(); }
 
@@ -50,7 +53,9 @@ public class VillagerGatherer : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority || phase == Phase.Idle) return;
+        if (!HasStateAuthority) return;
+        BusyNet = phase != Phase.Idle;   // one tick late at most, fine for the UI and the AI
+        if (phase == Phase.Idle) return;
         Vector3 pos = transform.position;
 
         switch (phase)
@@ -71,12 +76,12 @@ public class VillagerGatherer : NetworkBehaviour
                 break;
 
             case Phase.ToBuild:
-                if (site == null || site.Completed) { phase = Phase.Idle; break; }
+                if (!SiteAlive() || site.Completed) { phase = Phase.Idle; break; }
                 if (Flat(site.transform.position - pos) <= DepositReach) { unit.StopMoving(); phase = Phase.Building; }
                 break;
 
             case Phase.Building:
-                if (site == null || site.Completed) { phase = Phase.Idle; site = null; break; }
+                if (!SiteAlive() || site.Completed) { phase = Phase.Idle; site = null; break; }
                 site.AddBuildWork(Runner.DeltaTime); // each Villager adds real seconds of work
                 break;
 
@@ -109,6 +114,10 @@ public class VillagerGatherer : NetworkBehaviour
         if (node == null) { phase = Phase.Idle; unit.StopMoving(); return; }
         phase = Phase.ToNode; unit.MoveTo(node.transform.position);
     }
+
+    // A destroyed site is despawned at once but only Destroyed by Unity at the end of the frame: until then `site != null`
+    // is still true and reading its [Networked] values throws, so also check that its NetworkObject is still valid.
+    bool SiteAlive() { return site != null && site.Object != null && site.Object.IsValid; }
 
     NetworkPlayerState Owner() { return GameSpawner.Instance != null ? GameSpawner.Instance.StateOf(unit.Owner) : null; }
 

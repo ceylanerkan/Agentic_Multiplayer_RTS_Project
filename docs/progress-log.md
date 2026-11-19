@@ -21,6 +21,14 @@
   `AiCommanderPanel`: answer and status texts auto-size (min 12) instead of overflowing the panel.
 - Resource nodes are lifted by half their mesh height (fixed y = 0.5 buried most of a tree); placement ghost has the real building's size
   (`GameSpawner.BuildingSize`). `docs/setup.md`: Play from Menu, resolution, rebuild command.
+- Independent review (read-only subagent), 8 findings; fixed after checking each against the code:
+  (1) unfinished buildings were left out of `VisibilityAdapter.Collect`, so fog of war hid the player's own building sites (and
+  enemy sites were never visible): now listed with Los 0 (+ EditMode test, 49/49); (2) `VillagerGatherer.Busy` was host-only, so
+  P2's AI snapshot showed gathering Villagers as idle: `[Networked] BusyNet`; (3) builders read a despawned site in the same frame:
+  `SiteAlive()` checks `Object.IsValid`; (4) the same technology could be queued and paid in two buildings: host checks every own
+  queue; (6) ENEMY_SIGHTED re-armed instantly at the edge of sight and flooded the event log: re-armed after 10 s out of sight;
+  (7) start Villagers / trained units spawned on the Town Center's corner (maybe its roof): offset by the collider half size + 1.5.
+  Also: Menu session field had the AI panel's placeholder; report "Lessons learned" gained the editor play-test lesson.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
