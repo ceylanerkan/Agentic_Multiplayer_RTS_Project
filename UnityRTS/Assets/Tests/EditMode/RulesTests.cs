@@ -652,5 +652,19 @@ namespace RTS.Tests
             CollectionAssert.AreEquivalent(buildable, defs["building_type"]["enum"].ToObject<List<string>>());
             CollectionAssert.AreEquivalent(data.Techs.Keys, defs["tech_type"]["enum"].ToObject<List<string>>());
         }
+
+        [Test]
+        public void SnapshotSchemaEnums_MatchGameDataAndEventTypes()
+        {
+            // Unity must never export a value the gateway's schema rejects (it would answer HTTP 422 for the whole question).
+            string schemaPath = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../ai/schemas/safe_snapshot.schema.json"));
+            var schema = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(schemaPath));
+            var p = schema["properties"];
+            CollectionAssert.AreEquivalent(ZoneLookup.AllZones, schema["$defs"]["zone"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Units.Keys, p["own_army"]["items"]["properties"]["type"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Buildings.Keys, p["own_buildings"]["items"]["properties"]["type"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(data.Techs.Keys, p["researched_tech"]["items"]["enum"].ToObject<List<string>>());
+            CollectionAssert.AreEquivalent(PlayerEventLog.TypeList, p["recent_events"]["items"]["properties"]["type"]["enum"].ToObject<List<string>>());
+        }
     }
 }
