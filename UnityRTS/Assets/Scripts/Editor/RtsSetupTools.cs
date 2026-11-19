@@ -340,8 +340,9 @@ public static class RtsSetupTools
         go.GetComponent<Image>().color = Color.white; Place((RectTransform)go.transform, pos, size);
         var area = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D)); area.transform.SetParent(go.transform, false);
         var art = (RectTransform)area.transform; art.anchorMin = Vector2.zero; art.anchorMax = Vector2.one; art.offsetMin = new Vector2(8, 4); art.offsetMax = new Vector2(-8, -4);
-        var ph = Label(area.transform, "Placeholder", placeholder, 20, TextAlignmentOptions.Left); ph.color = new Color(0.4f, 0.4f, 0.4f);
-        var tx = Label(area.transform, "Text", "", 20, TextAlignmentOptions.Left); tx.color = Color.black;
+        float fontSize = Mathf.Round(size.y * 0.45f);   // 20 px in the 44 px AI field, 27 px in the 60 px menu field
+        var ph = Label(area.transform, "Placeholder", placeholder, fontSize, TextAlignmentOptions.Left); ph.color = new Color(0.4f, 0.4f, 0.4f);
+        var tx = Label(area.transform, "Text", "", fontSize, TextAlignmentOptions.Left); tx.color = Color.black;
         foreach (var r in new[] { (RectTransform)ph.transform, (RectTransform)tx.transform }) { r.anchorMin = Vector2.zero; r.anchorMax = Vector2.one; r.offsetMin = r.offsetMax = Vector2.zero; }
         var f = go.GetComponent<TMP_InputField>(); f.textViewport = art; f.textComponent = tx; f.placeholder = ph;
         return f;
