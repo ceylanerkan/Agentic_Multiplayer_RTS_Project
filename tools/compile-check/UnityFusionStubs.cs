@@ -62,7 +62,7 @@ namespace UnityEngine.UI { public class Graphic : Component { public Color color
     public class HorizontalLayoutGroup : Component { public bool childControlWidth, childControlHeight; public RectOffset padding; public float spacing; }
     public class GridLayoutGroup : Component { public Vector2 cellSize, spacing; } public class RectMask2D : Component { } public class LayoutElement : Component { public float preferredHeight, minHeight; }
     public class Button : Component { public bool interactable; public ButtonClickedEvent onClick = new ButtonClickedEvent(); public class ButtonClickedEvent { public void AddListener(Action a) { } } } }
-namespace UnityEngine.EventSystems { public class EventSystem : Component { public static EventSystem current; public bool IsPointerOverGameObject() { return false; } } }
+namespace UnityEngine.EventSystems { public class EventSystem : Component { public static EventSystem current; public GameObject currentSelectedGameObject; public bool IsPointerOverGameObject() { return false; } } }
 namespace UnityEngine.InputSystem {
     public class ButtonControl { public bool isPressed, wasPressedThisFrame, wasReleasedThisFrame; }
     public class Vec2Ctl { public Vector2 ReadValue() { return default(Vector2); } public float y; }
@@ -70,9 +70,9 @@ namespace UnityEngine.InputSystem {
         }
     public class Keyboard { public static Keyboard current; public ButtonControl wKey, aKey, sKey, dKey, upArrowKey, downArrowKey, leftArrowKey, rightArrowKey, shiftKey, escapeKey; }
 }
-namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
+namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public bool enableAutoSizing; public float fontSizeMin, fontSizeMax; public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
     public class TextMeshProUGUI : TMP_Text { } public class TextMeshPro : TMP_Text { } public static class TMP_Settings { public static TMP_FontAsset defaultFontAsset; } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
-    public class TMP_InputField : UnityEngine.Component { public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
+    public class TMP_InputField : UnityEngine.Component { public bool isFocused; public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
 namespace Fusion
 {
     using UnityEngine;

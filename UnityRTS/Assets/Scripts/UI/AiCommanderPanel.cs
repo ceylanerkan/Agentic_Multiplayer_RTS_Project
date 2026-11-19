@@ -27,6 +27,9 @@ public class AiCommanderPanel : MonoBehaviour
     void Start()
     {
         client = new AiGatewayClient(gatewayUrl);
+        // long LLM answers shrink to fit the box instead of running out of the panel
+        foreach (var t in new[] { answerText, statusText })
+            if (t != null) { t.enableAutoSizing = true; t.fontSizeMin = 12; t.fontSizeMax = t.fontSize; }
         askButton.onClick.AddListener(() => _ = Ask());
         whyButton.onClick.AddListener(() => _ = Why());
         approveButton.onClick.AddListener(Approve);
