@@ -314,6 +314,6 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
 **C. Tests.** Python: `python -m pytest -q ai evaluation` (57 tests, no network, no API key). C#: Unity Test Runner,
-EditMode, assembly `RTS.Tests.EditMode` (47 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+EditMode, assembly `RTS.Tests.EditMode` (48 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

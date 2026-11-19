@@ -9,7 +9,7 @@
 - Kod incelemesi: seçim halkası nesnenin ortasında, yani kapsülün içinde kalıyordu (görünmüyordu); artık ayağın altında. Bina yerleştirme tıkı Villager seçimini de siliyordu, yerleştirmeyi sağ tıkla iptal etmek birimleri de yürütüyordu; ikisi düzeltildi.
 - Alt paneldeki butonlar artık okunur: açık font, 18 px, `raider_boat` yerine "Raider Boat". Host tek başınayken üst barda "waiting for player 2..." yazıyor.
 - AI paneline soru yazarken WASD artık kamerayı kaydırmıyor; uzun AI cevapları panele sığacak şekilde küçülüyor; fare tekerleği zoom'u iki farklı Input System scroll ölçeğinde de çalışıyor.
-- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı; C# kural testleri 47/47.
+- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı; C# kural testleri 48/48 (yeni `DisplayNames` testi; EditMode Test Runner 48 göstermeli).
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme günü) senin geri bildirimlerinle sürüyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kod incelemesi ve eksik testler.

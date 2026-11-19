@@ -547,5 +547,18 @@ namespace RTS.Tests
             Assert.AreEqual(2 * data.Units["villager"].TimeSeconds, total, 1.01f);
             Assert.IsNotNull(done);
         }
+
+        [Test]
+        public void DisplayNames_TurnKeysIntoScreenNames()
+        {
+            Assert.AreEqual("Raider Boat", DisplayNames.Of("raider_boat"));
+            Assert.AreEqual("Town Center", DisplayNames.Of("town_center"));
+            Assert.AreEqual("Villager", DisplayNames.Of("villager"));
+            Assert.AreEqual("", DisplayNames.Of(null));
+            // every unit, building and technology key gets a non-empty name without underscores
+            foreach (var d in data.Units.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
+            foreach (var d in data.Buildings.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
+            foreach (var d in data.Techs.Values) StringAssert.DoesNotContain("_", DisplayNames.Of(d.Key));
+        }
     }
 }

@@ -103,14 +103,8 @@ public class EntityVisuals : MonoBehaviour
             label.text = Pretty(node.Resource) + "\n<size=70%>" + Mathf.CeilToInt(node.Amount) + "</size>";
     }
 
-    /// <summary>"raider_boat" -> "Raider Boat". Also used by SelectionPanel.</summary>
-    public static string Pretty(string key)
-    {
-        var parts = key.Split('_');
-        for (int i = 0; i < parts.Length; i++)
-            if (parts[i].Length > 0) parts[i] = char.ToUpper(parts[i][0]) + parts[i].Substring(1);
-        return string.Join(" ", parts);
-    }
+    /// <summary>"raider_boat" -> "Raider Boat" (rule in RTS.Core, tested). Also used by SelectionPanel.</summary>
+    public static string Pretty(string key) { return RTS.Core.Rules.DisplayNames.Of(key); }
 
     void OnDestroy()
     {
