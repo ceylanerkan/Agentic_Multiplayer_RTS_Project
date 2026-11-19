@@ -119,6 +119,7 @@ public class SelectionPanel : MonoBehaviour
         var text = textGo.GetComponent<TextMeshProUGUI>();
         text.font = font != null ? font : EntityVisuals.DefaultFont(); // font first: a TMP text without one throws in layout
         text.fontSize = 18; text.alignment = TextAlignmentOptions.Center; text.color = Color.black;
+        text.enableAutoSizing = true; text.fontSizeMin = 10; text.fontSizeMax = 18;   // long names + a reason line must fit the cell
         var button = go.GetComponent<Button>();
         button.onClick.AddListener(() => onClick());
         buttons.Add(go);
