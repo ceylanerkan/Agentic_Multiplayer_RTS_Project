@@ -119,7 +119,7 @@ public static class RtsSetupTools
             Save(go, Buildings[i, 1]);
         }
         // resources: tall dark-green trees, small pink bushes, wide yellow domes; shapes differ from capsule units and box buildings
-        MakeNode("Tree", "wood", PrimitiveType.Cylinder, "0.05,0.35,0.08", new Vector3(1.2f, 3f, 1.2f));
+        MakeNode("Tree", "wood", PrimitiveType.Cylinder, "0.05,0.35,0.08", new Vector3(1.2f, 1.6f, 1.2f)); // cylinder mesh is 2 high: 3.2 m tree
         MakeNode("BerryBush", "food", PrimitiveType.Sphere, "0.9,0.2,0.55", new Vector3(1.6f, 1.2f, 1.6f));
         MakeNode("GoldMine", "gold", PrimitiveType.Sphere, "1,0.8,0.05", new Vector3(3f, 1.8f, 3f));
         AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
@@ -338,7 +338,9 @@ public static class RtsSetupTools
         for (int i = 0; i < count; i++)
         {
             var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
-            inst.transform.position = centre + new Vector3((i % 3 - 1) * spacing, 0.5f, (i / 3 - 1) * spacing);
+            inst.transform.position = centre + new Vector3((i % 3 - 1) * spacing, 0f, (i / 3 - 1) * spacing);
+            // stand on the ground (y = 0): lift by half the mesh height instead of a fixed offset
+            inst.transform.position += Vector3.up * inst.GetComponent<Renderer>().bounds.extents.y;
         }
     }
 

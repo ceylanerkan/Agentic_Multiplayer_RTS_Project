@@ -52,7 +52,7 @@ namespace UnityEngine
     public class Texture2D : Texture { public static Texture2D whiteTexture; public FilterMode filterMode; public TextureWrapMode wrapMode;
         public Texture2D(int w, int h, TextureFormat f, bool m) { } public void SetPixels32(Color32[] c) { } public void Apply(bool b) { } }
     public enum TextureFormat { RGBA32 } public enum FilterMode { Bilinear } public enum TextureWrapMode { Clamp }
-    public class Renderer : Component { public bool enabled; public Material sharedMaterial, material; }
+    public class Renderer : Component { public Bounds bounds; public bool enabled; public Material sharedMaterial, material; }
     public class SerializeFieldAttribute : Attribute { } public class HideInInspectorAttribute : Attribute { }
     public class RequireComponentAttribute : Attribute { public RequireComponentAttribute(Type t) { } }
 }
