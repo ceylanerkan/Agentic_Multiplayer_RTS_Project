@@ -34,10 +34,10 @@ Yok.
 - `run_eval.py --out` artık klasör de kabul ediyor.
 
 ## Emin olmadığım yerler
-- `EntityVisuals.cs` ve `PlayFromMenu.cs` gerçek Unity'de derlenmedi (sadece stub'larla). Özellikle TMP'nin `outlineWidth`/`outlineColor` ayarı ve 3D `TextMeshPro`'nun font boyutu (6–9) ekranda çok küçük/büyük çıkabilir; söylersen ayarlarım.
+- Bugünkü Unity scriptleri (`EntityVisuals`, `PlayFromMenu`, yeni menü komutları, `AiGatewayClient` 401 tekrarı) gerçek Unity'de derlenmedi (sadece stub'larla). Özellikle TMP'nin `outlineWidth`/`outlineColor` ayarı ve 3D `TextMeshPro`'nun font boyutu (birim 8, bina 11) ekranda çok küçük/büyük çıkabilir; söylersen ayarlarım.
 - Rebuild sonrası prefab GUID'leri değişir; Fusion'ın Network Prefab Table'ı genelde kendini yeniler, yenilemezse Fusion menüsünden "Rebuild Prefab Table" çalıştır.
 - Etiketler için `TMP_Settings.defaultFontAsset` kullanılıyor (TMP Settings `Resources` altında, build'e girer); boş gelirse etiketler görünmez, haber ver.
-- `Tools > RTS > 1 Create placeholder prefabs`'ı mevcut prefab'ların üstüne tekrar çalıştırma: `GameSpawner` referansları Missing olabilir. Bunun yerine Rebuild kullan.
+- `Tools > RTS > 1 Create placeholder prefabs` mevcut prefab'ların üstüne yazmadan önce artık soruyor: yazarsan mevcut sahnedeki `GameSpawner` referansları Missing olabilir; Rebuild güvenli yol.
 - Gemini ile canlı çalıştırma hâlâ yapılmadı.
 
 ## Nasıl cevap verirsin
