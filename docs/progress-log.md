@@ -35,6 +35,7 @@
   `GetComponentsInChildren` every 0.25 s (small) and the no-BuildSlot fallback in `CommandRelay` (the generated scene always has slots).
 - Night 17 (partial): `git grep` finds no API keys; `.env` and `PhotonAppSettings.asset` are not tracked and never were; README status
   matches. Python from a fresh `pip install` (without the optional sentence-transformers, whose download hung here): `pytest ai evaluation` 60 passed.
+- New pytest: a question over 500 characters gets 422 and a security-log line before the LLM is called (the limit itself is allowed). 61 passed.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.

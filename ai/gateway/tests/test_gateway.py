@@ -105,3 +105,13 @@ def test_why_flags_stale_snapshot(tmp_path):
     import time; time.sleep(0.01)
     client.post("/why", json={}, headers=h)
     assert "stale" in seen[-1]
+
+
+def test_too_long_question_is_rejected_before_the_llm(tmp_path):
+    # A huge question is refused with 422 and logged; the model is never called (cost and prompt-stuffing guard).
+    client, h, llm = make([LLMReply(text=json.dumps(PLAN))], tmp_path)
+    r = client.post("/ask", json={"snapshot": SNAP, "question": "a" * 501}, headers=h)
+    assert r.status_code == 422
+    assert lines(tmp_path / "security.jsonl")[-1]["reason"] == "question too long"
+    ok = client.post("/ask", json={"snapshot": SNAP, "question": "a" * 500}, headers=h)  # the limit itself is allowed
+    assert ok.status_code == 200
