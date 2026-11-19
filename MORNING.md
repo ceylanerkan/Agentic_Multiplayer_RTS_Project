@@ -6,7 +6,7 @@
 - Okunurluk: yeni `UI/EntityVisuals.cs` her birim/binaya takım diski (mavi = benim, kırmızı = düşman) ve isim + HP etiketi, kaynaklara miktar etiketi koyuyor (prefab işi yok). Birimler daha büyük, kaynak şekilleri farklı, UI opak, fontlar ve butonlar büyük, "Raider Boat" gibi okunur isimler, host tekken "waiting for player 2...".
 - Kontrol hataları: seçim halkası kapsülün içinde kalıyordu (artık ayakta); bina yerleştirme tıkı seçimi siliyordu; sağ tıkla iptal birimleri yürütüyordu; AI paneline yazarken WASD kamerayı kaydırıyordu; fare tekerleği bazı Input System ayarlarında zoom yapmıyor olabilirdi.
 - Bağımsız kod incelemesinden 7 düzeltme: kendi yarım binaların fog altında görünmüyordu; P2'nin AI'ı çalışan Villager'ları boşta sanıyordu; aynı teknoloji iki kez ödenebiliyordu; ENEMY_SIGHTED spam'i; birimler TC'nin köşesinde doğuyordu; suyun ötesine saldır emri birimi donduruyordu; yıkılan inşaatta hata riski.
-- Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 49/49 (2 yeni), `pytest ai evaluation` 61 geçti. Rapora "Lessons learned" maddesi eklendi.
+- Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 49/49 (2 yeni), `pytest ai evaluation` 63 geçti. Rapora "Lessons learned" maddesi eklendi.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve Gece 17 (tutarlılık: gizli anahtar yok, README/test sayıları güncel) kısmen bitti, son Unity geri bildirimini bekliyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme ve testler.
