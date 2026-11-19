@@ -19,6 +19,8 @@
 - `RtsCamera`: WASD no longer pans while a TMP input field is focused (typing a question moved the camera); mouse wheel accepts both
   120-per-notch and normalised (~1) scroll values (with /120 only, a normalised value is below the 0.01 threshold and zoom is dead).
   `AiCommanderPanel`: answer and status texts auto-size (min 12) instead of overflowing the panel.
+- Resource nodes are lifted by half their mesh height (fixed y = 0.5 buried most of a tree); placement ghost has the real building's size
+  (`GameSpawner.BuildingSize`). `docs/setup.md`: Play from Menu, resolution, rebuild command.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.

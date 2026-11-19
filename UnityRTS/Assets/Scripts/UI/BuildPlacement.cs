@@ -38,7 +38,8 @@ public class BuildPlacement : MonoBehaviour
         buildingKey = key;
         ghost = GameObject.CreatePrimitive(PrimitiveType.Cube);
         Destroy(ghost.GetComponent<Collider>());
-        ghost.transform.localScale = new Vector3(3f, 2f, 3f);
+        // same footprint as the real building, so the player sees what will fit
+        ghost.transform.localScale = GameSpawner.Instance != null ? GameSpawner.Instance.BuildingSize(key) : new Vector3(3f, 2f, 3f);
         ghostRenderer = ghost.GetComponent<Renderer>();
         Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
         if (sh == null) sh = Shader.Find("Sprites/Default");
@@ -68,7 +69,7 @@ public class BuildPlacement : MonoBehaviour
         target = BuildSlot.FindNear(zone, buildingKey == "dock", point);
         bool near = target != null && (target.transform.position - point).magnitude <= snapRadius;
         bool ok = near && CanAfford(relay);
-        ghost.transform.position = (near ? target.transform.position : point) + Vector3.up;
+        ghost.transform.position = (near ? target.transform.position : point) + Vector3.up * (ghost.transform.localScale.y * 0.5f);
         ghostRenderer.material.color = ok ? new Color(0.2f, 1f, 0.3f, 0.5f) : new Color(1f, 0.2f, 0.2f, 0.5f);
 
         if (ok && mouse.leftButton.wasPressedThisFrame && !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))

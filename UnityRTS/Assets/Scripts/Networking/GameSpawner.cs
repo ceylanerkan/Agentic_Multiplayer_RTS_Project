@@ -84,6 +84,13 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
         return b;
     }
 
+    /// <summary>Size of a building prefab (for the placement ghost); 3 m cube if the key is unknown.</summary>
+    public Vector3 BuildingSize(string key)
+    {
+        foreach (var e in buildingPrefabs) if (e.key == key && e.prefab != null) return e.prefab.transform.localScale;
+        return new Vector3(3f, 2f, 3f);
+    }
+
     /// <summary>
     /// Put a freshly spawned object on the ground: cast a ray down from above its position and lift it by its collider's half height,
     /// so capsules and cubes do not sink into the floor. Ships land on the sea surface because the ray hits the sea object. Host only, before the first tick.
