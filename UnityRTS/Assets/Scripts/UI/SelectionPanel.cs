@@ -78,18 +78,27 @@ public class SelectionPanel : MonoBehaviour
             {
                 var k = uk; var udef = data.Units[k];
                 var action = new PlanAction { ActionType = "TRAIN_UNIT", UnitType = k };
-                AddButton("Train " + EntityVisuals.Pretty(k), udef, action, state, () => relay.SendTrain(k, b.Object.Id));
+                AddButton("Train " + EntityVisuals.Pretty(k), udef, action, state, () => relay.SendTrain(k, b.Object.Id), null, () => QueueBlock(b, false));
             }
             foreach (var tk in bdef.Researches)
             {
                 var k = tk; var tdef = data.Techs[k];
                 var action = new PlanAction { ActionType = "RESEARCH", TechType = k };
-                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k));
+                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k), () => QueueBlock(b, true));
             }
         }
     }
 
-    void AddButton(string label, DefRecord def, PlanAction action, NetworkPlayerState state, System.Action onClick, System.Func<bool> alreadyDone = null)
+    // The real queue lives on the host; the networked summary (QueueCount, CurrentKey) is enough for the two common refusals.
+    static string QueueBlock(NetworkBuilding b, bool research)
+    {
+        if (b == null || b.Object == null || !b.Object.IsValid) return null;
+        if (b.QueueCount >= ProductionQueue.MaxLength) return "queue is full";
+        if (!research && b.CurrentIsResearch && b.CurrentKey.ToString() == ProductionQueue.BlockingResearch) return "cannot train while researching Age II";
+        return null;
+    }
+
+    void AddButton(string label, DefRecord def, PlanAction action, NetworkPlayerState state, System.Action onClick, System.Func<bool> alreadyDone = null, System.Func<string> blocked = null)
     {
         var go = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
         go.transform.SetParent(buttonRoot, false);
@@ -110,6 +119,8 @@ public class SelectionPanel : MonoBehaviour
             string cost = CostText(def.Cost);
             if (alreadyDone != null && alreadyDone()) { button.interactable = false; text.text = label + " (done)"; return; }
             var result = validator.Validate(action, state.ToCore());
+            string queueReason = blocked != null ? blocked() : null;
+            if (result.Ok && queueReason != null) result = ValidationResult.Fail(queueReason);
             button.interactable = result.Ok;
             // Show the reason from the validator, so the player knows why the button is grey.
             text.text = result.Ok ? label + " " + cost : label + " " + cost + "\n<size=13>" + result.Reason + "</size>";
