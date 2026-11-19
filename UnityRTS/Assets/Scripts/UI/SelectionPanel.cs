@@ -68,7 +68,7 @@ public class SelectionPanel : MonoBehaviour
                 if (!def.Buildable) continue;
                 var d = def;
                 var action = new PlanAction { ActionType = "BUILD", BuildingType = d.Key, TargetZone = ownBase };
-                AddButton("Build " + d.Key, d, action, state, () => BuildPlacement.Instance.BeginPlacement(d.Key));
+                AddButton("Build " + EntityVisuals.Pretty(d.Key), d, action, state, () => BuildPlacement.Instance.BeginPlacement(d.Key));
             }
         }
         else if (sel.Building != null && sel.Building.Completed)
@@ -78,13 +78,13 @@ public class SelectionPanel : MonoBehaviour
             {
                 var k = uk; var udef = data.Units[k];
                 var action = new PlanAction { ActionType = "TRAIN_UNIT", UnitType = k };
-                AddButton("Train " + k, udef, action, state, () => relay.SendTrain(k, b.Object.Id));
+                AddButton("Train " + EntityVisuals.Pretty(k), udef, action, state, () => relay.SendTrain(k, b.Object.Id));
             }
             foreach (var tk in bdef.Researches)
             {
                 var k = tk; var tdef = data.Techs[k];
                 var action = new PlanAction { ActionType = "RESEARCH", TechType = k };
-                AddButton("Research " + k, tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k));
+                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k));
             }
         }
     }
@@ -98,8 +98,8 @@ public class SelectionPanel : MonoBehaviour
         textGo.transform.SetParent(go.transform, false);
         var rt = (RectTransform)textGo.transform; rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
         var text = textGo.GetComponent<TextMeshProUGUI>();
-        text.fontSize = 14; text.alignment = TextAlignmentOptions.Center; text.color = Color.black;
-        if (font != null) text.font = font;
+        text.font = font != null ? font : TMP_Settings.defaultFontAsset; // font first: a TMP text without one throws in layout
+        text.fontSize = 18; text.alignment = TextAlignmentOptions.Center; text.color = Color.black;
         var button = go.GetComponent<Button>();
         button.onClick.AddListener(() => onClick());
         buttons.Add(go);
@@ -112,7 +112,7 @@ public class SelectionPanel : MonoBehaviour
             var result = validator.Validate(action, state.ToCore());
             button.interactable = result.Ok;
             // Show the reason from the validator, so the player knows why the button is grey.
-            text.text = result.Ok ? label + " " + cost : label + " " + cost + "\n<size=10>" + result.Reason + "</size>";
+            text.text = result.Ok ? label + " " + cost : label + " " + cost + "\n<size=13>" + result.Reason + "</size>";
         });
     }
 
@@ -132,7 +132,7 @@ public class SelectionPanel : MonoBehaviour
         if (sel.Units.Count == 1)
         {
             var u = sel.Units[0]; var def = data.Units[u.TypeKey.ToString()];
-            sb.Append(def.Key).Append("  HP ").Append(Mathf.CeilToInt(u.Hp)).Append('/').Append(def.Hp)
+            sb.Append(EntityVisuals.Pretty(def.Key)).Append("  HP ").Append(Mathf.CeilToInt(u.Hp)).Append('/').Append(def.Hp)
               .Append("\nattack ").Append(def.Attack).Append("  armor ").Append(def.Armor).Append("  range ").Append(def.Range);
         }
         else if (sel.Units.Count > 1)
@@ -140,15 +140,15 @@ public class SelectionPanel : MonoBehaviour
             var counts = new SortedDictionary<string, int>();
             foreach (var u in sel.Units) { string k = u.TypeKey.ToString(); counts[k] = counts.ContainsKey(k) ? counts[k] + 1 : 1; }
             sb.Append(sel.Units.Count).Append(" units: ");
-            foreach (var kv in counts) sb.Append(kv.Value).Append(' ').Append(kv.Key).Append("  ");
+            foreach (var kv in counts) sb.Append(kv.Value).Append(' ').Append(EntityVisuals.Pretty(kv.Key)).Append("  ");
         }
         else if (sel.Building != null)
         {
             var b = sel.Building; var def = data.Buildings[b.TypeKey.ToString()];
-            sb.Append(def.Key).Append("  HP ").Append(Mathf.CeilToInt(b.Hp)).Append('/').Append(def.Hp);
+            sb.Append(EntityVisuals.Pretty(def.Key)).Append("  HP ").Append(Mathf.CeilToInt(b.Hp)).Append('/').Append(def.Hp);
             if (!b.Completed) sb.Append("\nUnder construction ").Append(Mathf.RoundToInt(b.BuildProgress * 100)).Append('%');
             else if (b.QueueCount > 0)
-                sb.Append("\n").Append(b.CurrentIsResearch ? "Researching " : "Training ").Append(b.CurrentKey.ToString())
+                sb.Append("\n").Append(b.CurrentIsResearch ? "Researching " : "Training ").Append(EntityVisuals.Pretty(b.CurrentKey.ToString()))
                   .Append(' ').Append(Mathf.RoundToInt(b.CurrentProgress * 100)).Append("%  (queue ").Append(b.QueueCount).Append(')');
         }
         info.text = sb.ToString();

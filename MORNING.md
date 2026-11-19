@@ -7,7 +7,8 @@
 - Ayırt edilebilirlik: yeni `UI/EntityVisuals.cs` her birimin/binanın altına takım diski (mavi = benim, kırmızı = düşman) ve üstüne isim etiketi koyuyor ("Villager 25/25", "House building 40%", "Wood 180"). Çalışma zamanında ekleniyor, prefab'larda elle iş yok. Fog of war etiketleri de gizliyor.
 - Birimler büyütüldü, kaynaklar farklı şekiller aldı (uzun koyu yeşil ağaç, pembe çalı, geniş sarı altın kubbesi), UI panelleri daha opak, fontlar büyük.
 - Kod incelemesi: seçim halkası nesnenin ortasında, yani kapsülün içinde kalıyordu (görünmüyordu); artık ayağın altında. Bina yerleştirme tıkı Villager seçimini de siliyordu, yerleştirmeyi sağ tıkla iptal etmek birimleri de yürütüyordu; ikisi düzeltildi.
-- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı.
+- Alt paneldeki butonlar artık okunur: açık font, 18 px, `raider_boat` yerine "Raider Boat". Host tek başınayken üst barda "waiting for player 2..." yazıyor.
+- Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs` (Menu, Game ve `Assets/Prefabs`'ı silip yeniden üretir). `tools/compile-check`: 0 hata, 0 uyarı; C# kural testleri 47/47.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme günü) senin geri bildirimlerinle sürüyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kod incelemesi ve eksik testler.

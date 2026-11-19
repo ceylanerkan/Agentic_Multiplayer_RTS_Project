@@ -103,8 +103,8 @@ public class EntityVisuals : MonoBehaviour
             label.text = Pretty(node.Resource) + "\n<size=70%>" + Mathf.CeilToInt(node.Amount) + "</size>";
     }
 
-    /// <summary>"raider_boat" -> "Raider Boat".</summary>
-    static string Pretty(string key)
+    /// <summary>"raider_boat" -> "Raider Boat". Also used by SelectionPanel.</summary>
+    public static string Pretty(string key)
     {
         var parts = key.Split('_');
         for (int i = 0; i < parts.Length; i++)

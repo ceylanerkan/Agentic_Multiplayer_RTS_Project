@@ -94,7 +94,7 @@ namespace Fusion
         public virtual void Spawned() { } public virtual void Despawned(NetworkRunner r, bool h) { } public virtual void FixedUpdateNetwork() { } }
     public interface IPlayerJoined { void PlayerJoined(PlayerRef p); }
 }
-public class GameLauncher : UnityEngine.MonoBehaviour { public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
+public class GameLauncher : UnityEngine.MonoBehaviour { public Fusion.NetworkRunner Runner; public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
 
 namespace UnityEngine { public class Object2 { } }
 namespace Fusion { public class NetworkTransform : UnityEngine.MonoBehaviour { } }

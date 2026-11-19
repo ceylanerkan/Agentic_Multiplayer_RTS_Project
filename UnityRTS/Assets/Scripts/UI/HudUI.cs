@@ -23,6 +23,14 @@ public class HudUI : MonoBehaviour
         if (food) food.text = "Food " + state.Food;
         if (gold) gold.text = "Gold " + state.Gold;
         if (population) population.text = "Pop " + state.PopUsed + "/" + state.PopCapacity;
-        if (age) age.text = "Age " + (state.Age == 2 ? "II" : "I");
+        if (age) age.text = "Age " + (state.Age == 2 ? "II" : "I") + (WaitingForOpponent() ? "  |  waiting for player 2..." : "");
+    }
+
+    /// <summary>The host is alone in the Game scene until the second player joins; say so, or it looks like nothing started.</summary>
+    static bool WaitingForOpponent()
+    {
+        var launcher = GameLauncher.Instance;
+        if (launcher == null || launcher.Runner == null) return false;
+        return System.Linq.Enumerable.Count(launcher.Runner.ActivePlayers) < RTS.Core.Rules.PlayerSlots.MaxPlayers;
     }
 }

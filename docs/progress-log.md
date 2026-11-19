@@ -14,6 +14,8 @@
   capsule; now at the feet and sized from the collider, just below the team disc. A building-placement click also deselected the
   Villagers, and a right-click that cancels placement also moved the units: `BuildPlacement.OwnsClick` now guards
   `SelectionManager` and `UnitCommandInput`. Gather loop and numbers re-checked against `rules.md` (no change needed).
+- Readability: `SelectionPanel` buttons get an explicit font, 18 px text, display names ("Raider Boat" instead of `raider_boat`) in
+  buttons and the info text; HUD shows "waiting for player 2..." while the host is alone. C# rule tests (throwaway net8.0 + NUnit): 47/47 pass.
 - Tests: `tools/compile-check` (stubs extended for the new APIs): 0 errors, 0 warnings.
 - Open questions: none.
 - Risks: `EntityVisuals` and `PlayFromMenu` are uncompiled in real Unity; the rebuild deletes hand edits in the generated scenes/prefabs.
