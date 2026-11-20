@@ -22,6 +22,26 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     void Awake() { Instance = this; GameEvents.Local.Clear(); } // new match, new event log
 
+    bool registered; // we added ourselves to the runner, so we must also remove ourselves
+
+    // A SimulationBehaviour in a loaded scene is NOT registered with the runner automatically (only one on the runner's own
+    // GameObject is). Without this, Runner stays null, PlayerJoined never runs and nobody gets a Town Center or Villagers.
+    // Tried every frame until the runner exists (the Game scene could be opened directly, without the Menu).
+    void TryRegister()
+    {
+        if (Runner != null) return; // already registered (by us or by Fusion)
+        var r = GameLauncher.Instance != null ? GameLauncher.Instance.Runner : null;
+        if (r == null || !r.IsRunning) return;
+        r.AddGlobal(this);
+        registered = true;
+        Debug.Log("GameSpawner registered with the NetworkRunner (" + (r.IsServer ? "host" : "client") + ").");
+    }
+
+    void OnDestroy()
+    {
+        if (registered && Runner != null) Runner.RemoveGlobal(this);
+    }
+
     // Works on host and clients: NetworkPlayerState registers itself when it spawns (input authority = the player).
     public NetworkPlayerState StateOf(PlayerRef p)
     {
@@ -41,6 +61,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     // that each active player has a base, and spawns it for those that do not (PlayerJoined ignores players that already have one).
     void Update()
     {
+        TryRegister();
         if (Runner == null || !Runner.IsRunning || !Runner.IsServer) return;
         foreach (var p in Runner.ActivePlayers) if (!players.ContainsKey(p)) PlayerJoined(p);
     }

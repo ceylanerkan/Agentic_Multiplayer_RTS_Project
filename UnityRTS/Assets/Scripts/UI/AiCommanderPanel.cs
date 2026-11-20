@@ -37,12 +37,23 @@ public class AiCommanderPanel : MonoBehaviour
         ShowAnswer(null);
     }
 
+    // Says which step is missing, so a failed test points to the cause (before: always "Match not started yet.").
+    static string WhyNoSnapshot()
+    {
+        var launcher = GameLauncher.Instance;
+        if (launcher == null || launcher.Runner == null) return "Not connected: start from the Menu scene and press Host or Join.";
+        if (!launcher.Runner.IsRunning) return "Still connecting to the session...";
+        if (GameSpawner.Instance == null) return "No GameSpawner in the Game scene (Tools > RTS > Rebuild).";
+        if (launcher.IsHost) return "Your player was not spawned yet; if this stays, check the Console for GameSpawner errors.";
+        return "Waiting for the host to spawn your base...";
+    }
+
     async Task Ask()
     {
         string q = questionInput.text.Trim();
         if (busy || q.Length == 0) return;
         var snap = AiSnapshotBuilder.Build();
-        if (snap == null) { statusText.text = "Match not started yet."; return; }
+        if (snap == null) { statusText.text = WhyNoSnapshot(); return; }
         SetBusy(true, "AI is thinking...");
         try
         {

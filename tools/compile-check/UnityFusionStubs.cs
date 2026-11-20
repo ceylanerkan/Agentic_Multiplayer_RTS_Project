@@ -11,7 +11,7 @@ namespace UnityEngine
         public T[] GetComponentsInChildren<T>() { return new T[0]; } public T GetComponentInChildren<T>() { return default(T); } }
     public class Behaviour : Component { public bool enabled; }
     public class MonoBehaviour : Behaviour { }
-    public class GameObject : Object { public Transform transform; public bool activeSelf;
+    public class GameObject : Object { public Transform transform; public bool activeSelf; public static GameObject Find(string n) { return null; }
         public GameObject() { } public GameObject(string n, params Type[] t) { }
         public T GetComponent<T>() { return default(T); } public T[] GetComponentsInChildren<T>() { return new T[0]; }
         public T AddComponent<T>() { return default(T); } public void SetActive(bool b) { }
@@ -88,13 +88,14 @@ namespace Fusion
     public class NetworkObject : UnityEngine.MonoBehaviour { public bool IsValid; public NetworkId Id; public PlayerRef InputAuthority; public bool HasInputAuthority, HasStateAuthority; }
     public class NetworkRunner : UnityEngine.MonoBehaviour { public float DeltaTime; public bool IsServer, IsRunning; public System.Collections.Generic.IEnumerable<PlayerRef> ActivePlayers; public PlayerRef LocalPlayer;
         public NetworkObject Spawn(NetworkObject p, Vector3 pos, Quaternion r, PlayerRef owner) { return null; } public void Despawn(NetworkObject o) { }
-        public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; } }
+        public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; }
+        public void AddGlobal(SimulationBehaviour b) { } public void RemoveGlobal(SimulationBehaviour b) { } }
     public class SimulationBehaviour : UnityEngine.MonoBehaviour { public NetworkRunner Runner; }
     public class NetworkBehaviour : SimulationBehaviour { public NetworkObject Object; public bool HasStateAuthority;
         public virtual void Spawned() { } public virtual void Despawned(NetworkRunner r, bool h) { } public virtual void FixedUpdateNetwork() { } }
     public interface IPlayerJoined { void PlayerJoined(PlayerRef p); }
 }
-public class GameLauncher : UnityEngine.MonoBehaviour { public Fusion.NetworkRunner Runner; public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
+public class GameLauncher : UnityEngine.MonoBehaviour { public Fusion.NetworkRunner Runner; public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } public bool IsHost; }
 
 namespace UnityEngine { public class Object2 { } }
 namespace Fusion { public class NetworkTransform : UnityEngine.MonoBehaviour { } }
@@ -127,7 +128,7 @@ public class AiGatewayClient
 namespace UnityEditor.SceneManagement { public enum NewSceneSetup { DefaultGameObjects, EmptyScene } public enum NewSceneMode { Single } }
 namespace UnityEditor { public class EditorBuildSettingsScene { public EditorBuildSettingsScene(string p, bool e) { } } public static class EditorBuildSettings { public static EditorBuildSettingsScene[] scenes; } }
 namespace UnityEditor { public class SceneAsset : UnityEngine.Object { } public class InitializeOnLoadAttribute : System.Attribute { }
-    public static class EditorUtility { public static bool DisplayDialog(string t, string m, string ok, string cancel) { return true; } }
+    public static class EditorUtility { public static bool DisplayDialog(string t, string m, string ok, string cancel) { return true; } public static bool DisplayDialog(string t, string m, string ok) { return true; } }
     public static class EditorPrefs { public static bool GetBool(string k, bool d) { return d; } public static void SetBool(string k, bool v) { } }
     public static class EditorApplication { public static bool isPlaying; public delegate void CallbackFunction(); public static CallbackFunction delayCall; }
     public static class Menu { public static void SetChecked(string p, bool c) { } }

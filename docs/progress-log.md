@@ -1,5 +1,22 @@
 # Progress log (newest first)
 
+## 2026-11-20 (run 5, night 16 fix day)
+- UNITY_FEEDBACK.md heading handled: "2026-11-19" (Test 4 failed: no TC/Villagers, AI panel "Match not started yet"; Game.unity
+  duplicated; ParrelSync clone closes itself).
+- Root cause confirmed: `GameSpawner` is a scene `SimulationBehaviour` and was never added to the runner (Fusion only auto-registers
+  ones on the runner's GameObject), so `Runner` stayed null and no base was spawned. `GameSpawner.TryRegister()` (from `Update`) calls
+  `NetworkRunner.AddGlobal(this)` once the launcher's runner is running (checked in `Fusion.Runtime.xml`); `OnDestroy` removes it.
+  Works for the host alone too (the `Update` loop spawns a base for every active player).
+- `AiCommanderPanel` names the missing step instead of "Match not started yet" (not connected / connecting / no GameSpawner /
+  player not spawned / waiting for host).
+- `RtsSetupTools` commands 2 and 3 show an "Already set up" dialog and add nothing when the open scene already has `MapAndSystems`/
+  `GameSpawner` or `GameCanvas`/`AiCommanderPanel`.
+- `docs/setup.md` section 3: Windows build = Host, editor = Join, step by step (ParrelSync fallback).
+- Tests: `tools/compile-check` 0 errors / 0 warnings (stubs gained `AddGlobal`, `RemoveGlobal`, `GameObject.Find`, 3-arg
+  `DisplayDialog`, `GameLauncher.IsHost`); `pytest -q ai evaluation` 67 passed. dotnet came from apt (`dotnet-sdk-8.0`); dot.net is
+  blocked by the proxy here.
+- Open questions: none. Risk: the fix is not run in Unity yet.
+
 ## 2026-11-19 (run 4, night 16 fix day)
 - UNITY_FEEDBACK.md headings handled: "2026-11-18" (3 obsolete-API warnings, TMP NullReferenceException, Test 4: Play starts in Game,
   unreadable visuals and text, no target resolution).

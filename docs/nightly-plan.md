@@ -125,6 +125,7 @@ engine-free `RTS.Core` keeps its asmdef.
 - [ ] Fix everything open in `UNITY_FEEDBACK.md`, then review the code for bugs and missing tests.
       (partly done 2026-11-15: 2026-11-14 feedback handled, first review pass + compile check done; waiting for the first real Unity feedback on the new code)
       (2026-11-19: 2026-11-18 feedback handled: warnings, TMP font NRE, Play from Menu, readable visuals; waiting for the next Unity test)
+      (2026-11-20: 2026-11-19 feedback handled: GameSpawner registered with the runner (no base spawned), setup commands 2/3 refuse duplicates, build-host test path; waiting for the next Unity test)
 - You: slides.
 
 ## Night 17 – 2026-11-28: final consistency pass

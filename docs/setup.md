@@ -20,7 +20,18 @@
 
 ## 3. Two instances on one machine
 - ParrelSync → *Clones Manager* → *Add new clone* → open the clone. One editor uses **Host**, the other **Join**.
-- Alternatively: *File → Build And Run* (Windows) and use the editor as the second player.
+- If the ParrelSync clone does not open (it can close itself during its first script compile), use a Windows build as the host
+  and the editor as the second player:
+  1. `Tools > RTS > Set build window (1280x720, windowed)` once (windowed, resizable, Run In Background, so the unfocused
+     window keeps simulating).
+  2. *File → Build Profiles* (or *Build Settings*): platform Windows, scenes `Menu` (index 0) and `Game` (index 1) ticked.
+     *Build And Run*, choose an empty folder outside `Assets`, e.g. `Builds/Win`.
+  3. In the build window: type a session name (e.g. `test1`) and press **Host**. The status line says it is waiting.
+  4. In the editor: press Play (starts in `Menu`), type the same session name and press **Join**.
+  5. Expected: both windows show their own Town Center + 3 Villagers (blue) and, once scouted, the enemy (red).
+     The build's log is `%USERPROFILE%\AppData\LocalLow\<Company>\<Product>\Player.log`.
+  Rebuild the player after every code change; an old build and a new editor do not match (different network prefabs).
+- With only one instance, Host alone still gets its Town Center + 3 Villagers and can play/ask the AI; the match "waits for P2".
 - Play always starts in the `Menu` scene, whichever scene is open (`Tools > RTS > Play from Menu scene`, on by default).
 - Game view resolution: **Full HD (1920x1080)**; for two windows side by side **1280x720**. The UI scales with the window.
 
