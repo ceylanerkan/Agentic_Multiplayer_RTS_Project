@@ -38,6 +38,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 - Spawn yüksekliği: ışın ağ nesnelerini (birim, bina, kaynak) atlayıp en yüksek diğer yüzeye (zemin/deniz) bakıyor.
 - `GameSpawner` kendini `GameLauncher.Instance.Runner`'a kaydediyor (runner'ı `GameLauncher`'dan bulmak yerine Fusion'a bırakmak mümkün değildi). Kayıt `Update`'te deneniyor, böylece sahne yüklenme sırası önemli değil.
 - AI paneli durum mesajları İngilizce (diğer UI yazılarıyla aynı).
+- `tools/run_gateway.bat` artık varsa `ai\.venv` içindeki Python'u kullanıyor (paketler oraya kuruluyor) ve sonunda `pause` var; hata olursa pencere açık kalır. `.env.example`'dan hiç okunmayan `GATEWAY_HOST/PORT` kaldırıldı.
 
 ## Emin olmadığım yerler
 - Üs oluşturma bir kez hata verirse (ör. prefab tablosu) o oyuncu için tekrar denenmiyor; düzeltip Play'i yeniden başlat.
