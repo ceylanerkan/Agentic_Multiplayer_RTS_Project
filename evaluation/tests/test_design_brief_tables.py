@@ -56,3 +56,23 @@ def test_technology_table_matches_technologies_json():
     assert {r[0] for r in table} == set(TECHS)
     for name, c, *_ in table:
         assert cost(c) == TECHS[name]["cost"], name
+
+
+def key(name):
+    return name.strip().lower().replace(" ", "_").replace("age_ii", "age_2")
+
+
+def test_where_and_requirements_match():
+    # "Trained at" is e.g. "Stable (Age II)": the building, plus Age II when the unit needs it
+    for name, *_rest in rows("Unit"):
+        trained = _rest[7]
+        u = UNITS[name]
+        assert key(trained.split("(")[0]) == u["trained_at"], name
+        assert ("Age II" in trained) == ("age_2" in u["requires"]), name
+    for name, _c, _hp, _f, req in rows("Building"):
+        assert ([] if req == "–" else [key(r) for r in req.split(",")]) == BUILDINGS[name]["requires"], name
+    for name, _c, where, req, _e in rows("Technology"):
+        t = TECHS[name]
+        assert key(where) == t["researched_at"], name
+        expected = [] if req == "–" else [key(r) for r in req.split(",")]
+        assert set(expected) <= set(t["requires"]), name   # the brief omits the obvious "own a Blacksmith"

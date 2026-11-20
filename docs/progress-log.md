@@ -63,7 +63,8 @@
   `strengths` and match rules.md; some `weaknesses` entries have no matching `strengths` (descriptive only, asked as Q-1120-2).
   pytest 76 passed. The tech test also checks that `GatherState.HorseCollarFoodBonus` equals `TechEffects.HorseCollarFood`.
 - New `evaluation/tests/test_design_brief_tables.py`: the brief's unit (domain, cost, HP, attack, armor, range, speed),
-  building (cost, HP) and technology (cost) tables match the knowledge JSON; all matched. pytest 79 passed.
+  building (cost, HP, requirements) and technology (cost, where, requirements) tables and "Trained at" match the knowledge
+  JSON; all matched. pytest 80 passed.
 - Open questions: Q-1120-1 (resource layout), Q-1120-2 (weaknesses vs strengths). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)
