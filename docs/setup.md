@@ -6,7 +6,7 @@
 3. Package Manager → *Add package by name*:
    - `com.unity.ai.navigation` (NavMesh Surface)
    - `com.unity.nuget.newtonsoft-json`
-   - ParrelSync (Add package from git URL): `https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync`
+   - ParrelSync, optional (Add package from git URL; alternatives in section 3): `https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync`
 4. Project Settings → Player → *Run In Background* = on (needed for two local instances).
 
 ## 2. Photon Fusion 2
