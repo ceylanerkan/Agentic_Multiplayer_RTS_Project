@@ -4,6 +4,7 @@
 - `UNITY_FEEDBACK.md` 2026-11-19 işlendi. Senin bulduğun sebep doğruydu: `GameSpawner` (sahnedeki `SimulationBehaviour`) runner'a hiç kaydedilmiyordu, `Runner` null kalıyordu, bu yüzden TC/Villager ve Player nesnesi oluşmuyordu. Artık `GameSpawner.Update` runner çalışır çalışmaz `NetworkRunner.AddGlobal(this)` çağırıyor (yok olunca `RemoveGlobal`). Tek başına Host iken de üs oluşur.
 - AI paneli artık "Match not started yet" yerine eksik adımı yazıyor: bağlı değil / bağlanıyor / sahnede `GameSpawner` yok / oyuncu henüz oluşmadı / host'un üssü oluşturması bekleniyor.
 - `Tools > RTS > 2 Setup open Game scene` ve `3 Create Game UI`, sahnede kurulum zaten varsa "Already set up" uyarısı verip hiçbir şey eklemiyor (Game.unity'deki çift nesnelerin sebebi buydu).
+- Bina yerleştirme hayaleti artık gerçekten yarı saydam (URP Unlit malzemesi opaktı, slotu kapatıyordu).
 - `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
 - Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 53/53.
 

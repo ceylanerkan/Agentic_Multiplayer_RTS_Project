@@ -19,6 +19,8 @@
   `Runner.Spawn` is fine; `OnDestroy` only calls `RemoveGlobal` while the runner is still running.
 - New pytest: every `SimulationBehaviour` in our scripts must call `AddGlobal(this)` (regression guard). 68 passed.
   C# rule tests (throwaway net8.0 + NUnit): 53/53.
+- UI/input review (SelectionManager, UnitCommandInput, BuildPlacement, SelectionPanel): flow is sound; fixed the placement ghost,
+  which was opaque (URP Unlit ignores alpha unless the material is set to Transparent) and hid the slot.
 - Open questions: none. Risk: the fix is not run in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

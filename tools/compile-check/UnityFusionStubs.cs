@@ -47,7 +47,8 @@ namespace UnityEngine
     public static class Gizmos { public static Color color; public static void DrawWireSphere(Vector3 p, float r) { } public static void DrawWireCube(Vector3 p, Vector3 s) { } }
     public static class GUI { public static Color color; public static void DrawTexture(Rect r, Texture t) { } }
     public class Shader { public static Shader Find(string n) { return null; } }
-    public class Material : Object { public Material(Shader s) { } public Material(Material m) { } public Color color; public Texture mainTexture; }
+    public class Material : Object { public Material(Shader s) { } public Material(Material m) { } public Color color; public Texture mainTexture; public int renderQueue;
+        public void SetFloat(string n, float v) { } public void SetOverrideTag(string t, string v) { } public void EnableKeyword(string k) { } }
     public class Texture : Object { } 
     public class Texture2D : Texture { public static Texture2D whiteTexture; public FilterMode filterMode; public TextureWrapMode wrapMode;
         public Texture2D(int w, int h, TextureFormat f, bool m) { } public void SetPixels32(Color32[] c) { } public void Apply(bool b) { } }
@@ -138,3 +139,9 @@ namespace UnityEngine { public static class Resources { public static T Load<T>(
     public class DefaultExecutionOrderAttribute : System.Attribute { public DefaultExecutionOrderAttribute(int o) { } } }
 namespace UnityEngine { public enum FullScreenMode { ExclusiveFullScreen, FullScreenWindow, MaximizedWindow, Windowed } }
 namespace UnityEditor { public static class PlayerSettings { public static UnityEngine.FullScreenMode fullScreenMode; public static int defaultScreenWidth, defaultScreenHeight; public static bool resizableWindow, runInBackground; } }
+
+namespace UnityEngine.Rendering
+{
+    public enum BlendMode { Zero = 0, One = 1, SrcAlpha = 5, OneMinusSrcAlpha = 10 }
+    public enum RenderQueue { Geometry = 2000, Transparent = 3000 }
+}
