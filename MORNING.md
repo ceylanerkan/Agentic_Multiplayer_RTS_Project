@@ -7,7 +7,7 @@
 - Villager bir ağaç bitince, depoladıktan sonra yeni ağacı TC'nin etrafında arıyordu (orman uzaksa boşta kalıyordu); artık biten ağacın yanında arıyor.
 - Küçükler (ikinci bağımsız inceleme dahil): yerleştirme hayaleti gerçekten yarı saydam (build'de de, `Sprites/Default`); görünmeyen düşmana sağ tık artık onu ele vermiyor.
 - Yeni testler: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği gerçek google-genai tipleriyle (sahte istemci); `make_session.py`; `PlayerSlots.FirstFree`; brief tabloları / zone isimleri / `unit_group` / tech ve hasar sabitleri JSON ve `rules.md` ile tutarlı mı. Rapor, mimari ve savunma notları güncellendi.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 86 geçti, C# kural testleri 54/54.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 87 geçti, C# kural testleri 54/54.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.

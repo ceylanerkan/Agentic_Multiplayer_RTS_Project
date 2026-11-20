@@ -132,3 +132,13 @@ def test_report_tool_table_lists_exactly_the_server_tools():
     report = (ROOT / "docs/report/report.md").read_text(encoding="utf-8")
     listed = set(re.findall(r"^\| `(\w+)` \|", report, re.M))
     assert len(tools) == 7 and listed == tools
+
+
+def test_snapshot_limits_agree_between_unity_and_schema():
+    # Unity cuts the snapshot to these sizes before sending; larger and the gateway would reject it with 422
+    schema = json.loads((ROOT / "ai/schemas/safe_snapshot.schema.json").read_text(encoding="utf-8"))
+    rules = ROOT / "UnityRTS/Assets/Scripts/Core/Rules"
+    events = int(re.search(r"MaxInSnapshot = (\d+)", (rules / "PlayerEventLog.cs").read_text(encoding="utf-8")).group(1))
+    groups = int(re.search(r"MaxGroups = (\d+)", (rules / "SnapshotAssembler.cs").read_text(encoding="utf-8")).group(1))
+    assert schema["properties"]["recent_events"]["maxItems"] == events
+    assert schema["properties"]["own_army"]["maxItems"] == groups
