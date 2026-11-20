@@ -155,6 +155,8 @@ public static class RtsSetupTools
     [MenuItem("Tools/RTS/2 Setup open Game scene")]
     static void SetupScene()
     {
+        // Running this twice put two Spawners, two Systems and two Zones into Game.unity (UNITY_FEEDBACK 2026-11-19).
+        if (AlreadySetUp(GameObject.Find("MapAndSystems") != null || Object.FindAnyObjectByType<GameSpawner>() != null, "map and systems (MapAndSystems / GameSpawner)")) return;
         if (!File.Exists(PrefabDir + "/Player.prefab")) CreatePrefabs();
         var root = new GameObject("MapAndSystems");
 
@@ -243,6 +245,7 @@ public static class RtsSetupTools
     [MenuItem("Tools/RTS/3 Create Game UI")]
     static void CreateUi()
     {
+        if (AlreadySetUp(GameObject.Find("GameCanvas") != null || Object.FindAnyObjectByType<AiCommanderPanel>() != null, "game UI (GameCanvas)")) return;
         var canvasGo = new GameObject("GameCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         var canvas = canvasGo.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = canvasGo.GetComponent<CanvasScaler>();
@@ -320,6 +323,15 @@ public static class RtsSetupTools
         if (f == null && UnityEngine.Resources.Load<TMP_Settings>("TMP Settings") != null) f = TMP_Settings.defaultFontAsset;
         if (f == null) Debug.LogError("RTS: no TMP font found. Window > TextMeshPro > Import TMP Essential Resources, then run the command again.");
         return f;
+    }
+
+    // Commands 2 and 3 add to the open scene; on a scene that already has their objects they would duplicate everything.
+    static bool AlreadySetUp(bool exists, string what)
+    {
+        if (!exists) return false;
+        EditorUtility.DisplayDialog("Already set up", "The open scene already has the " + what + ". Nothing was added.\n\n" +
+            "To start over, use Tools > RTS > Rebuild generated scenes and prefabs.", "OK");
+        return true;
     }
 
     static void Place(RectTransform rt, Vector2 pos, Vector2 size) { rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.anchoredPosition = pos; rt.sizeDelta = size; }

@@ -44,9 +44,11 @@ public class BuildPlacement : MonoBehaviour
         ghostRenderer = ghost.GetComponent<Renderer>();
         if (ghostMaterial == null)   // one material for all placements (a new one each time leaked)
         {
-            Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
-            if (sh == null) sh = Shader.Find("Sprites/Default");
-            ghostMaterial = new Material(sh);
+            // Sprites/Default is transparent without keywords (like the fog overlay); a URP Unlit material switched to
+            // Transparent at run time may lack that shader variant in a build, so it is only the fallback.
+            Shader sh = Shader.Find("Sprites/Default");
+            if (sh != null) ghostMaterial = new Material(sh);
+            else { ghostMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit")); MakeTransparent(ghostMaterial); }
         }
         ghostRenderer.sharedMaterial = ghostMaterial;
     }
@@ -85,6 +87,19 @@ public class BuildPlacement : MonoBehaviour
             UsedClickFrame = Time.frameCount;
             Cancel();
         }
+    }
+
+    // URP Unlit is opaque by default, so the 0.5 alpha of the ghost colour was ignored and the ghost hid the slot.
+    // These are the settings the URP material inspector writes for Surface Type = Transparent (harmless on Sprites/Default).
+    static void MakeTransparent(Material m)
+    {
+        m.SetFloat("_Surface", 1f);
+        m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        m.SetFloat("_ZWrite", 0f);
+        m.SetOverrideTag("RenderType", "Transparent");
+        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
     }
 
     bool CanAfford(CommandRelay relay)

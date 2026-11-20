@@ -45,14 +45,22 @@ public class UnitCommandInput : MonoBehaviour
         }
 
         var enemyUnit = hit.collider.GetComponentInParent<NetworkUnit>();
-        if (enemyUnit != null && enemyUnit.Owner != relay.Object.InputAuthority)
+        if (enemyUnit != null && enemyUnit.Owner != relay.Object.InputAuthority && Seen(enemyUnit))
         { foreach (var u in sel.Units) relay.SendAttack(u.Object.Id, enemyUnit.Object.Id); return; }
 
         var enemyBuilding = hit.collider.GetComponentInParent<NetworkBuilding>();
-        if (enemyBuilding != null && enemyBuilding.Owner != relay.Object.InputAuthority)
+        if (enemyBuilding != null && enemyBuilding.Owner != relay.Object.InputAuthority && Seen(enemyBuilding))
         { foreach (var u in sel.Units) relay.SendAttack(u.Object.Id, enemyBuilding.Object.Id); return; }
 
-        MoveInFormation(sel.Units, hit.point, relay);
+        MoveInFormation(sel.Units, new Vector3(hit.point.x, 0f, hit.point.z), relay); // ground height (the hit may be on a hidden enemy's top)
+    }
+
+    // FogOfWar only switches renderers off; the collider stays. Without this check a right-click on an empty-looking spot
+    // would attack the hidden enemy there and reveal it, so a hidden enemy counts as ground.
+    static bool Seen(Component target)
+    {
+        var r = target.GetComponent<Renderer>();
+        return r == null || r.enabled;
     }
 
     void GatherOrMove(List<NetworkUnit> units, ResourceNode node, CommandRelay relay)

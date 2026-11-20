@@ -37,9 +37,19 @@ Alternative: *injection* - a poisoned knowledge chunk is returned only as data, 
 - *What if the LLM is wrong?* The plan needs approval; invalid actions are skipped with a reason; confidence and evidence are shown.
 - *What if the snapshot is stale?* "Ask why" tells the model the snapshot is old and to lower its confidence.
 - *Why a mock evaluation?* Offline and repeatable; its 100% is by construction; live numbers are reported separately.
-- *Why plain C# classes in `RTS.Core`?* Testable without the editor (53 tests); MonoBehaviours only adapt.
+- *Why plain C# classes in `RTS.Core`?* Testable without the editor (54 tests); MonoBehaviours only adapt.
 - *Why are the team colours and labels not networked?* They are presentation only: each peer computes "mine or enemy" from its own
   `PlayerRef` (`EntityVisuals`). Nothing the host decides depends on them, so they cost no bandwidth and cannot be cheated with.
 - *Can a client queue the same research twice?* The client's validator cannot see queued research, so the host checks every own
   queue in `CommandRelay` before it takes the cost: the host is the final check, the client check is only for the buttons.
+- *How does a player get a base?* `GameSpawner` (Game scene) registers itself with the runner (`AddGlobal`; Fusion only
+  auto-registers behaviours on the runner's GameObject). On the host, every frame it checks `Runner.ActivePlayers` and, for a player
+  without a base, spawns the `Player` object (input authority = that player; `NetworkPlayerState` + `CommandRelay`), a Town Center
+  and 3 Villagers. The `Update` check is needed because the scene loads after the players joined, so a `PlayerJoined` callback can be missed.
+- *Why do units and buildings have no input authority?* Nobody sends Fusion input for them: every command is an RPC on the
+  player's own `CommandRelay`, and the host checks ownership with the networked `Owner` field. Only the `Player` object has the
+  player as input authority (that is what makes the RPC source checkable). Giving units input authority would only make the
+  client predict them, with nothing to predict from.
+- *How are P1 and P2 decided?* The host gives each joining player the first free slot and stores it in `NetworkPlayerState.Slot`.
+  Fusion's player numbers cannot be used: the host always gets the last index, so a lone host and a later client would both be "first".
 - *What did you not finish / what would you change?* Fill in honestly after the last test day (see MORNING.md notes).

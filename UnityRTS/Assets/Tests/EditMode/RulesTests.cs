@@ -92,6 +92,14 @@ namespace RTS.Tests
             Assert.AreEqual(1, PlayerSlots.SlotOf(new[] { 3, 2 }, 2));
             Assert.AreEqual(2, PlayerSlots.SlotOf(new[] { 3, 2 }, 3));
         }
+        // The host plays alone until P2 joins and keeps P1; the joining client gets P2 whatever its Fusion id is.
+        [Test] public void PlayerSlots_FirstFreeIsKeptWhenOthersJoin()
+        {
+            Assert.AreEqual(1, PlayerSlots.FirstFree(new int[0]));
+            Assert.AreEqual(2, PlayerSlots.FirstFree(new[] { 1 }));
+            Assert.AreEqual(1, PlayerSlots.FirstFree(new[] { 2 }));   // P1 left and someone rejoins
+            Assert.AreEqual(0, PlayerSlots.FirstFree(new[] { 2, 1 })); // full: a third player gets nothing
+        }
         [Test] public void PlayerSlots_ThirdPlayerAndUnknownGetZero()
         {
             Assert.AreEqual(0, PlayerSlots.SlotOf(new[] { 1, 2, 3 }, 3));
@@ -251,6 +259,9 @@ namespace RTS.Tests
             Assert.AreEqual(0f, TechEffects.AttackBonus("spearman", none));
             Assert.AreEqual(2f, TechEffects.AttackBonus("spearman", all));
             Assert.AreEqual(0f, TechEffects.AttackBonus("villager", all));
+            Assert.AreEqual(2f, TechEffects.AttackBonus("cavalry", all));
+            Assert.AreEqual(0f, TechEffects.AttackBonus("scout", all));     // technologies.json names only Spearman, Archer, Cavalry
+            Assert.AreEqual(0f, TechEffects.AttackBonus("warship", all));
             Assert.AreEqual(1f, TechEffects.RangeBonus("archer", all));
             Assert.AreEqual(0f, TechEffects.RangeBonus("spearman", all));
             Assert.AreEqual(1f, TechEffects.LosBonus("archer", all));

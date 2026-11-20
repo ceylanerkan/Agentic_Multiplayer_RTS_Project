@@ -15,6 +15,7 @@ using UnityEngine.UI;
 public class AiCommanderPanel : MonoBehaviour
 {
     [SerializeField] TMP_InputField questionInput;
+    const int MaxQuestionLength = 500;   // = MAX_QUESTION_LEN of the gateway (a pytest checks both)
     [SerializeField] Button askButton, approveButton, rejectButton, whyButton;
     [SerializeField] TMP_Text answerText;      // summary + confidence + evidence + actions
     [SerializeField] TMP_Text statusText;      // loading / errors / approval result
@@ -30,6 +31,8 @@ public class AiCommanderPanel : MonoBehaviour
         // long LLM answers shrink to fit the box instead of running out of the panel
         foreach (var t in new[] { answerText, statusText })
             if (t != null) { t.enableAutoSizing = true; t.fontSizeMin = 12; t.fontSizeMax = t.fontSize; }
+        // the gateway rejects longer questions (MAX_QUESTION_LEN in ai/gateway/app.py); stop the typing here instead
+        if (questionInput != null) questionInput.characterLimit = MaxQuestionLength;
         askButton.onClick.AddListener(() => _ = Ask());
         whyButton.onClick.AddListener(() => _ = Why());
         approveButton.onClick.AddListener(Approve);
@@ -37,12 +40,24 @@ public class AiCommanderPanel : MonoBehaviour
         ShowAnswer(null);
     }
 
+    // Says which step is missing, so a failed test points to the cause (before: always "Match not started yet.").
+    static string WhyNoSnapshot()
+    {
+        var launcher = GameLauncher.Instance;
+        if (launcher == null || launcher.Runner == null) return "Not connected: start from the Menu scene and press Host or Join.";
+        if (!launcher.Runner.IsRunning) return "Still connecting to the session...";
+        if (GameSpawner.Instance == null) return "No GameSpawner in the Game scene (Tools > RTS > Rebuild).";
+        if (GameSpawner.SpawnError != null) return "Base spawn failed: " + GameSpawner.SpawnError + " (see Console).";
+        if (launcher.IsHost) return "Your player was not spawned yet; if this stays, check the Console for GameSpawner errors.";
+        return "Waiting for the host to spawn your base...";
+    }
+
     async Task Ask()
     {
         string q = questionInput.text.Trim();
         if (busy || q.Length == 0) return;
         var snap = AiSnapshotBuilder.Build();
-        if (snap == null) { statusText.text = "Match not started yet."; return; }
+        if (snap == null) { statusText.text = WhyNoSnapshot(); return; }
         SetBusy(true, "AI is thinking...");
         try
         {

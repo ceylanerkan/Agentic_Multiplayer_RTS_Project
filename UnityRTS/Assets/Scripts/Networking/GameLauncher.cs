@@ -33,10 +33,12 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
     /// <summary>1 or 2 for the local player, 0 if not in a match. Same answer on host and client.</summary>
     public int LocalSlot => runner == null ? 0 : SlotOf(runner.LocalPlayer);
 
+    /// <summary>The slot the host stored in that player's NetworkPlayerState (0 until it is spawned).</summary>
     public int SlotOf(PlayerRef player)
     {
         if (runner == null) return 0;
-        return PlayerSlots.SlotOf(runner.ActivePlayers.Select(p => p.RawEncoded), player.RawEncoded);
+        foreach (var s in NetworkPlayerState.All) if (s.Object != null && s.Object.InputAuthority == player) return s.Slot;
+        return 0;
     }
 
     void Awake()

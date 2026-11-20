@@ -6,6 +6,8 @@ It does NOT check real Unity or Fusion APIs (the stubs are written from memory; 
 
     dotnet build tools/compile-check/CompileCheck.csproj
 
+Needs the .NET 8 SDK (`dotnet --version`). On Ubuntu without access to dot.net: `apt-get install dotnet-sdk-8.0`.
+
 (`GameLauncher.cs` and `AiGatewayClient.cs` are not included: the stub declares a small `GameLauncher`, and the gateway client needs
 `UnityWebRequest`. `MenuUI.cs`, `RtsSetupTools.cs` and `PlayFromMenu.cs` are included with stub editor APIs. Obsolete-API warnings
 (CS0618) are only visible in Unity: the stubs only declare the current APIs.)

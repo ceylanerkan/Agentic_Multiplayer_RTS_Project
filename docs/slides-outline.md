@@ -13,5 +13,6 @@
 10. **Security**: fog of war before the network, schema rejects unknown fields, identity from the session, injection test; the
     client-side fog limitation.
 11. **Evaluation**: metrics table (mock vs live), one failure case.
-12. **Lessons and future work**: engine-free core, single source of numbers; server-side fog, plan chaining.
+12. **Lessons and future work**: engine-free core, single source of numbers, "a compile check proves types, not lifecycle" (the
+    unregistered spawner); server-side fog, plan chaining, pathfinding.
 (Backup slide: demo scenario checklist 1-9.)

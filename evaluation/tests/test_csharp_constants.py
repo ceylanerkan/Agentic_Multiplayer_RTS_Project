@@ -1,4 +1,5 @@
 """Consistency: numbers hard-coded in Unity's GameConstants.cs must match the knowledge base and design brief."""
+import json
 import re
 from pathlib import Path
 
@@ -37,3 +38,48 @@ def test_every_unit_and_building_has_a_generated_prefab():
     for name in ("units", "buildings"):
         keys = {r["key"] for r in json.loads((ROOT / f"ai/rag/knowledge/{name}.json").read_text(encoding="utf-8"))}
         assert keys <= rows, f"{name} without a prefab row in RtsSetupTools.cs: {sorted(keys - rows)}"
+
+
+def test_scene_simulation_behaviours_register_with_the_runner():
+    # Fusion only auto-registers a SimulationBehaviour on the runner's own GameObject. One in a scene must call
+    # AddGlobal itself, or its Runner stays null (UNITY_FEEDBACK 2026-11-19: GameSpawner never spawned any base).
+    scripts = ROOT / "UnityRTS/Assets/Scripts"
+    found = []
+    for path in scripts.rglob("*.cs"):
+        text = path.read_text(encoding="utf-8")
+        if re.search(r"class \w+\s*:\s*SimulationBehaviour\b", text):
+            found.append(path.name)
+            assert "AddGlobal(this)" in text, f"{path.name} is a SimulationBehaviour but never calls Runner.AddGlobal(this)"
+    assert "GameSpawner.cs" in found
+
+
+def test_tech_effect_constants_match_technologies_json():
+    # TechEffects.cs hard-codes the effect numbers; they must say the same as the "effect" texts the AI reads.
+    techs = {t["key"]: t["effect"] for t in json.loads((ROOT / "ai/rag/knowledge/technologies.json").read_text(encoding="utf-8"))}
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/TechEffects.cs").read_text(encoding="utf-8")
+    num = lambda name: float(re.search(rf"\b{name}\s*=\s*([0-9.]+)f", cs).group(1))
+    assert f"+{num('IronWeaponsAttack'):g} attack for Spearman, Archer and Cavalry" in techs["iron_weapons"]
+    assert '"spearman", "archer", "cavalry"' in cs
+    assert f"+{num('FletchingRange'):g} range and +{num('FletchingLos'):g} line of sight for Archers" in techs["fletching"]
+    assert f"+{round((num('HorseCollarFood') - 1) * 100)}% food" in techs["horse_collar"]
+    # GatherState has its own copy (the gather loop uses that one): both must agree
+    gather = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/GatherState.cs").read_text(encoding="utf-8")
+    assert float(re.search(r"HorseCollarFoodBonus\s*=\s*([0-9.]+)f", gather).group(1)) == num("HorseCollarFood")
+
+
+def test_damage_multipliers_match_rules():
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/DamageCalculator.cs").read_text(encoding="utf-8")
+    num = lambda name: float(re.search(rf"\b{name}\s*=\s*([0-9.]+)f", cs).group(1))
+    assert f"multiplier is {num('CounterBonus'):g} when the attacker counters the target and {num('CounterPenalty'):g} when" in RULES
+    assert f"Catapults deal {num('CatapultVsBuilding'):g}x damage to buildings" in RULES
+
+
+def test_population_data_matches_constants():
+    # GameConstants hard-codes 1 pop per unit and +5 per Town Center/House; the JSON the AI reads must agree
+    kb = ROOT / "ai/rag/knowledge"
+    units = json.loads((kb / "units.json").read_text(encoding="utf-8"))
+    buildings = {b["key"]: b for b in json.loads((kb / "buildings.json").read_text(encoding="utf-8"))}
+    assert all(u["population"] == 1 for u in units) and "Every unit costs 1 population" in RULES
+    assert buildings["town_center"]["population_provided"] == const("TownCenterCapacity")
+    assert buildings["house"]["population_provided"] == const("HouseCapacity")
+    assert all(b.get("population_provided", 0) == 0 for k, b in buildings.items() if k not in ("town_center", "house"))

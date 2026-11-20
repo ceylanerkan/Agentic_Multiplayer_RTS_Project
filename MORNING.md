@@ -1,46 +1,51 @@
-# Sabah notları – 2026-11-19
+# Sabah notları – 2026-11-20
 
 ## Dün gece ne yaptım
-- `UNITY_FEEDBACK.md` 2026-11-18 işlendi: 3 obsolete uyarısı düzeltildi; TMP `NullReferenceException`'ın sebebi üretilen yazılarda fontun boş olmasıydı (`m_fontAsset: {fileID: 0}`), `RtsSetupTools` artık LiberationSans SDF atıyor. Yazılar bu yüzden görünmüyordu.
-- Play artık hangi sahne açıksa açık olsun `Menu`'den başlıyor (`Editor/PlayFromMenu.cs`). Yeni komut: `Tools > RTS > Rebuild generated scenes and prefabs`.
-- Okunurluk: yeni `UI/EntityVisuals.cs` her birim/binaya takım diski (mavi = benim, kırmızı = düşman) ve isim + HP etiketi, kaynaklara miktar etiketi koyuyor (prefab işi yok). Birimler daha büyük, kaynak şekilleri farklı, UI opak, fontlar ve butonlar büyük, "Raider Boat" gibi okunur isimler, host tekken üst barda "P1 | Age I | waiting for P2".
-- Kontrol hataları: seçim halkası kapsülün içinde kalıyordu (artık ayakta); bina yerleştirme tıkı seçimi siliyordu; sağ tıkla iptal birimleri yürütüyordu; AI paneline yazarken WASD kamerayı kaydırıyordu; fare tekerleği bazı Input System ayarlarında zoom yapmıyor olabilirdi.
-- İki bağımsız kod incelemesinden ~12 düzeltme: kendi yarım binaların fog altında görünmüyordu; P2'nin AI'ı çalışan Villager'ları boşta sanıyordu; aynı teknoloji iki kez ödenebiliyordu; ENEMY_SIGHTED spam'i; birimler TC'nin köşesinde doğuyordu; suyun ötesine saldırı emri birimi donduruyordu; yok olan seçili birim/inşaattan okuma hatası; AI paneli hata olunca sonsuza kadar "busy" kalıyordu; materyal sızıntıları.
-- Testler: `tools/compile-check` 0 hata/0 uyarı, C# kural testleri 53/53 (6 yeni), `pytest ai evaluation` 67 geçti. Rapora "Lessons learned" maddesi eklendi.
+- `UNITY_FEEDBACK.md` 2026-11-19 işlendi. Bulduğun sebep doğruydu: `GameSpawner` runner'a kaydedilmiyordu, bu yüzden Player/TC/Villager oluşmuyordu. Artık runner çalışınca `NetworkRunner.AddGlobal(this)` çağırıyor; tek başına Host iken de üs oluşur. Üs oluşturma hata verirse Console bir kez yazar, AI paneli "Base spawn failed: ..." der; diğer durumlarda panel eksik adımı söylüyor ("Match not started yet" yok).
+- `Tools > RTS > 2` ve `3` komutları kurulu sahnede "Already set up" deyip hiçbir şey eklemiyor (çift nesnelerin sebebi). `docs/setup.md` §3: ParrelSync yerine Windows build = Host + editör = Join, ya da Unity'nin Multiplayer Play Mode'u.
+- Bağımsız inceleme, ilk kez çalışacak kodda 4 hata: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON numarayı veriyor) — artık host ilk boş slotu verip saklıyor; (2) birkaç Villager biten kaynağı okuyup hata veriyordu; (3) her şey havada doğacaktı (ışın nesnenin kendisine çarpıyordu); (4) birimler input authority ile doğup client'ta zıplayabilirdi.
+- Küçükler (ikinci bağımsız inceleme dahil): ağaç bitince Villager yenisini TC'nin değil biten ağacın yanında arıyor (önce uzak ormanda boşta kalıyordu); AI soru kutusu 500 karakterle sınırlı (gateway'in sınırı, önce HTTP 422 hatası dönüyordu); yerleştirme hayaleti gerçekten yarı saydam (build'de de, `Sprites/Default`); görünmeyen düşmana sağ tık artık onu ele vermiyor.
+- Yeni testler: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği gerçek google-genai tipleriyle (sahte istemci); `make_session.py`; `PlayerSlots.FirstFree`; brief tabloları / zone isimleri / `unit_group` / tech ve hasar sabitleri JSON ve `rules.md` ile tutarlı mı. Rapor, mimari ve savunma notları güncellendi.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 88 geçti, C# kural testleri 54/54.
 
 ## Plan durumu
-Gece 1–15 bitti; Gece 16 (hata düzeltme) ve Gece 17 (tutarlılık: gizli anahtar yok, README/test sayıları güncel) kısmen bitti, son Unity geri bildirimini bekliyor (plan tarihlerinin ~8 gün önündeyiz). Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme ve testler.
+Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
 
 ## Bugün test et
-1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/4, sonra main'de `git pull`.
-2. Unity'yi aç; Console'da kırmızı hata olmamalı. `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. (Bu sahnelerde elle yaptığın değişiklik varsa kaybolur.) Bitince `Menu.unity`, `Game.unity`, `Assets/Prefabs` değişikliklerini main'e commit'le. `Window > General > Test Runner > EditMode > Run All`: 53 test geçmeli.
-3. Game view'ın üstündeki çözünürlük menüsünden **Full HD (1920x1080)** seç (16:9). ParrelSync ile iki pencere için **1280x720** yeterli; UI pencereye göre ölçekleniyor. Windows build için `Tools > RTS > Set build window (1280x720, windowed)` çalıştır: iki pencere yan yana sığar (ProjectSettings değişir, main'e commit'le).
-4. `Game` sahnesi açıkken Play'e bas: `Menu` açılmalı. Session adı yaz, Host. ParrelSync klonunda aynı adla Join. Beklenen: iki tarafta da TC + 3 Villager, altlarında mavi (kendi) / kırmızı (düşman) disk, üstlerinde isim + HP; ağaç/çalı/altın üstünde miktar; üst barda Wood/Food/Gold/Pop/Age okunur.
-5. Fare tekerleğiyle zoom yap (çalışmalı); AI paneline "wasd" yaz: kamera kımıldamamalı.
-6. Villager seç (ayağının altında yeşil halka görünmeli), ağaca sağ tık: ağacın etiketindeki sayı azalmalı, HUD'da Wood artmalı. House inşa et: yerleştirdikten sonra Villager seçili kalmalı, etikette "building %" görünmeli. Yerleştirirken sağ tık sadece iptal etmeli, birimleri yürütmemeli. TC'de Villager kuyruğa koy: nüfus (5) dolunca Train butonu grileşip sebebini yazmalı; House'lardan sonra 5'lik kuyruk dolunca "queue is full" yazmalı.
-7. Sorun olursa `UNITY_FEEDBACK.md`'ye: Console hatası (olduğu gibi), adım numarasıyla `Test 4 tamam` / `Test 6 olmadı: ...`, mümkünse "hâlâ okunmuyor: X" gibi somut not (ekran görüntüsü yolu da yazabilirsin).
+1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/5, sonra main'de `git pull`.
+2. Çift nesneli `Game.unity`'yi at: `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild (sadece bunu çalıştır, 1/2/3'ü kurulu sahnede çalıştırma). Console'da kırmızı hata olmamalı. `Game.unity`'de tek `MapAndSystems` ve tek `GameCanvas` olmalı. Sahneleri ve `Assets/Prefabs`'ı main'e commit'le.
+3. Tek başına dene: Play > session adı > Host. Console'da `GameSpawner registered with the NetworkRunner (host).` görünmeli; TC + 3 Villager (mavi disk, etiket) yere oturmuş halde (havada değil) oluşmalı; üst barda "P1". AI paneline soru yaz: gateway kapalıysa bağlantı hatası, açıksa cevap gelmeli; "Match not started yet" artık çıkmamalı.
+4. İki oyuncu: ParrelSync klonu yine kapanırsa `docs/setup.md` §3'teki yolu izle: `File > Build Profiles` > Windows > Build And Run (klasör: `UnityRTS/Builds/Win`, git-ignore'da), build'de Host, editörde aynı adla Join. Host üst barda "P1", client "P2" görmeli; üsler haritanın iki ucunda (x = −65 / +65) olmalı. 3 Villager'ı aynı çalıya gönder: çalı bitince hata çıkmamalı, Villager'lar yandaki çalıya geçmeli. Kod değişince build'i yeniden al. Build istemiyorsan alternatif: Unity 6'nın **Multiplayer Play Mode** paketi (`docs/setup.md` §3; Photon'un Fusion 2 örnekleri kullanıyor, bu projede denenmedi).
+5. Sonra geçen günkü test listesinin kalanı (`TODO.md` [You] 2): Villager seç, ağaca sağ tık, House inşa et, TC'de Villager üret.
+6. Sorun olursa `UNITY_FEEDBACK.md`'ye: Console hatası olduğu gibi, adım numarasıyla `Test 3 tamam` / `Test 4 olmadı: ...`. Klon/build için `Player.log` veya `Editor.log`'un son satırları da işe yarar.
 
 ## Senin kararın gerekiyor
-Yok.
+**Q-1120-1:** Kaynak yerleşimi: design brief'e göre bütün odun EastForest'ta (P2'nin yanı, x=+65), bütün altın WestMine'da (P1'in yanı, x=−65). P1 her odun turu için ~140 m yürüyor, P2 altın için aynı; erken ekonomi iki taraf için farklı.
+- **A:** Olduğu gibi bırak. Brief, RAG bilgisi ve AI cevapları değişmez; demo çalışır ama oyun dengesiz.
+- **B:** Her üssün yanına küçük bir orman (ör. 4 ağaç, `P1Base`/`P2Base` içinde) ekle; EastForest/WestMine kalır. Değişecekler: `RtsSetupTools` (ağaç yerleşimi, build slot'larıyla çakışmayacak yerde), brief'in kaynak satırı, `rules.md` (RAG) ve harita EditMode testi; şemalar ve zone isimleri değişmez. Sonra senin Rebuild yapman gerekir (ben kodu yaparım).
+- **C:** Haritayı aynala: her iki tarafa da bir orman + bir maden. Zone isimleri ve AI bilgi tabanı daha çok değişir.
+- Önerim: **B** (küçük değişiklik, iki tarafa eşit erken odun). Bekleyen: sadece harita/kaynak düzeni; diğer işler devam ediyor.
+
+**Q-1120-2:** `units.json`'ta bazı `weaknesses` girdileri karşı birimin `strengths`'inde yok (Raider Boat "catapult'a zayıf", Scout ve Villager "spearman/archer'a zayıf"), ama hasar çarpanı sadece `strengths`'ten geliyor; AI bu zayıflıkları kanıt olarak söyleyebilir.
+- **A:** `weaknesses`'i `strengths`'e uydur (çarpanı olmayanları sil). Oyun aynı kalır, AI'nın söylediği hasar kurallarıyla tutarlı olur; RAG indeksini yeniden kurarsın. Aynı düzeltmede `rules.md`'deki "Units automatically attack enemies ... while idle" cümlesine "(Villagers never start fights)" eklerim (kod böyle çalışıyor).
+- **B:** Eksik `strengths` ekle (ör. Catapult → Raider Boat). Oyun dengesi değişir.
+- **C:** Bırak.
+- Önerim: **A**. Bekleyen: yok (sadece veri tutarlılığı).
 
 ## Gözden geçir
-- Takım renkleri göreli: herkes kendini mavi, rakibini kırmızı görür (P1/P2 sabit renk yerine). Kaynak etiketleri açık sarı.
-- Disk ve etiket nesnenin çocuğu değil, onu `LateUpdate`'te takip ediyor (binalar düzleştirilmiş küp; çocuk olsalardı esnerdi). Görünürlüğü gövdenin `Renderer`'ından kopyalıyor, böylece fog of war onları da saklıyor.
-- Yeni birim ölçekleri (Villager 1.2 … Warship 2.4), kamera başlangıç yüksekliği 24, zemin rengi zeytin yeşili: hepsi `RtsSetupTools.cs` başındaki tablolarda, istediğin gibi değiştir.
-- `Play from Menu scene` varsayılan açık (EditorPrefs); bir sahneyi tek başına denemek istersen menüden kapat.
-- `ENEMY_SIGHTED` aynı düşman için ancak 10 s görüş dışında kaldıktan sonra tekrar yazılıyor (`FogOfWar.RearmSeconds`, veride yok).
-- Suyun ötesindeki hedefe saldırı emri kıyıda takılırsa emir bırakılıyor (birim durur, sonra kendiliğinden saldırabilir).
-- Birimler binanın yanında (çarpıştırıcı yarı boyu + 1.5 m, güneyde) doğuyor; başlangıç Villager'ları TC'nin önünde sıra halinde.
-- `run_eval.py --out` artık klasör de kabul ediyor.
-- AI planı "6 Spearman üret" derse birimler uygun tüm binaların kuyruklarına dağıtılıyor; sığmazsa durum satırında "Queued N of M" yazıyor (önce fazlası sessizce kayboluyordu).
-- `GameActionValidator`: bilinmeyen/eksik `unit_group` ile MOVE_GROUP artık reddediliyor (önce sadece şema durduruyordu); Python kopyası da aynı.
+- Iron Weapons artık sadece Spearman, Archer ve Cavalry'ye +2 saldırı veriyor (`technologies.json` böyle diyor, AI de bunu okuyor); önce Scout, Catapult ve gemilere de veriyordu. Brief'te "+2 attack for military" yazıyor; tersini istersen JSON'u değiştiririz.
+- Birim ve binalar artık input authority olmadan doğuyor (sahiplik zaten `[Networked] Owner`'da, emirler RPC ile gidiyor). Kendi birimlerinin client'ta akıcı hareket ettiğini kontrol et.
+- Spawn yüksekliği: ışın ağ nesnelerini (birim, bina, kaynak) atlayıp en yüksek diğer yüzeye (zemin/deniz) bakıyor.
+- `GameSpawner` kendini `GameLauncher.Instance.Runner`'a kaydediyor (runner'ı `GameLauncher`'dan bulmak yerine Fusion'a bırakmak mümkün değildi). Kayıt `Update`'te deneniyor, böylece sahne yüklenme sırası önemli değil.
+- AI paneli durum mesajları İngilizce (diğer UI yazılarıyla aynı).
+- `tools/run_gateway.bat` artık varsa `ai\.venv` içindeki Python'u kullanıyor (paketler oraya kuruluyor) ve sonunda `pause` var; hata olursa pencere açık kalır. `.env.example`'dan hiç okunmayan `GATEWAY_HOST/PORT` kaldırıldı.
 
 ## Emin olmadığım yerler
-- Bugünkü Unity scriptleri (`EntityVisuals`, `PlayFromMenu`, yeni menü komutları, `AiGatewayClient` 401 tekrarı) gerçek Unity'de derlenmedi (sadece stub'larla). Özellikle TMP'nin `outlineWidth`/`outlineColor` ayarı ve 3D `TextMeshPro`'nun font boyutu (birim 8, bina 11) ekranda çok küçük/büyük çıkabilir; söylersen ayarlarım.
-- Rebuild sonrası prefab GUID'leri değişir; Fusion'ın Network Prefab Table'ı genelde kendini yeniler, yenilemezse Fusion menüsünden "Rebuild Prefab Table" çalıştır.
-- Etiketler için `TMP_Settings.defaultFontAsset` kullanılıyor (TMP Settings `Resources` altında, build'e girer); boş gelirse etiketler görünmez, haber ver.
-- `Tools > RTS > 1 Create placeholder prefabs` mevcut prefab'ların üstüne yazmadan önce artık soruyor: yazarsan mevcut sahnedeki `GameSpawner` referansları Missing olabilir; Rebuild güvenli yol.
+- Üs oluşturma bir kez hata verirse (ör. prefab tablosu) o oyuncu için tekrar denenmiyor; düzeltip Play'i yeniden başlat.
+- Düzeltme gerçek Unity'de denenmedi (sadece stub'larla derlendi). `AddGlobal` ve `RemoveGlobal` Fusion 2.0.13'ün `Fusion.Runtime.xml` belgesinde var; yine de Console'da Fusion'dan bir uyarı görürsen yaz.
+- ParrelSync klonunun kapanma sebebini bulamadım (log'da çökme yok). Build = Host yolu bunu tamamen atlıyor.
 - Gemini ile canlı çalıştırma hâlâ yapılmadı.
+- `AiCommanderPanel` URL'si `http://127.0.0.1:8765` kaldıkça sorun yok: Unity localhost'u "Allow downloads over HTTP = Not allowed" kuralından muaf tutuyor. Gateway'i başka bir PC'nin IP'sine yönlendirirsen `Project Settings > Player > Other Settings > Allow downloads over HTTP` ayarını `Always allowed` yapman gerekir.
 
 ## Nasıl cevap verirsin
 UNITY_FEEDBACK.md dosyasına bugünün tarihiyle bir başlık aç, cevapları yaz (ör. `Q-1114-1: B`,

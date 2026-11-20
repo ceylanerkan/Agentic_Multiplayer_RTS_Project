@@ -4,6 +4,7 @@
 prints the command to start the Inspector against the real server (stdio) with that session.
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -12,7 +13,8 @@ sys.path.insert(0, str(ROOT / "ai"))
 
 from common.session_store import SessionStore  # noqa: E402
 
-DB = ROOT / "ai" / "data" / "sessions.sqlite3"
+# same variable the MCP server reads, so both always open the same database
+DB = Path(os.environ.get("SESSION_DB_PATH", ROOT / "ai" / "data" / "sessions.sqlite3"))
 
 if __name__ == "__main__":
     name = sys.argv[1] if len(sys.argv) > 1 else "early_economy"

@@ -29,6 +29,7 @@ public class ResourceNode : NetworkBehaviour
     /// <returns>true when the node is now empty and was despawned (do not read it afterwards)</returns>
     public bool Take(float amount)
     {
+        if (Object == null || !Object.IsValid) return true; // already emptied and despawned this tick: never despawn twice
         if (!HasStateAuthority) return false;
         Amount -= amount;
         if (Amount > 0.001f) return false;

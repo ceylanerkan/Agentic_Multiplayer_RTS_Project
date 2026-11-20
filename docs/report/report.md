@@ -51,7 +51,7 @@ Boat; Catapults deal 3x damage to buildings and beat Warships. Land units stay o
 units attack only their own domain, ranged units shoot across the shoreline.
 
 **Buildings and technology.** Town Center, House, Barracks, Stable, Blacksmith, Dock. Four technologies: Age II
-(unlocks Stable, Cavalry, Catapult, Warship, Fletching), Iron Weapons (+2 attack for military units), Fletching
+(unlocks Stable, Cavalry, Catapult, Warship, Fletching), Iron Weapons (+2 attack for Spearman, Archer and Cavalry), Fletching
 (+1 range and line of sight for Archers), Horse Collar (+20% food gathering). The Town Center cannot train while it
 researches Age II.
 
@@ -89,7 +89,7 @@ domains, visibility, production queue, win condition, approval checks) are plain
 MonoBehaviours and NetworkBehaviours are thin adapters that read the networked objects and call the core.
 
 **Python side.** `ai/gateway` (FastAPI, agent loop, logs), `ai/mcp-server` (seven tools), `ai/rag` (knowledge index
-and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 67 pytest cases.
+and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 88 pytest cases.
 
 **Data flow of one question.** (1) The player types a question. (2) `AiSnapshotBuilder` collects own units and
 buildings and the enemies returned by `VisibilityService.FilterFor`. (3) The gateway validates the snapshot against
@@ -109,7 +109,8 @@ pathing, gathering, construction, production, combat and the win check. Each pla
 calls `Send*`, which is an RPC from InputAuthority to StateAuthority. On the host the relay (a) checks that the
 object belongs to the sender, (b) validates cost, population, prerequisites and zone rules with `GameActionValidator`
 and the production queue rules, and only then (c) changes the state. A client therefore cannot spend resources it
-does not have or command units it does not own.
+does not have or command units it does not own. Units and buildings are spawned without input authority: ownership is
+a networked `Owner` field, so no client predicts or moves them locally.
 
 **Replicated state.** `NetworkPlayerState` (resources, population, age, researched technologies, match result),
 `NetworkUnit` (owner, type, HP, move and attack target; position through `NetworkTransform`), `NetworkBuilding`
@@ -117,8 +118,10 @@ does not have or command units it does not own.
 values for the HUD and panels.
 
 **Match life cycle.** `GameLauncher` starts the Fusion runner (`GameMode.Host` or `GameMode.Client`) with a session
-name, loads the Game scene, and assigns slot 1 to the lowest `PlayerRef` and slot 2 to the next, which every peer
-computes identically. If the opponent disconnects the match ends and both return to the menu. When a player loses the
+name and loads the Game scene. There, `GameSpawner` (registered with the runner through `AddGlobal`) gives each
+joining player the first free slot, stores it in the networked `NetworkPlayerState`, and spawns that player's Town
+Center and three Villagers. The slot is not derived from `PlayerRef` order, because Fusion gives the host the last
+index: a host that starts alone and a client that joins later would otherwise both compute slot 1. If the opponent disconnects the match ends and both return to the menu. When a player loses the
 last Town Center the host sets a result for both players and `GameOverUI` shows Victory or Defeat.
 
 **Fog of war.** Visibility is a pure function: a player sees all own objects and every enemy object inside the line
@@ -295,6 +298,11 @@ Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance
   before the text and to force play mode to start in the Menu scene. A first play test also showed that identical
   grey placeholders were hard to read, so each unit and building now has a team disc and a name/HP label.
   Lesson: test the generated content in the editor as early as the code.
+- **Framework registration is invisible to stubs.** The spawner that creates each player's base is a Fusion
+  `SimulationBehaviour` placed in the Game scene. Fusion only registers such a behaviour automatically when it sits on the
+  runner's own GameObject, so its `Runner` stayed null and no base ever spawned, although the code compiled against stubs
+  and every rule test passed. The fix is one `NetworkRunner.AddGlobal` call; a static test now checks that every scene
+  `SimulationBehaviour` registers itself. Lesson: a compile check proves types, not lifecycle; only a play test does.
 - **One source of numbers.** Keeping all values in JSON files read by Unity, the RAG index and the evaluation removed a
   whole class of inconsistencies, but needs a loader at build time (`StreamingAssets` copy).
 - **Host authority vs. convenience.** Reserving population and paying cost when a unit is queued (not when it appears)
@@ -309,7 +317,8 @@ We delivered a two-player networked RTS with an authoritative host, a fog-of-war
 read-only MCP tools and a RAG index, structured and approved plans, a decision log and an evaluation harness. Future
 work: per-player interest management for server-side fog of war; embeddings and a reranker for retrieval with a
 larger corpus; AI plans that can chain (build, then train after the building completes); a tool that explains the
-validator's rejection to the model so that it can repair a plan; balance tuning from recorded matches.
+validator's rejection to the model so that it can repair a plan; NavMesh pathfinding and unit separation instead of
+straight-line moves with a zone check; a symmetric map and balance tuning from recorded matches.
 
 ## XII. Appendix
 
@@ -324,10 +333,10 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Photon Fusion | 2.0.13 (Host Mode) |
 | Unity packages | AI Navigation 2.0.12, Input System 1.19.0, Newtonsoft JSON 3.2.2, Test Framework 1.6.0, uGUI 2.0.0, ParrelSync |
 | Python | 3.10+ |
-| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
+| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
-**C. Tests.** Python: `python -m pytest -q ai evaluation` (67 tests, no network, no API key). C#: Unity Test Runner,
-EditMode, assembly `RTS.Tests.EditMode` (53 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+**C. Tests.** Python: `python -m pytest -q ai evaluation` (88 tests, no network, no API key). C#: Unity Test Runner,
+EditMode, assembly `RTS.Tests.EditMode` (54 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

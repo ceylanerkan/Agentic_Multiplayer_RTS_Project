@@ -1,24 +1,26 @@
 # TODO: remaining work
 
 This file lists only the work that is still open. Milestone overview and status: [README.md](README.md#status).
-All code for nights 1-12 is written (updated 2026-11-19); what is left is editor work, play testing, live runs and
+All code for nights 1-12 is written (updated 2026-11-20); what is left is editor work, play testing, live runs and
 the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is compiled and tested with the .NET SDK
-(53 C# tests), the Unity-specific scripts are only checked against stubs (`tools/compile-check`), so expect small
+(54 C# tests), the Unity-specific scripts are only checked against stubs (`tools/compile-check`), so expect small
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## Open decisions
+- [ ] Q-1120-2 (MORNING.md): `weaknesses` in units.json that have no matching `strengths`; recommended: align them (no gameplay change).
+- [ ] Q-1120-1 (MORNING.md): resource layout favours each side unevenly (wood only near P2, gold only near P1); recommended: a small forest in each base.
 - [ ] Get written instructor approval for the one-person team (assignment asks for 2 students). Mention it in the report.
 
-## [You] 1. Rebuild the generated scenes and prefabs (fixes from UNITY_FEEDBACK 2026-11-18)
-- [ ] Delete `Assets/TutorialInfo` and `Assets/Readme.asset` if they are still there, and `Assets/Scenes/SampleScene.unity` (not used).
-- [ ] Menu `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. It deletes `Assets/Scenes/Menu.unity`, `Game.unity` and
-      `Assets/Prefabs` and runs command 0 again: every TMP text now has the LiberationSans SDF font (the NullReferenceException came
-      from texts without a font), bigger units, distinct resource shapes, more opaque UI panels. Console: no red errors expected.
-- [ ] Check `Tools > RTS > Play from Menu scene` is ticked (default). Press Play with the Game scene open: the Menu must appear.
-- [ ] Game view resolution: `Full HD (1920x1080)` (16:9). For two windows on one screen use `1280x720`; the UI scales with the window.
-- [ ] Test: Play with a ParrelSync clone: A = Host, B = Join, same session name; both load `Game`. Every unit and building has a coloured
-      disc and a name label (blue = mine, red = enemy); trees, berry bushes and gold mines show their remaining amount.
-      Closing the clone returns the other to `Menu` with a message.
+## [You] 1. Rebuild the generated scenes and prefabs (fixes from UNITY_FEEDBACK 2026-11-18 and 2026-11-19)
+- [ ] Throw away the duplicated `Game.unity` (it was not committed): `git checkout -- UnityRTS/Assets/Scenes/Game.unity` or simply
+      run the rebuild below. Run **only** the Rebuild command, not 1/2/3 on top of an existing scene (2 and 3 now refuse that with a dialog).
+- [ ] Menu `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild. Console: no red errors. Commit `Assets/Scenes/*.unity` and
+      `Assets/Prefabs` to main. Open `Game.unity`: exactly one `MapAndSystems` and one `GameCanvas` in the Hierarchy.
+- [ ] Host alone (no second player): Play > session name > Host. Console shows `GameSpawner registered with the NetworkRunner (host).`;
+      your TC + 3 Villagers appear; the AI panel no longer says "Match not started yet" (if something is still missing it now names the step).
+- [ ] Two players: ParrelSync clone (A = Host, B = Join, same session name), or if the clone keeps closing, Windows build = Host and
+      editor = Join (steps in `docs/setup.md` section 3). Both sides: own TC + 3 Villagers (blue) standing on the ground, enemy red
+      once seen; host's top bar shows P1, the client's P2, bases at opposite ends. Send 3 Villagers to one bush until it is empty: no error.
 
 ### What the commands do (reference only; the rebuild runs all of them)
 - `Tools > RTS > 1 Create placeholder prefabs`: makes `Assets/Prefabs` with `Player`, 8 unit prefabs (capsules), 6 building prefabs
@@ -35,8 +37,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
   `NetworkPlayerState` + `CommandRelay`.
 
 ## [You] 2. Play tests (report results in UNITY_FEEDBACK.md)
-- [ ] Two instances: each side sees its TC and 3 Villagers (blue disc) in front of the TC; box-select (green rings at the feet) and move;
-      right-click a tree: its label counts down and Wood rises in the HUD after each trip to the TC.
+- [ ] Economy: box-select Villagers (green rings at the feet) and move them; right-click a tree: its label counts down and Wood
+      rises in the HUD after each trip to the TC.
 - [ ] Build a House (Villager selected > `Build House` > click a slot; the ghost turns green near a free slot): the site shows
       "building N%", the Villager stays selected; when done, Pop shows x/10. Select more Villagers and right-click the
       unfinished building: they help and it finishes faster. Train a Villager at the TC.
@@ -48,7 +50,7 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## [You] 3. Python and live runs
 - [ ] `pip install -r ai/requirements.txt`, `python ai/rag/build_index.py` (downloads the embedding model), `pytest ai evaluation`.
-- [ ] Live Gemini: `.env` with `GEMINI_API_KEY`, `uvicorn --factory ai.gateway.app:create_app --port 8765` from the repo root; try
+- [ ] Live Gemini: `.env` with `GEMINI_API_KEY`, then double-click `tools/run_gateway.bat` (or `uvicorn --factory ai.gateway.app:create_app --port 8765` from the repo root); try
       `MCP_TRANSPORT=stdio` with a file `SESSION_DB_PATH` too.
 - [ ] `GEMINI_API_KEY=... python evaluation/run_eval.py --real` (waits 4 s between prompts for the free-tier rate limit; `--delay N` changes it): keep `results.json`, `results.csv`, `results_table.md`; fill the `[TODO live]`
       cells in `docs/report/report.md` and the "Live (Gemini)" column of `evaluation/security-tests.md`.
@@ -64,8 +66,9 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 - [ ] Read `docs/defense-notes.md` and practise the five defense topics.
 
 ## Agent work still open
-- [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (two code reviews and the 2026-11-18
-      feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
+- [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (four code reviews and the
+      2026-11-18/19 feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
+- [ ] Q-1120-1 answer: if B, a small forest in each base (`RtsSetupTools`, design brief, `rules.md`, map EditMode test).
 - [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
       Graphics stay placeholders on purpose (team discs + labels give the readability); say so in the demo.
 

@@ -1,5 +1,77 @@
 # Progress log (newest first)
 
+## 2026-11-20 (run 5, night 16 fix day)
+- UNITY_FEEDBACK.md heading handled: "2026-11-19" (Test 4 failed: no TC/Villagers, AI panel "Match not started yet"; Game.unity
+  duplicated; ParrelSync clone closes itself).
+- Root cause confirmed: `GameSpawner` is a scene `SimulationBehaviour` and was never added to the runner (Fusion only auto-registers
+  ones on the runner's GameObject), so `Runner` stayed null and no base was spawned. `GameSpawner.TryRegister()` (from `Update`) calls
+  `NetworkRunner.AddGlobal(this)` once the launcher's runner is running (checked in `Fusion.Runtime.xml`); `OnDestroy` removes it.
+  Works for the host alone too (the `Update` loop spawns a base for every active player).
+- `AiCommanderPanel` names the missing step instead of "Match not started yet" (not connected / connecting / no GameSpawner /
+  player not spawned / waiting for host).
+- `RtsSetupTools` commands 2 and 3 show an "Already set up" dialog and add nothing when the open scene already has `MapAndSystems`/
+  `GameSpawner` or `GameCanvas`/`AiCommanderPanel`.
+- `docs/setup.md` section 3: Windows build = Host, editor = Join, step by step (ParrelSync fallback).
+- Tests: `tools/compile-check` 0 errors / 0 warnings (stubs gained `AddGlobal`, `RemoveGlobal`, `GameObject.Find`, 3-arg
+  `DisplayDialog`, `GameLauncher.IsHost`); `pytest -q ai evaluation` 67 passed. dotnet came from apt (`dotnet-sdk-8.0`); dot.net is
+  blocked by the proxy here.
+- Review of the host spawn path (it never ran before): `EntityVisuals` reads `TypeKey`/`Owner` lazily, so `InitHost` after
+  `Runner.Spawn` is fine; `OnDestroy` only calls `RemoveGlobal` while the runner is still running.
+- New pytest: every `SimulationBehaviour` in our scripts must call `AddGlobal(this)` (regression guard). 68 passed.
+  C# rule tests (throwaway net8.0 + NUnit): 53/53.
+- UI/input review (SelectionManager, UnitCommandInput, BuildPlacement, SelectionPanel): flow is sound; fixed the placement ghost,
+  which was opaque (URP Unlit ignores alpha unless the material is set to Transparent) and hid the slot.
+- Fog leak: FogOfWar only disables renderers, so a right-click on a hidden enemy attacked (and revealed) it; `UnitCommandInput`
+  now treats a hidden enemy as ground.
+- Night 17 (partial): re-ran the `docs/setup.md` Python steps in a fresh venv: `run_eval.py` (mock) OK, `create_app()` OK without
+  a key; fixed the stale test count (57 -> 68) in setup.md and the report; `build_index.py` prints how to install the optional
+  sentence-transformers instead of a traceback. Report gained the "framework registration" lesson.
+- New EditMode test `PlayerSlots_HostAloneIsP1`; C# rule tests 54/54 (counts updated in TODO, report, defense notes).
+- Checked: `AiApprovalFlow`, `AiGatewayClient`, `MenuUI`; Unity exempts localhost from "Allow downloads over HTTP = Not allowed"
+  (project has `insecureHttpOption: 0`), so the default gateway URL works.
+- Independent review of the networking/unit scripts (read-only subagent), 5 findings, each checked against the code and
+  `Fusion.Runtime.xml`:
+  (1) both players could get slot 1: Fusion gives the host the LAST player index, so a host alone was P1 by id order and a client
+  joining with a lower id also computed P1 (same base position, same zone, broken win check). Now the host assigns
+  `PlayerSlots.FirstFree` once and `GameLauncher.SlotOf` reads the stored `NetworkPlayerState.Slot` (EditMode test replaced by
+  `PlayerSlots_FirstFreeIsKeptWhenOthersJoin`); (2) several Villagers on a node that empties read/despawned it again in the same
+  tick: `VillagerGatherer.NodeAlive()`, `ResourceNode.Take` ignores an invalid object; (3) `StandOnGround` hit the new object's own
+  collider, so everything spawned floating: `RaycastAll`, skipping networked objects; (4) units/buildings were spawned with the
+  owner as input authority (client prediction, possible jumpy own units) though nothing uses it: now spawned without input
+  authority (`(PlayerRef?)null`); (5) resource layout favours each side unevenly (wood near P2, gold near P1): fixed by the design
+  brief, asked as Q-1120-1.
+- Tests after the fixes: compile-check 0/0, C# 54/54, pytest 68 passed.
+- A failed base spawn (e.g. a prefab missing from Fusion's prefab table) is logged once instead of every frame, and the AI panel
+  shows "Base spawn failed: ..." (`GameSpawner.SpawnError`). `docs/setup.md`: Multiplayer Play Mode as a second ParrelSync
+  alternative; defense notes: how a base is spawned.
+- New `ai/gateway/tests/test_gemini_request.py`: `GeminiLLM` builds a real google-genai request (system prompt, tool
+  declarations, user/model/tool history) against a fake client; function calls with `args=None` become `{}`. pytest 70 passed.
+  Report (match life cycle, authority), architecture (slots) and setup.md counts updated.
+- `make_session.py` honours `SESSION_DB_PATH` (the variable the MCP server reads); new `test_make_session.py` runs it for all
+  three fixtures in a temp database and checks the stored snapshot and printed command. pytest 73 passed.
+- New pytest: every `test_*` name cited in `evaluation/security-tests.md` exists (the table is report evidence). pytest 74 passed.
+- `VillagerGatherer`: after a node ran out, the next node was searched within 30 m of the Villager, which by then stood at
+  the Town Center (far from the forest/mine), so it went idle; now searched around the last node's position.
+- Second independent review (tonight's C# diff only): no compile or crash issues found (`(PlayerRef?)null` overload, usings,
+  AddGlobal guard, RaycastAll still finds Ground/Sea checked). Applied: placement ghost uses `Sprites/Default` first (a run-time
+  URP Transparent keyword may be stripped from builds), move target at ground height, `ResourceNode.Take` checks `Object.IsValid`
+  before `HasStateAuthority`. Not changed: a failed base spawn is not retried (shown in the AI panel instead).
+- Rule drift: `TechEffects` gave Iron Weapons +2 attack to every non-Villager, but `technologies.json` (what the AI reads) says
+  Spearman, Archer and Cavalry only; code now follows the JSON (EditMode assertions for cavalry/scout/warship) and a new pytest
+  ties the TechEffects constants to the JSON effect texts (report wording updated too). C# 54/54, pytest 75 passed.
+- New pytest: `DamageCalculator` multipliers (1.5 / 0.75 / 3x vs buildings) match rules.md. Counter pairs come from the JSON
+  `strengths` and match rules.md; some `weaknesses` entries have no matching `strengths` (descriptive only, asked as Q-1120-2).
+  pytest 76 passed. The tech test also checks that `GatherState.HorseCollarFoodBonus` equals `TechEffects.HorseCollarFood`.
+- New `evaluation/tests/test_design_brief_tables.py`: the brief's unit (domain, cost, HP, attack, armor, range, speed),
+  building (cost, HP, requirements) and technology (cost, where, requirements) tables and "Trained at" match the knowledge
+  JSON; all matched. Zone names agree in the brief, both schemas and `ZoneLookup.cs` (same 3 water zones); `unit_group` enum = 3 named groups + all non-Villager units, as the validator accepts; every `action_type` has a case in the validator and in `AiApprovalFlow`; the 8 event types agree between `PlayerEventLog` and the snapshot schema; the report's MCP tool table lists exactly the 7 server tools. pytest 85 passed.
+- `run_eval.py --real` without `GEMINI_API_KEY` prints a usage error instead of a KeyError traceback; `tools/run_gateway.bat` uses `ai\.venv` when it exists (setup.md installs the packages there) and pauses at the end so a crash message stays readable.
+- `.env.example`: removed `GATEWAY_HOST`/`GATEWAY_PORT` (never read; the port is on the uvicorn command and the AI panel URL); every other variable the code reads is listed.
+- Defense notes: why units have no input authority, how P1/P2 are decided. Architecture: spawning row. Slides outline: the
+  lifecycle lesson and pathfinding as future work (RAG corpus of 33 chunks re-checked; report version table checked against manifest.json and requirements.txt, rank-bm25 and python-dotenv added). setup.md: ParrelSync optional.
+- Final test run: `tools/compile-check` 0 errors / 0 warnings, C# rule tests 54/54, `pytest -q ai evaluation` 88 passed (last tests: population data matches `GameConstants`; count limit and snapshot limits agree between Unity, schemas and the Python mirror; the AI panel's question field is limited to the gateway's 500 characters (`characterLimit`), so a long question no longer ends in a raw HTTP 422).
+- Open questions: Q-1120-1 (resource layout), Q-1120-2 (weaknesses vs strengths). Risk: none of this ran in Unity yet.
+
 ## 2026-11-19 (run 4, night 16 fix day)
 - UNITY_FEEDBACK.md headings handled: "2026-11-18" (3 obsolete-API warnings, TMP NullReferenceException, Test 4: Play starts in Game,
   unreadable visuals and text, no target resolution).

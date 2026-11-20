@@ -11,7 +11,7 @@ namespace UnityEngine
         public T[] GetComponentsInChildren<T>() { return new T[0]; } public T GetComponentInChildren<T>() { return default(T); } }
     public class Behaviour : Component { public bool enabled; }
     public class MonoBehaviour : Behaviour { }
-    public class GameObject : Object { public Transform transform; public bool activeSelf;
+    public class GameObject : Object { public Transform transform; public bool activeSelf; public static GameObject Find(string n) { return null; }
         public GameObject() { } public GameObject(string n, params Type[] t) { }
         public T GetComponent<T>() { return default(T); } public T[] GetComponentsInChildren<T>() { return new T[0]; }
         public T AddComponent<T>() { return default(T); } public void SetActive(bool b) { }
@@ -36,7 +36,7 @@ namespace UnityEngine
     public struct RaycastHit { public Collider collider; public Vector3 point; }
     public class Collider : Component { public Bounds bounds; }
     public struct Bounds { public Vector3 extents; }
-    public static class Physics { public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } public static bool Raycast(Vector3 o, Vector3 dir, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
+    public static class Physics { public static RaycastHit[] RaycastAll(Vector3 o, Vector3 dir, float d) { return new RaycastHit[0]; } public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } public static bool Raycast(Vector3 o, Vector3 dir, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
     public class Camera : Component { public static Camera main;  public Ray ScreenPointToRay(Vector3 p) { return default(Ray); } public Vector3 WorldToScreenPoint(Vector3 p) { return p; } }
     public static class Mathf { public static float Round(float f) { return f; } public static float Max(float a, float b) { return a; } public static int Max(int a, int b) { return a; } public static float Min(float a, float b) { return a; } public static float Abs(float a) { return a; }
         public static float Clamp(float a, float b, float c) { return a; } public static int RoundToInt(float f) { return 0; } public static int CeilToInt(float f) { return 0; } }
@@ -47,7 +47,8 @@ namespace UnityEngine
     public static class Gizmos { public static Color color; public static void DrawWireSphere(Vector3 p, float r) { } public static void DrawWireCube(Vector3 p, Vector3 s) { } }
     public static class GUI { public static Color color; public static void DrawTexture(Rect r, Texture t) { } }
     public class Shader { public static Shader Find(string n) { return null; } }
-    public class Material : Object { public Material(Shader s) { } public Material(Material m) { } public Color color; public Texture mainTexture; }
+    public class Material : Object { public Material(Shader s) { } public Material(Material m) { } public Color color; public Texture mainTexture; public int renderQueue;
+        public void SetFloat(string n, float v) { } public void SetOverrideTag(string t, string v) { } public void EnableKeyword(string k) { } }
     public class Texture : Object { } 
     public class Texture2D : Texture { public static Texture2D whiteTexture; public FilterMode filterMode; public TextureWrapMode wrapMode;
         public Texture2D(int w, int h, TextureFormat f, bool m) { } public void SetPixels32(Color32[] c) { } public void Apply(bool b) { } }
@@ -72,7 +73,7 @@ namespace UnityEngine.InputSystem {
 }
 namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public UnityEngine.Material fontMaterial; public bool enableAutoSizing; public float fontSizeMin, fontSizeMax; public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
     public class TextMeshProUGUI : TMP_Text { } public class TextMeshPro : TMP_Text { } public class TMP_Settings : UnityEngine.Object { public static TMP_FontAsset defaultFontAsset; } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
-    public class TMP_InputField : UnityEngine.Component { public bool isFocused; public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
+    public class TMP_InputField : UnityEngine.Component { public bool isFocused; public string text; public int characterLimit; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
 namespace Fusion
 {
     using UnityEngine;
@@ -87,14 +88,15 @@ namespace Fusion
     public class RpcAttribute : Attribute { public RpcAttribute(RpcSources s, RpcTargets t) { } }
     public class NetworkObject : UnityEngine.MonoBehaviour { public bool IsValid; public NetworkId Id; public PlayerRef InputAuthority; public bool HasInputAuthority, HasStateAuthority; }
     public class NetworkRunner : UnityEngine.MonoBehaviour { public float DeltaTime; public bool IsServer, IsRunning; public System.Collections.Generic.IEnumerable<PlayerRef> ActivePlayers; public PlayerRef LocalPlayer;
-        public NetworkObject Spawn(NetworkObject p, Vector3 pos, Quaternion r, PlayerRef owner) { return null; } public void Despawn(NetworkObject o) { }
-        public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; } }
+        public NetworkObject Spawn(NetworkObject p, Vector3? pos, Quaternion? r, PlayerRef? owner) { return null; } public void Despawn(NetworkObject o) { }
+        public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; }
+        public void AddGlobal(SimulationBehaviour b) { } public void RemoveGlobal(SimulationBehaviour b) { } }
     public class SimulationBehaviour : UnityEngine.MonoBehaviour { public NetworkRunner Runner; }
     public class NetworkBehaviour : SimulationBehaviour { public NetworkObject Object; public bool HasStateAuthority;
         public virtual void Spawned() { } public virtual void Despawned(NetworkRunner r, bool h) { } public virtual void FixedUpdateNetwork() { } }
     public interface IPlayerJoined { void PlayerJoined(PlayerRef p); }
 }
-public class GameLauncher : UnityEngine.MonoBehaviour { public Fusion.NetworkRunner Runner; public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } }
+public class GameLauncher : UnityEngine.MonoBehaviour { public Fusion.NetworkRunner Runner; public static string LastMessage = ""; public void StartHost(string n) { } public void StartClient(string n) { } public static GameLauncher Instance; public int SlotOf(Fusion.PlayerRef p) { return 1; } public void ReturnToMenu(string m) { } public bool IsHost; }
 
 namespace UnityEngine { public class Object2 { } }
 namespace Fusion { public class NetworkTransform : UnityEngine.MonoBehaviour { } }
@@ -127,7 +129,7 @@ public class AiGatewayClient
 namespace UnityEditor.SceneManagement { public enum NewSceneSetup { DefaultGameObjects, EmptyScene } public enum NewSceneMode { Single } }
 namespace UnityEditor { public class EditorBuildSettingsScene { public EditorBuildSettingsScene(string p, bool e) { } } public static class EditorBuildSettings { public static EditorBuildSettingsScene[] scenes; } }
 namespace UnityEditor { public class SceneAsset : UnityEngine.Object { } public class InitializeOnLoadAttribute : System.Attribute { }
-    public static class EditorUtility { public static bool DisplayDialog(string t, string m, string ok, string cancel) { return true; } }
+    public static class EditorUtility { public static bool DisplayDialog(string t, string m, string ok, string cancel) { return true; } public static bool DisplayDialog(string t, string m, string ok) { return true; } }
     public static class EditorPrefs { public static bool GetBool(string k, bool d) { return d; } public static void SetBool(string k, bool v) { } }
     public static class EditorApplication { public static bool isPlaying; public delegate void CallbackFunction(); public static CallbackFunction delayCall; }
     public static class Menu { public static void SetChecked(string p, bool c) { } }
@@ -137,3 +139,9 @@ namespace UnityEngine { public static class Resources { public static T Load<T>(
     public class DefaultExecutionOrderAttribute : System.Attribute { public DefaultExecutionOrderAttribute(int o) { } } }
 namespace UnityEngine { public enum FullScreenMode { ExclusiveFullScreen, FullScreenWindow, MaximizedWindow, Windowed } }
 namespace UnityEditor { public static class PlayerSettings { public static UnityEngine.FullScreenMode fullScreenMode; public static int defaultScreenWidth, defaultScreenHeight; public static bool resizableWindow, runInBackground; } }
+
+namespace UnityEngine.Rendering
+{
+    public enum BlendMode { Zero = 0, One = 1, SrcAlpha = 5, OneMinusSrcAlpha = 10 }
+    public enum RenderQueue { Geometry = 2000, Transparent = 3000 }
+}

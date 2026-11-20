@@ -47,3 +47,15 @@ def test_out_may_be_a_folder(tmp_path):
     # `--out results/` used to crash with IsADirectoryError; now the three files are written inside the folder
     subprocess.run([sys.executable, str(E / "run_eval.py"), "--out", str(tmp_path)], check=True, capture_output=True)
     assert {"results.json", "results.csv", "results_table.md"} <= {p.name for p in tmp_path.iterdir()}
+
+
+def test_security_table_cites_only_existing_tests():
+    # evaluation/security-tests.md is evidence in the report: every test it names must exist (Python or C#).
+    import re
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2]
+    table = (root / "evaluation/security-tests.md").read_text(encoding="utf-8")
+    cited = set(re.findall(r"`(test_\w+)`", table))
+    sources = "".join(p.read_text(encoding="utf-8") for p in list(root.glob("ai/**/test_*.py")) + list(root.glob("evaluation/**/test_*.py")))
+    missing = sorted(name for name in cited if f"def {name}(" not in sources)
+    assert cited and not missing, f"security-tests.md names tests that do not exist: {missing}"
