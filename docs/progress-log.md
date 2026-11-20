@@ -23,6 +23,9 @@
   which was opaque (URP Unlit ignores alpha unless the material is set to Transparent) and hid the slot.
 - Fog leak: FogOfWar only disables renderers, so a right-click on a hidden enemy attacked (and revealed) it; `UnitCommandInput`
   now treats a hidden enemy as ground.
+- Night 17 (partial): re-ran the `docs/setup.md` Python steps in a fresh venv: `run_eval.py` (mock) OK, `create_app()` OK without
+  a key; fixed the stale test count (57 -> 68) in setup.md and the report; `build_index.py` prints how to install the optional
+  sentence-transformers instead of a traceback. Report gained the "framework registration" lesson.
 - Open questions: none. Risk: the fix is not run in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

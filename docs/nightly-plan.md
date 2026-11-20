@@ -132,6 +132,7 @@ engine-free `RTS.Core` keeps its asmdef.
 - [ ] `docs/setup.md` works from a clean clone, the repository has no secrets, and the README status, the report
       numbers and `TODO.md` match the code.
       (partly done 2026-11-19: no secrets tracked, README status checked, Python deps + pytest 60 passed; setup.md got the Play-from-Menu/rebuild notes; final pass after the last Unity feedback)
+      (2026-11-20: setup.md Python steps re-run in a fresh venv: offline eval, gateway app factory OK; test count fixed; build_index explains a missing sentence-transformers)
 
 ## Night 18 – 2026-11-29: last run
 - [ ] Only fixes from `UNITY_FEEDBACK.md`. `MORNING.md` ends with a submission checklist.
