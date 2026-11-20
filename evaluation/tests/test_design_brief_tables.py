@@ -90,3 +90,14 @@ def test_zone_names_agree_everywhere():
     cs_water = set(re.findall(r'"(\w+)"', re.search(r"Water = new HashSet<string> \{([^}]*)\}", cs).group(1)))
     assert cs_water == water
     assert land | water <= set(re.findall(r'"(\w+)"', cs))
+
+
+def test_unit_groups_agree_with_units_and_validator():
+    # schema enum = the 3 named groups + every unit type except villager (GameActionValidator accepts exactly that)
+    schema = json.loads((ROOT / "ai/schemas/action_plan.schema.json").read_text(encoding="utf-8"))
+    enum = set(schema["$defs"]["unit_group"]["enum"])
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/GameActionValidator.cs").read_text(encoding="utf-8")
+    named = set(re.findall(r'"(\w+)"', re.search(r"Groups = new HashSet<string> \{([^}]*)\}", cs).group(1)))
+    unit_keys = {u["key"] for u in UNITS.values()}
+    assert named == {"all_military", "all_ships", "idle_villagers"}
+    assert enum == named | (unit_keys - {"villager"})
