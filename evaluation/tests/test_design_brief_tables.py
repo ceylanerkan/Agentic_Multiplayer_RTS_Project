@@ -112,3 +112,11 @@ def test_every_action_type_is_validated_and_executed():
     executor = (scripts / "AI/AiApprovalFlow.cs").read_text(encoding="utf-8")
     for t in types:
         assert f'case "{t}":' in validator and f'case "{t}":' in executor, t
+
+
+def test_event_types_agree_between_unity_and_snapshot_schema():
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/PlayerEventLog.cs").read_text(encoding="utf-8")
+    unity = re.findall(r'"([A-Z_]+)"', re.search(r"TypeList\s*=\s*\{([^}]*)\}", cs).group(1))
+    schema = (ROOT / "ai/schemas/safe_snapshot.schema.json").read_text(encoding="utf-8")
+    enum = re.findall(r'"([A-Z_]+)"', re.search(r'"type":\s*\{"enum":\s*\[("UNDER_ATTACK"[^\]]*)\]', schema).group(1))
+    assert len(unity) == 8 and set(unity) == set(enum)
