@@ -66,7 +66,8 @@
   building (cost, HP, requirements) and technology (cost, where, requirements) tables and "Trained at" match the knowledge
   JSON; all matched. Zone names agree in the brief, both schemas and `ZoneLookup.cs` (same 3 water zones); `unit_group` enum = 3 named groups + all non-Villager units, as the validator accepts; every `action_type` has a case in the validator and in `AiApprovalFlow`; the 8 event types agree between `PlayerEventLog` and the snapshot schema; the report's MCP tool table lists exactly the 7 server tools. pytest 85 passed.
 - `.env.example`: removed `GATEWAY_HOST`/`GATEWAY_PORT` (never read; the port is on the uvicorn command and the AI panel URL); every other variable the code reads is listed.
-- Defense notes: why units have no input authority, how P1/P2 are decided.
+- Defense notes: why units have no input authority, how P1/P2 are decided. Architecture: spawning row. Slides outline: the
+  lifecycle lesson and pathfinding as future work (RAG corpus of 33 chunks re-checked). setup.md: ParrelSync optional.
 - Final test run: `tools/compile-check` 0 errors / 0 warnings, C# rule tests 54/54, `pytest -q ai evaluation` 88 passed (last tests: population data matches `GameConstants`; count limit and snapshot limits agree between Unity, schemas and the Python mirror; the AI panel's question field is limited to the gateway's 500 characters (`characterLimit`), so a long question no longer ends in a raw HTTP 422).
 - Open questions: Q-1120-1 (resource layout), Q-1120-2 (weaknesses vs strengths). Risk: none of this ran in Unity yet.
 
