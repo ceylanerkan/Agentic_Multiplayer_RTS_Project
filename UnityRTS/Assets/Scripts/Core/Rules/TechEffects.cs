@@ -4,7 +4,7 @@ namespace RTS.Core.Rules
 {
     /// <summary>
     /// What the researched technologies change (numbers from technologies.json descriptions):
-    /// Iron Weapons +2 attack for military units, Fletching +1 range and line of sight for Archers,
+    /// Iron Weapons +2 attack for Spearman, Archer and Cavalry, Fletching +1 range and line of sight for Archers,
     /// Horse Collar +20% food gathering. Age II only unlocks things (the validator checks that).
     /// Effects are looked up when needed, so they apply to existing and future units alike.
     /// </summary>
@@ -12,11 +12,12 @@ namespace RTS.Core.Rules
     {
         public const float IronWeaponsAttack = 2f, FletchingRange = 1f, FletchingLos = 1f, HorseCollarFood = 1.2f;
 
-        static bool IsMilitary(string unitKey) { return unitKey != "villager"; }
+        // technologies.json: "+2 attack for Spearman, Archer and Cavalry" (not Scout, Catapult or ships)
+        static readonly HashSet<string> IronWeaponsUnits = new HashSet<string> { "spearman", "archer", "cavalry" };
 
         public static float AttackBonus(string unitKey, ICollection<string> techs)
         {
-            return IsMilitary(unitKey) && techs.Contains("iron_weapons") ? IronWeaponsAttack : 0f;
+            return IronWeaponsUnits.Contains(unitKey) && techs.Contains("iron_weapons") ? IronWeaponsAttack : 0f;
         }
 
         public static float RangeBonus(string unitKey, ICollection<string> techs)

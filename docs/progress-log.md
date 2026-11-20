@@ -56,6 +56,9 @@
   AddGlobal guard, RaycastAll still finds Ground/Sea checked). Applied: placement ghost uses `Sprites/Default` first (a run-time
   URP Transparent keyword may be stripped from builds), move target at ground height, `ResourceNode.Take` checks `Object.IsValid`
   before `HasStateAuthority`. Not changed: a failed base spawn is not retried (shown in the AI panel instead).
+- Rule drift: `TechEffects` gave Iron Weapons +2 attack to every non-Villager, but `technologies.json` (what the AI reads) says
+  Spearman, Archer and Cavalry only; code now follows the JSON (EditMode assertions for cavalry/scout/warship) and a new pytest
+  ties the TechEffects constants to the JSON effect texts. C# 54/54, pytest 75 passed.
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

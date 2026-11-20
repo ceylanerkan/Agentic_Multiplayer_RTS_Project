@@ -7,7 +7,7 @@
 - Villager bir ağaç bitince, depoladıktan sonra yeni ağacı TC'nin etrafında arıyordu (orman uzaksa boşta kalıyordu); artık biten ağacın yanında arıyor.
 - Küçükler (ikinci bağımsız inceleme dahil): yerleştirme hayaleti gerçekten yarı saydam (build'de de, `Sprites/Default`); görünmeyen düşmana sağ tık artık onu ele vermiyor.
 - Yeni testler: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği gerçek google-genai tipleriyle (sahte istemci); `make_session.py`; `PlayerSlots.FirstFree`. Rapor, mimari ve savunma notları güncellendi.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 74 geçti, C# kural testleri 54/54.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 75 geçti, C# kural testleri 54/54.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
@@ -28,6 +28,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 - Önerim: **B** (küçük değişiklik, iki tarafa eşit erken odun). Bekleyen: sadece harita/kaynak düzeni; diğer işler devam ediyor.
 
 ## Gözden geçir
+- Iron Weapons artık sadece Spearman, Archer ve Cavalry'ye +2 saldırı veriyor (`technologies.json` böyle diyor, AI de bunu okuyor); önce Scout, Catapult ve gemilere de veriyordu. Brief'te "+2 attack for military" yazıyor; tersini istersen JSON'u değiştiririz.
 - Birim ve binalar artık input authority olmadan doğuyor (sahiplik zaten `[Networked] Owner`'da, emirler RPC ile gidiyor). Kendi birimlerinin client'ta akıcı hareket ettiğini kontrol et.
 - Spawn yüksekliği: ışın ağ nesnelerini (birim, bina, kaynak) atlayıp en yüksek diğer yüzeye (zemin/deniz) bakıyor.
 - `GameSpawner` kendini `GameLauncher.Instance.Runner`'a kaydediyor (runner'ı `GameLauncher`'dan bulmak yerine Fusion'a bırakmak mümkün değildi). Kayıt `Update`'te deneniyor, böylece sahne yüklenme sırası önemli değil.

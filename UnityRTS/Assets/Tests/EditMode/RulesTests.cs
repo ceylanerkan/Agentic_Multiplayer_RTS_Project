@@ -259,6 +259,9 @@ namespace RTS.Tests
             Assert.AreEqual(0f, TechEffects.AttackBonus("spearman", none));
             Assert.AreEqual(2f, TechEffects.AttackBonus("spearman", all));
             Assert.AreEqual(0f, TechEffects.AttackBonus("villager", all));
+            Assert.AreEqual(2f, TechEffects.AttackBonus("cavalry", all));
+            Assert.AreEqual(0f, TechEffects.AttackBonus("scout", all));     // technologies.json names only Spearman, Archer, Cavalry
+            Assert.AreEqual(0f, TechEffects.AttackBonus("warship", all));
             Assert.AreEqual(1f, TechEffects.RangeBonus("archer", all));
             Assert.AreEqual(0f, TechEffects.RangeBonus("spearman", all));
             Assert.AreEqual(1f, TechEffects.LosBonus("archer", all));

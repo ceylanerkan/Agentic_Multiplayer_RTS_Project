@@ -1,4 +1,5 @@
 """Consistency: numbers hard-coded in Unity's GameConstants.cs must match the knowledge base and design brief."""
+import json
 import re
 from pathlib import Path
 
@@ -50,3 +51,14 @@ def test_scene_simulation_behaviours_register_with_the_runner():
             found.append(path.name)
             assert "AddGlobal(this)" in text, f"{path.name} is a SimulationBehaviour but never calls Runner.AddGlobal(this)"
     assert "GameSpawner.cs" in found
+
+
+def test_tech_effect_constants_match_technologies_json():
+    # TechEffects.cs hard-codes the effect numbers; they must say the same as the "effect" texts the AI reads.
+    techs = {t["key"]: t["effect"] for t in json.loads((ROOT / "ai/rag/knowledge/technologies.json").read_text(encoding="utf-8"))}
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/TechEffects.cs").read_text(encoding="utf-8")
+    num = lambda name: float(re.search(rf"\b{name}\s*=\s*([0-9.]+)f", cs).group(1))
+    assert f"+{num('IronWeaponsAttack'):g} attack for Spearman, Archer and Cavalry" in techs["iron_weapons"]
+    assert '"spearman", "archer", "cavalry"' in cs
+    assert f"+{num('FletchingRange'):g} range and +{num('FletchingLos'):g} line of sight for Archers" in techs["fletching"]
+    assert f"+{round((num('HorseCollarFood') - 1) * 100)}% food" in techs["horse_collar"]
