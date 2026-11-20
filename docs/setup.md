@@ -31,6 +31,8 @@
   5. Expected: both windows show their own Town Center + 3 Villagers (blue) and, once scouted, the enemy (red).
      The build's log is `%USERPROFILE%\AppData\LocalLow\<Company>\<Product>\Player.log`.
   Rebuild the player after every code change; an old build and a new editor do not match (different network prefabs).
+  Test builds use the default Mono backend (fast). The final IL2CPP build (TODO.md [You] 4) also needs Visual Studio's
+  "Desktop development with C++" workload installed.
 - Second alternative, no build needed: Unity 6's **Multiplayer Play Mode** (Package Manager > Unity Registry >
   "Multiplayer Play Mode", `com.unity.multiplayer.playmode`; Photon's Fusion 2 samples use it). *Window > Multiplayer >
   Multiplayer Play Mode*, tick Player 2, press Play: a second window opens. Host in one window, Join with the same session name in
