@@ -92,6 +92,11 @@ namespace RTS.Tests
             Assert.AreEqual(1, PlayerSlots.SlotOf(new[] { 3, 2 }, 2));
             Assert.AreEqual(2, PlayerSlots.SlotOf(new[] { 3, 2 }, 3));
         }
+        // The host plays alone until P2 joins (GameSpawner spawns its base right away): it must already be P1.
+        [Test] public void PlayerSlots_HostAloneIsP1()
+        {
+            Assert.AreEqual(1, PlayerSlots.SlotOf(new[] { 5 }, 5));
+        }
         [Test] public void PlayerSlots_ThirdPlayerAndUnknownGetZero()
         {
             Assert.AreEqual(0, PlayerSlots.SlotOf(new[] { 1, 2, 3 }, 3));

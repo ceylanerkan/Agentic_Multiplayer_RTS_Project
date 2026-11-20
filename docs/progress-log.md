@@ -26,6 +26,9 @@
 - Night 17 (partial): re-ran the `docs/setup.md` Python steps in a fresh venv: `run_eval.py` (mock) OK, `create_app()` OK without
   a key; fixed the stale test count (57 -> 68) in setup.md and the report; `build_index.py` prints how to install the optional
   sentence-transformers instead of a traceback. Report gained the "framework registration" lesson.
+- New EditMode test `PlayerSlots_HostAloneIsP1`; C# rule tests 54/54 (counts updated in TODO, report, defense notes).
+- Checked: `AiApprovalFlow`, `AiGatewayClient`, `MenuUI`; Unity exempts localhost from "Allow downloads over HTTP = Not allowed"
+  (project has `insecureHttpOption: 0`), so the default gateway URL works.
 - Open questions: none. Risk: the fix is not run in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

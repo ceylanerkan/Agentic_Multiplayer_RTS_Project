@@ -7,7 +7,7 @@
 - Bina yerleştirme hayaleti artık gerçekten yarı saydam (URP Unlit malzemesi opaktı, slotu kapatıyordu).
 - Fog açığı kapandı: görünmeyen düşmanın durduğu yere sağ tık onu saldırıyla ortaya çıkarıyordu; artık oraya yürünüyor.
 - `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 53/53.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 54/54 (yeni: host tek başınayken P1).
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
