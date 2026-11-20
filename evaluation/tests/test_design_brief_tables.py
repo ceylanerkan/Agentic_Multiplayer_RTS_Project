@@ -112,6 +112,10 @@ def test_every_action_type_is_validated_and_executed():
     executor = (scripts / "AI/AiApprovalFlow.cs").read_text(encoding="utf-8")
     for t in types:
         assert f'case "{t}":' in validator and f'case "{t}":' in executor, t
+    # the count limit is written in three places: schema, C# validator, Python mirror
+    n = schema["$defs"]["action"]["properties"]["count"]["maximum"]
+    assert f"a.Count > {n})" in validator
+    assert f"count > {n}:" in (ROOT / "evaluation/plan_checks.py").read_text(encoding="utf-8")
 
 
 def test_event_types_agree_between_unity_and_snapshot_schema():
