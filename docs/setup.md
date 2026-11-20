@@ -31,6 +31,11 @@
   5. Expected: both windows show their own Town Center + 3 Villagers (blue) and, once scouted, the enemy (red).
      The build's log is `%USERPROFILE%\AppData\LocalLow\<Company>\<Product>\Player.log`.
   Rebuild the player after every code change; an old build and a new editor do not match (different network prefabs).
+- Second alternative, no build needed: Unity 6's **Multiplayer Play Mode** (Package Manager > Unity Registry >
+  "Multiplayer Play Mode", `com.unity.multiplayer.playmode`; Photon's Fusion 2 samples use it). *Window > Multiplayer >
+  Multiplayer Play Mode*, tick Player 2, press Play: a second window opens. Host in one window, Join with the same session name in
+  the other. Not tried with this project yet; if Player 2 does not start in `Menu`, use the build path above. Remove ParrelSync
+  only if this works.
 - With only one instance, Host alone still gets its Town Center + 3 Villagers and can play/ask the AI; the match "waits for P2".
 - Play always starts in the `Menu` scene, whichever scene is open (`Tools > RTS > Play from Menu scene`, on by default).
 - Game view resolution: **Full HD (1920x1080)**; for two windows side by side **1280x720**. The UI scales with the window.
