@@ -42,4 +42,8 @@ Alternative: *injection* - a poisoned knowledge chunk is returned only as data, 
   `PlayerRef` (`EntityVisuals`). Nothing the host decides depends on them, so they cost no bandwidth and cannot be cheated with.
 - *Can a client queue the same research twice?* The client's validator cannot see queued research, so the host checks every own
   queue in `CommandRelay` before it takes the cost: the host is the final check, the client check is only for the buttons.
+- *How does a player get a base?* `GameSpawner` (Game scene) registers itself with the runner (`AddGlobal`; Fusion only
+  auto-registers behaviours on the runner's GameObject). On the host, every frame it checks `Runner.ActivePlayers` and, for a player
+  without a base, spawns the `Player` object (input authority = that player; `NetworkPlayerState` + `CommandRelay`), a Town Center
+  and 3 Villagers. The `Update` check is needed because the scene loads after the players joined, so a `PlayerJoined` callback can be missed.
 - *What did you not finish / what would you change?* Fill in honestly after the last test day (see MORNING.md notes).
