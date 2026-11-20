@@ -1,7 +1,7 @@
 # TODO: remaining work
 
 This file lists only the work that is still open. Milestone overview and status: [README.md](README.md#status).
-All code for nights 1-12 is written (updated 2026-11-19); what is left is editor work, play testing, live runs and
+All code for nights 1-12 is written (updated 2026-11-20); what is left is editor work, play testing, live runs and
 the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is compiled and tested with the .NET SDK
 (54 C# tests), the Unity-specific scripts are only checked against stubs (`tools/compile-check`), so expect small
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
@@ -65,8 +65,9 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 - [ ] Read `docs/defense-notes.md` and practise the five defense topics.
 
 ## Agent work still open
-- [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (two code reviews and the 2026-11-18
-      feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
+- [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (four code reviews and the
+      2026-11-18/19 feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
+- [ ] Q-1120-1 answer: if B, a small forest in each base (`RtsSetupTools`, design brief, `rules.md`, map EditMode test).
 - [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
       Graphics stay placeholders on purpose (team discs + labels give the readability); say so in the demo.
 
