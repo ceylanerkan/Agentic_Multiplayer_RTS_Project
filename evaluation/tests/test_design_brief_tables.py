@@ -101,3 +101,14 @@ def test_unit_groups_agree_with_units_and_validator():
     unit_keys = {u["key"] for u in UNITS.values()}
     assert named == {"all_military", "all_ships", "idle_villagers"}
     assert enum == named | (unit_keys - {"villager"})
+
+
+def test_every_action_type_is_validated_and_executed():
+    schema = json.loads((ROOT / "ai/schemas/action_plan.schema.json").read_text(encoding="utf-8"))
+    types = schema["$defs"]["action"]["properties"]["action_type"]["enum"]
+    assert types
+    scripts = ROOT / "UnityRTS/Assets/Scripts"
+    validator = (scripts / "Core/Rules/GameActionValidator.cs").read_text(encoding="utf-8")
+    executor = (scripts / "AI/AiApprovalFlow.cs").read_text(encoding="utf-8")
+    for t in types:
+        assert f'case "{t}":' in validator and f'case "{t}":' in executor, t
