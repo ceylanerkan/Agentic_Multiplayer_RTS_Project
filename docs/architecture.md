@@ -49,7 +49,7 @@ at approval time, and by the host in the RPC handler.
 | Commands | A client never changes state. It calls `CommandRelay.Send*`, an RPC `InputAuthority -> StateAuthority`. The host checks ownership (`FindOwned`) and the rules (`GameActionValidator`, `ProductionQueue.WhyNot`) before acting. |
 | AI actions | The approved plan uses the same `CommandRelay` RPCs as manual play, so the AI cannot bypass authority. |
 | Resources and population | Cost is paid and population is reserved when a unit is queued, so a long queue cannot exceed the cap. |
-| Slots | Player 1 is the lowest `PlayerRef`, player 2 the next one (`PlayerSlots`); every peer computes the same result. |
+| Slots | The host gives each joining player the first free slot (`PlayerSlots.FirstFree`) and stores it in the networked `NetworkPlayerState.Slot`; every peer reads that value. (Not by `PlayerRef` order: Fusion gives the host the last index.) |
 | Disconnect | When the other player leaves, the host ends the match and both peers return to the menu (`GameLauncher`). |
 | Match end | When a player's last Town Center is destroyed the host sets `NetworkPlayerState.Result` (1 = won, 2 = lost) for both players; `GameOverUI` shows Victory or Defeat. |
 | Events | Per-player event log. The host decides what a player may know and sends each event to its owner with an RPC (`StateAuthority -> InputAuthority`); every peer stores only its own log. |
