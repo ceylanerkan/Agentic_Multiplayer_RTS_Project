@@ -1,15 +1,12 @@
 # Sabah notları – 2026-11-20
 
 ## Dün gece ne yaptım
-- `UNITY_FEEDBACK.md` 2026-11-19 işlendi. Senin bulduğun sebep doğruydu: `GameSpawner` (sahnedeki `SimulationBehaviour`) runner'a hiç kaydedilmiyordu, `Runner` null kalıyordu, bu yüzden TC/Villager ve Player nesnesi oluşmuyordu. Artık `GameSpawner.Update` runner çalışır çalışmaz `NetworkRunner.AddGlobal(this)` çağırıyor (yok olunca `RemoveGlobal`). Tek başına Host iken de üs oluşur.
-- AI paneli artık "Match not started yet" yerine eksik adımı yazıyor: bağlı değil / bağlanıyor / sahnede `GameSpawner` yok / oyuncu henüz oluşmadı / host'un üssü oluşturması bekleniyor.
-- `Tools > RTS > 2 Setup open Game scene` ve `3 Create Game UI`, sahnede kurulum zaten varsa "Already set up" uyarısı verip hiçbir şey eklemiyor (Game.unity'deki çift nesnelerin sebebi buydu).
-- Bina yerleştirme hayaleti artık gerçekten yarı saydam (URP Unlit malzemesi opaktı, slotu kapatıyordu).
-- Fog açığı kapandı: görünmeyen düşmanın durduğu yere sağ tık onu saldırıyla ortaya çıkarıyordu; artık oraya yürünüyor.
-- Bağımsız inceleme (ağ/birim scriptleri), 4 hata düzeltildi: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON oyuncu numarasını veriyor; host tek başınayken P1, sonra gelen client da P1 hesaplıyordu, iki üs üst üste) — artık host ilk boş slotu bir kez verip saklıyor; (2) aynı kaynağa giden birkaç Villager, kaynak bitince yok olmuş nesneyi okuyordu; (3) `StandOnGround` ışını nesnenin kendi çarpıştırıcısına çarpıyordu, her şey havada doğacaktı; (4) birimler sahibine input authority ile doğuyordu (client tahmini, kendi birimlerin zıplayarak yürüyebilirdi), artık input authority yok.
-- Üs oluşturma bir hata yüzünden başarısız olursa (ör. Fusion'ın prefab tablosunda eksik prefab) Console her karede değil bir kez yazıyor ve AI paneli "Base spawn failed: ..." diyor.
-- `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 73 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği sahte istemciyle gerçek google-genai tipleriyle kuruluyor), C# kural testleri 54/54 (yeni: `PlayerSlots.FirstFree`).
+- `UNITY_FEEDBACK.md` 2026-11-19 işlendi. Bulduğun sebep doğruydu: `GameSpawner` runner'a kaydedilmiyordu, bu yüzden Player/TC/Villager oluşmuyordu. Artık runner çalışınca `NetworkRunner.AddGlobal(this)` çağırıyor; tek başına Host iken de üs oluşur. Üs oluşturma hata verirse Console bir kez yazar, AI paneli "Base spawn failed: ..." der; diğer durumlarda panel eksik adımı söylüyor ("Match not started yet" yok).
+- `Tools > RTS > 2` ve `3` komutları kurulu sahnede "Already set up" deyip hiçbir şey eklemiyor (çift nesnelerin sebebi). `docs/setup.md` §3: ParrelSync yerine Windows build = Host + editör = Join, ya da Unity'nin Multiplayer Play Mode'u.
+- Bağımsız inceleme, ilk kez çalışacak kodda 4 hata: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON numarayı veriyor) — artık host ilk boş slotu verip saklıyor; (2) birkaç Villager biten kaynağı okuyup hata veriyordu; (3) her şey havada doğacaktı (ışın nesnenin kendisine çarpıyordu); (4) birimler input authority ile doğup client'ta zıplayabilirdi.
+- Küçükler: yerleştirme hayaleti gerçekten yarı saydam; görünmeyen düşmana sağ tık artık onu ele vermiyor.
+- Yeni testler: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği gerçek google-genai tipleriyle (sahte istemci); `make_session.py`; `PlayerSlots.FirstFree`. Rapor, mimari ve savunma notları güncellendi.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 73 geçti, C# kural testleri 54/54.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
