@@ -51,7 +51,7 @@ Boat; Catapults deal 3x damage to buildings and beat Warships. Land units stay o
 units attack only their own domain, ranged units shoot across the shoreline.
 
 **Buildings and technology.** Town Center, House, Barracks, Stable, Blacksmith, Dock. Four technologies: Age II
-(unlocks Stable, Cavalry, Catapult, Warship, Fletching), Iron Weapons (+2 attack for military units), Fletching
+(unlocks Stable, Cavalry, Catapult, Warship, Fletching), Iron Weapons (+2 attack for Spearman, Archer and Cavalry), Fletching
 (+1 range and line of sight for Archers), Horse Collar (+20% food gathering). The Town Center cannot train while it
 researches Age II.
 
