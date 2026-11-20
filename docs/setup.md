@@ -25,7 +25,7 @@
   1. `Tools > RTS > Set build window (1280x720, windowed)` once (windowed, resizable, Run In Background, so the unfocused
      window keeps simulating).
   2. *File → Build Profiles* (or *Build Settings*): platform Windows, scenes `Menu` (index 0) and `Game` (index 1) ticked.
-     *Build And Run*, choose an empty folder outside `Assets`, e.g. `Builds/Win`.
+     *Build And Run*, choose the folder `UnityRTS/Builds/Win` (git-ignored; never inside `Assets`).
   3. In the build window: type a session name (e.g. `test1`) and press **Host**. The status line says it is waiting.
   4. In the editor: press Play (starts in `Menu`), type the same session name and press **Join**.
   5. Expected: both windows show their own Town Center + 3 Villagers (blue) and, once scouted, the enemy (red).
