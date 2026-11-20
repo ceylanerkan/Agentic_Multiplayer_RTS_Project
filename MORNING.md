@@ -28,7 +28,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 - Önerim: **B** (küçük değişiklik, iki tarafa eşit erken odun). Bekleyen: sadece harita/kaynak düzeni; diğer işler devam ediyor.
 
 **Q-1120-2:** `units.json`'ta bazı `weaknesses` girdileri karşı birimin `strengths`'inde yok (Raider Boat "catapult'a zayıf", Scout ve Villager "spearman/archer'a zayıf"), ama hasar çarpanı sadece `strengths`'ten geliyor; AI bu zayıflıkları kanıt olarak söyleyebilir.
-- **A:** `weaknesses`'i `strengths`'e uydur (çarpanı olmayanları sil). Oyun aynı kalır, AI'nın söylediği hasar kurallarıyla tutarlı olur; RAG indeksini yeniden kurarsın.
+- **A:** `weaknesses`'i `strengths`'e uydur (çarpanı olmayanları sil). Oyun aynı kalır, AI'nın söylediği hasar kurallarıyla tutarlı olur; RAG indeksini yeniden kurarsın. Aynı düzeltmede `rules.md`'deki "Units automatically attack enemies ... while idle" cümlesine "(Villagers never start fights)" eklerim (kod böyle çalışıyor).
 - **B:** Eksik `strengths` ekle (ör. Catapult → Raider Boat). Oyun dengesi değişir.
 - **C:** Bırak.
 - Önerim: **A**. Bekleyen: yok (sadece veri tutarlılığı).
