@@ -317,7 +317,8 @@ We delivered a two-player networked RTS with an authoritative host, a fog-of-war
 read-only MCP tools and a RAG index, structured and approved plans, a decision log and an evaluation harness. Future
 work: per-player interest management for server-side fog of war; embeddings and a reranker for retrieval with a
 larger corpus; AI plans that can chain (build, then train after the building completes); a tool that explains the
-validator's rejection to the model so that it can repair a plan; balance tuning from recorded matches.
+validator's rejection to the model so that it can repair a plan; NavMesh pathfinding and unit separation instead of
+straight-line moves with a zone check; a symmetric map and balance tuning from recorded matches.
 
 ## XII. Appendix
 
