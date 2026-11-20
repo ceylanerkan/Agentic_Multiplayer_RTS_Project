@@ -120,3 +120,11 @@ def test_event_types_agree_between_unity_and_snapshot_schema():
     schema = (ROOT / "ai/schemas/safe_snapshot.schema.json").read_text(encoding="utf-8")
     enum = re.findall(r'"([A-Z_]+)"', re.search(r'"type":\s*\{"enum":\s*\[("UNDER_ATTACK"[^\]]*)\]', schema).group(1))
     assert len(unity) == 8 and set(unity) == set(enum)
+
+
+def test_report_tool_table_lists_exactly_the_server_tools():
+    server = (ROOT / "ai/mcp-server/server.py").read_text(encoding="utf-8")
+    tools = set(re.findall(r"@mcp\.tool\([^)]*\)\s*\n\s*def (\w+)\(", server))
+    report = (ROOT / "docs/report/report.md").read_text(encoding="utf-8")
+    listed = set(re.findall(r"^\| `(\w+)` \|", report, re.M))
+    assert len(tools) == 7 and listed == tools
