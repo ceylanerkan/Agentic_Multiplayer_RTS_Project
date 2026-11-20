@@ -5,7 +5,7 @@
 - `Tools > RTS > 2` ve `3` komutları kurulu sahnede "Already set up" deyip hiçbir şey eklemiyor (çift nesnelerin sebebi). `docs/setup.md` §3: ParrelSync yerine Windows build = Host + editör = Join, ya da Unity'nin Multiplayer Play Mode'u.
 - Bağımsız inceleme, ilk kez çalışacak kodda 4 hata: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON numarayı veriyor) — artık host ilk boş slotu verip saklıyor; (2) birkaç Villager biten kaynağı okuyup hata veriyordu; (3) her şey havada doğacaktı (ışın nesnenin kendisine çarpıyordu); (4) birimler input authority ile doğup client'ta zıplayabilirdi.
 - Villager bir ağaç bitince, depoladıktan sonra yeni ağacı TC'nin etrafında arıyordu (orman uzaksa boşta kalıyordu); artık biten ağacın yanında arıyor.
-- Küçükler: yerleştirme hayaleti gerçekten yarı saydam; görünmeyen düşmana sağ tık artık onu ele vermiyor.
+- Küçükler (ikinci bağımsız inceleme dahil): yerleştirme hayaleti gerçekten yarı saydam (build'de de, `Sprites/Default`); görünmeyen düşmana sağ tık artık onu ele vermiyor.
 - Yeni testler: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği gerçek google-genai tipleriyle (sahte istemci); `make_session.py`; `PlayerSlots.FirstFree`. Rapor, mimari ve savunma notları güncellendi.
 - Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 74 geçti, C# kural testleri 54/54.
 
@@ -34,6 +34,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 - AI paneli durum mesajları İngilizce (diğer UI yazılarıyla aynı).
 
 ## Emin olmadığım yerler
+- Üs oluşturma bir kez hata verirse (ör. prefab tablosu) o oyuncu için tekrar denenmiyor; düzeltip Play'i yeniden başlat.
 - Düzeltme gerçek Unity'de denenmedi (sadece stub'larla derlendi). `AddGlobal` ve `RemoveGlobal` Fusion 2.0.13'ün `Fusion.Runtime.xml` belgesinde var; yine de Console'da Fusion'dan bir uyarı görürsen yaz.
 - ParrelSync klonunun kapanma sebebini bulamadım (log'da çökme yok). Build = Host yolu bunu tamamen atlıyor.
 - Gemini ile canlı çalıştırma hâlâ yapılmadı.

@@ -52,6 +52,10 @@
 - New pytest: every `test_*` name cited in `evaluation/security-tests.md` exists (the table is report evidence). pytest 74 passed.
 - `VillagerGatherer`: after a node ran out, the next node was searched within 30 m of the Villager, which by then stood at
   the Town Center (far from the forest/mine), so it went idle; now searched around the last node's position.
+- Second independent review (tonight's C# diff only): no compile or crash issues found (`(PlayerRef?)null` overload, usings,
+  AddGlobal guard, RaycastAll still finds Ground/Sea checked). Applied: placement ghost uses `Sprites/Default` first (a run-time
+  URP Transparent keyword may be stripped from builds), move target at ground height, `ResourceNode.Take` checks `Object.IsValid`
+  before `HasStateAuthority`. Not changed: a failed base spawn is not retried (shown in the AI panel instead).
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

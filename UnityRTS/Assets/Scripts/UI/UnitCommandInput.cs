@@ -52,7 +52,7 @@ public class UnitCommandInput : MonoBehaviour
         if (enemyBuilding != null && enemyBuilding.Owner != relay.Object.InputAuthority && Seen(enemyBuilding))
         { foreach (var u in sel.Units) relay.SendAttack(u.Object.Id, enemyBuilding.Object.Id); return; }
 
-        MoveInFormation(sel.Units, hit.point, relay);
+        MoveInFormation(sel.Units, new Vector3(hit.point.x, 0f, hit.point.z), relay); // ground height (the hit may be on a hidden enemy's top)
     }
 
     // FogOfWar only switches renderers off; the collider stays. Without this check a right-click on an empty-looking spot

@@ -44,10 +44,11 @@ public class BuildPlacement : MonoBehaviour
         ghostRenderer = ghost.GetComponent<Renderer>();
         if (ghostMaterial == null)   // one material for all placements (a new one each time leaked)
         {
-            Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
-            if (sh == null) sh = Shader.Find("Sprites/Default");
-            ghostMaterial = new Material(sh);
-            MakeTransparent(ghostMaterial);
+            // Sprites/Default is transparent without keywords (like the fog overlay); a URP Unlit material switched to
+            // Transparent at run time may lack that shader variant in a build, so it is only the fallback.
+            Shader sh = Shader.Find("Sprites/Default");
+            if (sh != null) ghostMaterial = new Material(sh);
+            else { ghostMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit")); MakeTransparent(ghostMaterial); }
         }
         ghostRenderer.sharedMaterial = ghostMaterial;
     }
