@@ -72,3 +72,14 @@ def test_damage_multipliers_match_rules():
     num = lambda name: float(re.search(rf"\b{name}\s*=\s*([0-9.]+)f", cs).group(1))
     assert f"multiplier is {num('CounterBonus'):g} when the attacker counters the target and {num('CounterPenalty'):g} when" in RULES
     assert f"Catapults deal {num('CatapultVsBuilding'):g}x damage to buildings" in RULES
+
+
+def test_population_data_matches_constants():
+    # GameConstants hard-codes 1 pop per unit and +5 per Town Center/House; the JSON the AI reads must agree
+    kb = ROOT / "ai/rag/knowledge"
+    units = json.loads((kb / "units.json").read_text(encoding="utf-8"))
+    buildings = {b["key"]: b for b in json.loads((kb / "buildings.json").read_text(encoding="utf-8"))}
+    assert all(u["population"] == 1 for u in units) and "Every unit costs 1 population" in RULES
+    assert buildings["town_center"]["population_provided"] == const("TownCenterCapacity")
+    assert buildings["house"]["population_provided"] == const("HouseCapacity")
+    assert all(b.get("population_provided", 0) == 0 for k, b in buildings.items() if k not in ("town_center", "house"))
