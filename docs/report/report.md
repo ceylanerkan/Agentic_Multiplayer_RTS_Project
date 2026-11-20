@@ -89,7 +89,7 @@ domains, visibility, production queue, win condition, approval checks) are plain
 MonoBehaviours and NetworkBehaviours are thin adapters that read the networked objects and call the core.
 
 **Python side.** `ai/gateway` (FastAPI, agent loop, logs), `ai/mcp-server` (seven tools), `ai/rag` (knowledge index
-and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 67 pytest cases.
+and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 68 pytest cases.
 
 **Data flow of one question.** (1) The player types a question. (2) `AiSnapshotBuilder` collects own units and
 buildings and the enemies returned by `VisibilityService.FilterFor`. (3) The gateway validates the snapshot against
@@ -295,6 +295,11 @@ Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance
   before the text and to force play mode to start in the Menu scene. A first play test also showed that identical
   grey placeholders were hard to read, so each unit and building now has a team disc and a name/HP label.
   Lesson: test the generated content in the editor as early as the code.
+- **Framework registration is invisible to stubs.** The spawner that creates each player's base is a Fusion
+  `SimulationBehaviour` placed in the Game scene. Fusion only registers such a behaviour automatically when it sits on the
+  runner's own GameObject, so its `Runner` stayed null and no base ever spawned, although the code compiled against stubs
+  and every rule test passed. The fix is one `NetworkRunner.AddGlobal` call; a static test now checks that every scene
+  `SimulationBehaviour` registers itself. Lesson: a compile check proves types, not lifecycle; only a play test does.
 - **One source of numbers.** Keeping all values in JSON files read by Unity, the RAG index and the evaluation removed a
   whole class of inconsistencies, but needs a loader at build time (`StreamingAssets` copy).
 - **Host authority vs. convenience.** Reserving population and paying cost when a unit is queued (not when it appears)
@@ -327,7 +332,7 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
-**C. Tests.** Python: `python -m pytest -q ai evaluation` (67 tests, no network, no API key). C#: Unity Test Runner,
+**C. Tests.** Python: `python -m pytest -q ai evaluation` (68 tests, no network, no API key). C#: Unity Test Runner,
 EditMode, assembly `RTS.Tests.EditMode` (53 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).
