@@ -333,7 +333,7 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Photon Fusion | 2.0.13 (Host Mode) |
 | Unity packages | AI Navigation 2.0.12, Input System 1.19.0, Newtonsoft JSON 3.2.2, Test Framework 1.6.0, uGUI 2.0.0, ParrelSync |
 | Python | 3.10+ |
-| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
+| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
 | LLM | Gemini (default `gemini-2.5-flash`, configurable) |
 
 **C. Tests.** Python: `python -m pytest -q ai evaluation` (88 tests, no network, no API key). C#: Unity Test Runner,
