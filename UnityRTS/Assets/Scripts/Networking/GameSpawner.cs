@@ -70,7 +70,10 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     {
         if (!Runner.IsServer || players.ContainsKey(player)) return; // already has a base (also called from Update)
         MatchEnd.Reset();
-        int slot = GameLauncher.Instance != null ? GameLauncher.Instance.SlotOf(player) : players.Count + 1;
+        // first free slot, decided once here and stored in NetworkPlayerState.Slot (not recomputed from player ids)
+        var taken = new List<int>();
+        foreach (var st in players.Values) if (st != null) taken.Add(st.Slot);
+        int slot = RTS.Core.Rules.PlayerSlots.FirstFree(taken);
         if (slot == 0) { players[player] = null; return; } // third player: ignored (remembered, so Update does not retry)
         Transform baseCentre = slot == 1 ? p1Spawn : p2Spawn;
 
@@ -90,7 +93,9 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     public NetworkUnit SpawnUnit(PlayerRef owner, string key, Vector3 pos)
     {
-        var obj = Runner.Spawn(Find(unitPrefabs, key), pos, Quaternion.identity, owner);
+        // no input authority: ownership is the networked Owner and commands come by RPC; with the owner as input authority
+        // the client would predict its own units and they could move in jumps
+        var obj = Runner.Spawn(Find(unitPrefabs, key), pos, Quaternion.identity, (PlayerRef?)null);
         StandOnGround(obj);
         var u = obj.GetComponent<NetworkUnit>();
         u.InitHost(owner, key);
@@ -99,7 +104,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     public NetworkBuilding SpawnBuilding(PlayerRef owner, string key, Vector3 pos, bool completed)
     {
-        var obj = Runner.Spawn(Find(buildingPrefabs, key), pos, Quaternion.identity, owner);
+        var obj = Runner.Spawn(Find(buildingPrefabs, key), pos, Quaternion.identity, (PlayerRef?)null); // no input authority, see SpawnUnit
         StandOnGround(obj);
         var b = obj.GetComponent<NetworkBuilding>();
         b.InitHost(owner, key, completed);
@@ -122,8 +127,14 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     {
         var col = obj.GetComponentInChildren<Collider>();
         Vector3 p = obj.transform.position;
-        float ground = 0f;
-        if (Physics.Raycast(p + Vector3.up * 100f, Vector3.down, out var hit, 300f)) ground = hit.point.y;
+        // RaycastAll and skip networked objects: the new object already exists here, so a single ray hit its own top and
+        // every spawned unit and building floated one body height up (and a unit could also land on another unit).
+        float ground = 0f; bool found = false;
+        foreach (var hit in Physics.RaycastAll(p + Vector3.up * 100f, Vector3.down, 300f))
+        {
+            if (hit.collider.GetComponentInParent<NetworkObject>() != null) continue; // itself, units, buildings, resource nodes
+            if (!found || hit.point.y > ground) { ground = hit.point.y; found = true; } // highest other surface (ground or sea)
+        }
         obj.transform.position = new Vector3(p.x, ground + (col != null ? col.bounds.extents.y : 0f), p.z);
     }
 

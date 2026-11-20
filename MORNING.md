@@ -6,8 +6,9 @@
 - `Tools > RTS > 2 Setup open Game scene` ve `3 Create Game UI`, sahnede kurulum zaten varsa "Already set up" uyarısı verip hiçbir şey eklemiyor (Game.unity'deki çift nesnelerin sebebi buydu).
 - Bina yerleştirme hayaleti artık gerçekten yarı saydam (URP Unlit malzemesi opaktı, slotu kapatıyordu).
 - Fog açığı kapandı: görünmeyen düşmanın durduğu yere sağ tık onu saldırıyla ortaya çıkarıyordu; artık oraya yürünüyor.
+- Bağımsız inceleme (ağ/birim scriptleri), 4 hata düzeltildi: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON oyuncu numarasını veriyor; host tek başınayken P1, sonra gelen client da P1 hesaplıyordu, iki üs üst üste) — artık host ilk boş slotu bir kez verip saklıyor; (2) aynı kaynağa giden birkaç Villager, kaynak bitince yok olmuş nesneyi okuyordu; (3) `StandOnGround` ışını nesnenin kendi çarpıştırıcısına çarpıyordu, her şey havada doğacaktı; (4) birimler sahibine input authority ile doğuyordu (client tahmini, kendi birimlerin zıplayarak yürüyebilirdi), artık input authority yok.
 - `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 54/54 (yeni: host tek başınayken P1).
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 54/54 (yeni: `PlayerSlots.FirstFree`).
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
@@ -15,15 +16,21 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 ## Bugün test et
 1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/5, sonra main'de `git pull`.
 2. Çift nesneli `Game.unity`'yi at: `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild (sadece bunu çalıştır, 1/2/3'ü kurulu sahnede çalıştırma). Console'da kırmızı hata olmamalı. `Game.unity`'de tek `MapAndSystems` ve tek `GameCanvas` olmalı. Sahneleri ve `Assets/Prefabs`'ı main'e commit'le.
-3. Tek başına dene: Play > session adı > Host. Console'da `GameSpawner registered with the NetworkRunner (host).` görünmeli; TC + 3 Villager (mavi disk, etiket) oluşmalı. AI paneline soru yaz: gateway kapalıysa bağlantı hatası, açıksa cevap gelmeli; "Match not started yet" artık çıkmamalı.
-4. İki oyuncu: ParrelSync klonu yine kapanırsa `docs/setup.md` §3'teki yolu izle: `File > Build Profiles` > Windows > Build And Run (`Builds/Win` gibi `Assets` dışı bir klasör), build'de Host, editörde aynı adla Join. İki tarafta da kendi TC + 3 Villager'ın görünmeli. Kod değişince build'i yeniden al.
+3. Tek başına dene: Play > session adı > Host. Console'da `GameSpawner registered with the NetworkRunner (host).` görünmeli; TC + 3 Villager (mavi disk, etiket) yere oturmuş halde (havada değil) oluşmalı; üst barda "P1". AI paneline soru yaz: gateway kapalıysa bağlantı hatası, açıksa cevap gelmeli; "Match not started yet" artık çıkmamalı.
+4. İki oyuncu: ParrelSync klonu yine kapanırsa `docs/setup.md` §3'teki yolu izle: `File > Build Profiles` > Windows > Build And Run (`Builds/Win` gibi `Assets` dışı bir klasör), build'de Host, editörde aynı adla Join. Host üst barda "P1", client "P2" görmeli; üsler haritanın iki ucunda (x = −65 / +65) olmalı. 3 Villager'ı aynı çalıya gönder, çalı bitince hata çıkmamalı. Kod değişince build'i yeniden al.
 5. Sonra geçen günkü test listesinin kalanı (`TODO.md` [You] 2): Villager seç, ağaca sağ tık, House inşa et, TC'de Villager üret.
 6. Sorun olursa `UNITY_FEEDBACK.md`'ye: Console hatası olduğu gibi, adım numarasıyla `Test 3 tamam` / `Test 4 olmadı: ...`. Klon/build için `Player.log` veya `Editor.log`'un son satırları da işe yarar.
 
 ## Senin kararın gerekiyor
-Yok.
+**Q-1120-1:** Kaynak yerleşimi: design brief'e göre bütün odun EastForest'ta (P2'nin yanı, x=+65), bütün altın WestMine'da (P1'in yanı, x=−65). P1 her odun turu için ~140 m yürüyor, P2 altın için aynı; erken ekonomi iki taraf için farklı.
+- **A:** Olduğu gibi bırak. Brief, RAG bilgisi ve AI cevapları değişmez; demo çalışır ama oyun dengesiz.
+- **B:** Her üssün yanına küçük bir orman (ör. 4 ağaç, `P1Base`/`P2Base` içinde) ekle; EastForest/WestMine kalır. Brief'te kaynak satırı, `rules.md` ve harita testi güncellenir (ben yaparım).
+- **C:** Haritayı aynala: her iki tarafa da bir orman + bir maden. Zone isimleri ve AI bilgi tabanı daha çok değişir.
+- Önerim: **B** (küçük değişiklik, iki tarafa eşit erken odun). Bekleyen: sadece harita/kaynak düzeni; diğer işler devam ediyor.
 
 ## Gözden geçir
+- Birim ve binalar artık input authority olmadan doğuyor (sahiplik zaten `[Networked] Owner`'da, emirler RPC ile gidiyor). Kendi birimlerinin client'ta akıcı hareket ettiğini kontrol et.
+- Spawn yüksekliği: ışın ağ nesnelerini (birim, bina, kaynak) atlayıp en yüksek diğer yüzeye (zemin/deniz) bakıyor.
 - `GameSpawner` kendini `GameLauncher.Instance.Runner`'a kaydediyor (runner'ı `GameLauncher`'dan bulmak yerine Fusion'a bırakmak mümkün değildi). Kayıt `Update`'te deneniyor, böylece sahne yüklenme sırası önemli değil.
 - AI paneli durum mesajları İngilizce (diğer UI yazılarıyla aynı).
 

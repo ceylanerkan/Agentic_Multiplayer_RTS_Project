@@ -92,10 +92,13 @@ namespace RTS.Tests
             Assert.AreEqual(1, PlayerSlots.SlotOf(new[] { 3, 2 }, 2));
             Assert.AreEqual(2, PlayerSlots.SlotOf(new[] { 3, 2 }, 3));
         }
-        // The host plays alone until P2 joins (GameSpawner spawns its base right away): it must already be P1.
-        [Test] public void PlayerSlots_HostAloneIsP1()
+        // The host plays alone until P2 joins and keeps P1; the joining client gets P2 whatever its Fusion id is.
+        [Test] public void PlayerSlots_FirstFreeIsKeptWhenOthersJoin()
         {
-            Assert.AreEqual(1, PlayerSlots.SlotOf(new[] { 5 }, 5));
+            Assert.AreEqual(1, PlayerSlots.FirstFree(new int[0]));
+            Assert.AreEqual(2, PlayerSlots.FirstFree(new[] { 1 }));
+            Assert.AreEqual(1, PlayerSlots.FirstFree(new[] { 2 }));   // P1 left and someone rejoins
+            Assert.AreEqual(0, PlayerSlots.FirstFree(new[] { 2, 1 })); // full: a third player gets nothing
         }
         [Test] public void PlayerSlots_ThirdPlayerAndUnknownGetZero()
         {

@@ -61,12 +61,12 @@ public class VillagerGatherer : NetworkBehaviour
         switch (phase)
         {
             case Phase.ToNode:
-                if (node == null) { FindOtherNodeOrStop(); break; }
+                if (!NodeAlive()) { node = null; FindOtherNodeOrStop(); break; }
                 if (Flat(node.transform.position - pos) <= NodeReach) { unit.StopMoving(); phase = Phase.Gathering; }
                 break;
 
             case Phase.Gathering:
-                if (node == null) { FindOtherNodeOrStop(); break; }
+                if (!NodeAlive()) { node = null; FindOtherNodeOrStop(); break; }
                 bool horseCollar = Owner() != null && Owner().HasTech("horse_collar"); // +20% food, see TechEffects
                 float taken = bag.Tick(Runner.DeltaTime, resource, node.Amount, horseCollar);
                 Vector3 nodePos = node.transform.position;
@@ -92,7 +92,7 @@ public class VillagerGatherer : NetworkBehaviour
                 {
                     var st = Owner();
                     if (st != null) st.Add(resource, bag.Deposit());
-                    if (node != null) { phase = Phase.ToNode; unit.MoveTo(node.transform.position); }
+                    if (NodeAlive()) { phase = Phase.ToNode; unit.MoveTo(node.transform.position); }
                     else FindOtherNodeOrStop();
                 }
                 break;
@@ -117,6 +117,10 @@ public class VillagerGatherer : NetworkBehaviour
 
     // A destroyed site is despawned at once but only Destroyed by Unity at the end of the frame: until then `site != null`
     // is still true and reading its [Networked] values throws, so also check that its NetworkObject is still valid.
+    // Another Villager may have emptied (despawned) the node earlier in this tick; Unity destroys it only at the end of the
+    // frame, so "node == null" is still false and reading node.Amount would throw.
+    bool NodeAlive() { return node != null && node.Object != null && node.Object.IsValid; }
+
     bool SiteAlive() { return site != null && site.Object != null && site.Object.IsValid; }
 
     NetworkPlayerState Owner() { return GameSpawner.Instance != null ? GameSpawner.Instance.StateOf(unit.Owner) : null; }

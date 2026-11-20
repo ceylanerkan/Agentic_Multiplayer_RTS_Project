@@ -30,6 +30,7 @@ public class ResourceNode : NetworkBehaviour
     public bool Take(float amount)
     {
         if (!HasStateAuthority) return false;
+        if (Object == null || !Object.IsValid) return true; // already emptied and despawned this tick: never despawn twice
         Amount -= amount;
         if (Amount > 0.001f) return false;
         Amount = 0; Runner.Despawn(Object);

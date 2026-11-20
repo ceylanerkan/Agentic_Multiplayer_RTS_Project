@@ -7,6 +7,7 @@ the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is 
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## Open decisions
+- [ ] Q-1120-1 (MORNING.md): resource layout favours each side unevenly (wood only near P2, gold only near P1); recommended: a small forest in each base.
 - [ ] Get written instructor approval for the one-person team (assignment asks for 2 students). Mention it in the report.
 
 ## [You] 1. Rebuild the generated scenes and prefabs (fixes from UNITY_FEEDBACK 2026-11-18 and 2026-11-19)
@@ -17,7 +18,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 - [ ] Host alone (no second player): Play > session name > Host. Console shows `GameSpawner registered with the NetworkRunner (host).`;
       your TC + 3 Villagers appear; the AI panel no longer says "Match not started yet" (if something is still missing it now names the step).
 - [ ] Two players: ParrelSync clone (A = Host, B = Join, same session name), or if the clone keeps closing, Windows build = Host and
-      editor = Join (steps in `docs/setup.md` section 3). Both sides: own TC + 3 Villagers (blue), enemy red once seen.
+      editor = Join (steps in `docs/setup.md` section 3). Both sides: own TC + 3 Villagers (blue) standing on the ground, enemy red
+      once seen; host's top bar shows P1, the client's P2, bases at opposite ends. Send 3 Villagers to one bush until it is empty: no error.
 
 ### What the commands do (reference only; the rebuild runs all of them)
 - `Tools > RTS > 1 Create placeholder prefabs`: makes `Assets/Prefabs` with `Player`, 8 unit prefabs (capsules), 6 building prefabs

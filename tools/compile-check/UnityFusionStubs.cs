@@ -36,7 +36,7 @@ namespace UnityEngine
     public struct RaycastHit { public Collider collider; public Vector3 point; }
     public class Collider : Component { public Bounds bounds; }
     public struct Bounds { public Vector3 extents; }
-    public static class Physics { public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } public static bool Raycast(Vector3 o, Vector3 dir, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
+    public static class Physics { public static RaycastHit[] RaycastAll(Vector3 o, Vector3 dir, float d) { return new RaycastHit[0]; } public static bool Raycast(Ray r, out RaycastHit h, float d) { h = default(RaycastHit); return false; } public static bool Raycast(Vector3 o, Vector3 dir, out RaycastHit h, float d) { h = default(RaycastHit); return false; } }
     public class Camera : Component { public static Camera main;  public Ray ScreenPointToRay(Vector3 p) { return default(Ray); } public Vector3 WorldToScreenPoint(Vector3 p) { return p; } }
     public static class Mathf { public static float Round(float f) { return f; } public static float Max(float a, float b) { return a; } public static int Max(int a, int b) { return a; } public static float Min(float a, float b) { return a; } public static float Abs(float a) { return a; }
         public static float Clamp(float a, float b, float c) { return a; } public static int RoundToInt(float f) { return 0; } public static int CeilToInt(float f) { return 0; } }
@@ -88,7 +88,7 @@ namespace Fusion
     public class RpcAttribute : Attribute { public RpcAttribute(RpcSources s, RpcTargets t) { } }
     public class NetworkObject : UnityEngine.MonoBehaviour { public bool IsValid; public NetworkId Id; public PlayerRef InputAuthority; public bool HasInputAuthority, HasStateAuthority; }
     public class NetworkRunner : UnityEngine.MonoBehaviour { public float DeltaTime; public bool IsServer, IsRunning; public System.Collections.Generic.IEnumerable<PlayerRef> ActivePlayers; public PlayerRef LocalPlayer;
-        public NetworkObject Spawn(NetworkObject p, Vector3 pos, Quaternion r, PlayerRef owner) { return null; } public void Despawn(NetworkObject o) { }
+        public NetworkObject Spawn(NetworkObject p, Vector3? pos, Quaternion? r, PlayerRef? owner) { return null; } public void Despawn(NetworkObject o) { }
         public bool TryFindObject(NetworkId id, out NetworkObject o) { o = null; return false; }
         public void AddGlobal(SimulationBehaviour b) { } public void RemoveGlobal(SimulationBehaviour b) { } }
     public class SimulationBehaviour : UnityEngine.MonoBehaviour { public NetworkRunner Runner; }

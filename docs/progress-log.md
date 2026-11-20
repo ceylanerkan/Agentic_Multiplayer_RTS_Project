@@ -29,7 +29,19 @@
 - New EditMode test `PlayerSlots_HostAloneIsP1`; C# rule tests 54/54 (counts updated in TODO, report, defense notes).
 - Checked: `AiApprovalFlow`, `AiGatewayClient`, `MenuUI`; Unity exempts localhost from "Allow downloads over HTTP = Not allowed"
   (project has `insecureHttpOption: 0`), so the default gateway URL works.
-- Open questions: none. Risk: the fix is not run in Unity yet.
+- Independent review of the networking/unit scripts (read-only subagent), 5 findings, each checked against the code and
+  `Fusion.Runtime.xml`:
+  (1) both players could get slot 1: Fusion gives the host the LAST player index, so a host alone was P1 by id order and a client
+  joining with a lower id also computed P1 (same base position, same zone, broken win check). Now the host assigns
+  `PlayerSlots.FirstFree` once and `GameLauncher.SlotOf` reads the stored `NetworkPlayerState.Slot` (EditMode test replaced by
+  `PlayerSlots_FirstFreeIsKeptWhenOthersJoin`); (2) several Villagers on a node that empties read/despawned it again in the same
+  tick: `VillagerGatherer.NodeAlive()`, `ResourceNode.Take` ignores an invalid object; (3) `StandOnGround` hit the new object's own
+  collider, so everything spawned floating: `RaycastAll`, skipping networked objects; (4) units/buildings were spawned with the
+  owner as input authority (client prediction, possible jumpy own units) though nothing uses it: now spawned without input
+  authority (`(PlayerRef?)null`); (5) resource layout favours each side unevenly (wood near P2, gold near P1): fixed by the design
+  brief, asked as Q-1120-1.
+- Tests after the fixes: compile-check 0/0, C# 54/54, pytest 68 passed.
+- Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)
 - UNITY_FEEDBACK.md headings handled: "2026-11-18" (3 obsolete-API warnings, TMP NullReferenceException, Test 4: Play starts in Game,
