@@ -61,7 +61,7 @@
   ties the TechEffects constants to the JSON effect texts. C# 54/54, pytest 75 passed.
 - New pytest: `DamageCalculator` multipliers (1.5 / 0.75 / 3x vs buildings) match rules.md. Counter pairs come from the JSON
   `strengths` and match rules.md; some `weaknesses` entries have no matching `strengths` (descriptive only, asked as Q-1120-2).
-  pytest 76 passed.
+  pytest 76 passed. The tech test also checks that `GatherState.HorseCollarFoodBonus` equals `TechEffects.HorseCollarFood`.
 - Open questions: Q-1120-1 (resource layout), Q-1120-2 (weaknesses vs strengths). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

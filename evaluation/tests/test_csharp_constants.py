@@ -62,6 +62,9 @@ def test_tech_effect_constants_match_technologies_json():
     assert '"spearman", "archer", "cavalry"' in cs
     assert f"+{num('FletchingRange'):g} range and +{num('FletchingLos'):g} line of sight for Archers" in techs["fletching"]
     assert f"+{round((num('HorseCollarFood') - 1) * 100)}% food" in techs["horse_collar"]
+    # GatherState has its own copy (the gather loop uses that one): both must agree
+    gather = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/GatherState.cs").read_text(encoding="utf-8")
+    assert float(re.search(r"HorseCollarFoodBonus\s*=\s*([0-9.]+)f", gather).group(1)) == num("HorseCollarFood")
 
 
 def test_damage_multipliers_match_rules():
