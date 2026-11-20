@@ -50,6 +50,8 @@
 - `make_session.py` honours `SESSION_DB_PATH` (the variable the MCP server reads); new `test_make_session.py` runs it for all
   three fixtures in a temp database and checks the stored snapshot and printed command. pytest 73 passed.
 - New pytest: every `test_*` name cited in `evaluation/security-tests.md` exists (the table is report evidence). pytest 74 passed.
+- `VillagerGatherer`: after a node ran out, the next node was searched within 30 m of the Villager, which by then stood at
+  the Town Center (far from the forest/mine), so it went idle; now searched around the last node's position.
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)
