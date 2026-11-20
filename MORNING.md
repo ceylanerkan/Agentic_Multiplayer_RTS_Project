@@ -11,7 +11,7 @@
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
 
 ## Bugün test et
-1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pulls (başlık "Autopilot: daily progress"), sonra main'de `git pull`.
+1. PR'ı merge et: https://github.com/ceylanerkan/Agentic_Multiplayer_RTS_Project/pull/5, sonra main'de `git pull`.
 2. Çift nesneli `Game.unity`'yi at: `Tools > RTS > Rebuild generated scenes and prefabs` > Rebuild (sadece bunu çalıştır, 1/2/3'ü kurulu sahnede çalıştırma). Console'da kırmızı hata olmamalı. `Game.unity`'de tek `MapAndSystems` ve tek `GameCanvas` olmalı. Sahneleri ve `Assets/Prefabs`'ı main'e commit'le.
 3. Tek başına dene: Play > session adı > Host. Console'da `GameSpawner registered with the NetworkRunner (host).` görünmeli; TC + 3 Villager (mavi disk, etiket) oluşmalı. AI paneline soru yaz: gateway kapalıysa bağlantı hatası, açıksa cevap gelmeli; "Match not started yet" artık çıkmamalı.
 4. İki oyuncu: ParrelSync klonu yine kapanırsa `docs/setup.md` §3'teki yolu izle: `File > Build Profiles` > Windows > Build And Run (`Builds/Win` gibi `Assets` dışı bir klasör), build'de Host, editörde aynı adla Join. İki tarafta da kendi TC + 3 Villager'ın görünmeli. Kod değişince build'i yeniden al.
