@@ -47,6 +47,8 @@
 - New `ai/gateway/tests/test_gemini_request.py`: `GeminiLLM` builds a real google-genai request (system prompt, tool
   declarations, user/model/tool history) against a fake client; function calls with `args=None` become `{}`. pytest 70 passed.
   Report (match life cycle, authority), architecture (slots) and setup.md counts updated.
+- `make_session.py` honours `SESSION_DB_PATH` (the variable the MCP server reads); new `test_make_session.py` runs it for all
+  three fixtures in a temp database and checks the stored snapshot and printed command. pytest 73 passed.
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

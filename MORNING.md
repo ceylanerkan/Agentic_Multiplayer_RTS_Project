@@ -9,7 +9,7 @@
 - Bağımsız inceleme (ağ/birim scriptleri), 4 hata düzeltildi: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON oyuncu numarasını veriyor; host tek başınayken P1, sonra gelen client da P1 hesaplıyordu, iki üs üst üste) — artık host ilk boş slotu bir kez verip saklıyor; (2) aynı kaynağa giden birkaç Villager, kaynak bitince yok olmuş nesneyi okuyordu; (3) `StandOnGround` ışını nesnenin kendi çarpıştırıcısına çarpıyordu, her şey havada doğacaktı; (4) birimler sahibine input authority ile doğuyordu (client tahmini, kendi birimlerin zıplayarak yürüyebilirdi), artık input authority yok.
 - Üs oluşturma bir hata yüzünden başarısız olursa (ör. Fusion'ın prefab tablosunda eksik prefab) Console her karede değil bir kez yazıyor ve AI paneli "Base spawn failed: ..." diyor.
 - `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 70 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği sahte istemciyle gerçek google-genai tipleriyle kuruluyor), C# kural testleri 54/54 (yeni: `PlayerSlots.FirstFree`).
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 73 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği sahte istemciyle gerçek google-genai tipleriyle kuruluyor), C# kural testleri 54/54 (yeni: `PlayerSlots.FirstFree`).
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
