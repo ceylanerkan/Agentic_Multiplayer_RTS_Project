@@ -6,7 +6,7 @@
 - Bağımsız inceleme, ilk kez çalışacak kodda 4 hata: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON numarayı veriyor) — artık host ilk boş slotu verip saklıyor; (2) birkaç Villager biten kaynağı okuyup hata veriyordu; (3) her şey havada doğacaktı (ışın nesnenin kendisine çarpıyordu); (4) birimler input authority ile doğup client'ta zıplayabilirdi.
 - Küçükler: yerleştirme hayaleti gerçekten yarı saydam; görünmeyen düşmana sağ tık artık onu ele vermiyor.
 - Yeni testler: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı; `GeminiLLM` isteği gerçek google-genai tipleriyle (sahte istemci); `make_session.py`; `PlayerSlots.FirstFree`. Rapor, mimari ve savunma notları güncellendi.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 73 geçti, C# kural testleri 54/54.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 74 geçti, C# kural testleri 54/54.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
