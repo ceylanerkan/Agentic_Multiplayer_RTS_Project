@@ -31,6 +31,7 @@ Yok.
 - Düzeltme gerçek Unity'de denenmedi (sadece stub'larla derlendi). `AddGlobal` ve `RemoveGlobal` Fusion 2.0.13'ün `Fusion.Runtime.xml` belgesinde var; yine de Console'da Fusion'dan bir uyarı görürsen yaz.
 - ParrelSync klonunun kapanma sebebini bulamadım (log'da çökme yok). Build = Host yolu bunu tamamen atlıyor.
 - Gemini ile canlı çalıştırma hâlâ yapılmadı.
+- `AiCommanderPanel` URL'si `http://127.0.0.1:8765` kaldıkça sorun yok: Unity localhost'u "Allow downloads over HTTP = Not allowed" kuralından muaf tutuyor. Gateway'i başka bir PC'nin IP'sine yönlendirirsen `Project Settings > Player > Other Settings > Allow downloads over HTTP` ayarını `Always allowed` yapman gerekir.
 
 ## Nasıl cevap verirsin
 UNITY_FEEDBACK.md dosyasına bugünün tarihiyle bir başlık aç, cevapları yaz (ör. `Q-1114-1: B`,
