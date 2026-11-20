@@ -41,6 +41,9 @@
   authority (`(PlayerRef?)null`); (5) resource layout favours each side unevenly (wood near P2, gold near P1): fixed by the design
   brief, asked as Q-1120-1.
 - Tests after the fixes: compile-check 0/0, C# 54/54, pytest 68 passed.
+- A failed base spawn (e.g. a prefab missing from Fusion's prefab table) is logged once instead of every frame, and the AI panel
+  shows "Base spawn failed: ..." (`GameSpawner.SpawnError`). `docs/setup.md`: Multiplayer Play Mode as a second ParrelSync
+  alternative; defense notes: how a base is spawned.
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

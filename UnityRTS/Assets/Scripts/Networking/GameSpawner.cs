@@ -20,7 +20,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     readonly Dictionary<PlayerRef, NetworkPlayerState> players = new Dictionary<PlayerRef, NetworkPlayerState>();
 
-    void Awake() { Instance = this; GameEvents.Local.Clear(); } // new match, new event log
+    void Awake() { Instance = this; SpawnError = null; GameEvents.Local.Clear(); } // new match, new event log
 
     bool registered; // we added ourselves to the runner, so we must also remove ourselves
 
@@ -63,8 +63,22 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     {
         TryRegister();
         if (Runner == null || !Runner.IsRunning || !Runner.IsServer) return;
-        foreach (var p in Runner.ActivePlayers) if (!players.ContainsKey(p)) PlayerJoined(p);
+        foreach (var p in Runner.ActivePlayers)
+        {
+            if (players.ContainsKey(p)) continue;
+            try { PlayerJoined(p); }
+            catch (Exception e)
+            {
+                // e.g. a prefab missing from Fusion's Network Prefab Table: log once instead of retrying every frame
+                if (!players.ContainsKey(p)) players[p] = null; // keep a state that was already spawned
+                SpawnError = e.GetType().Name + ": " + e.Message;
+                Debug.LogException(e);
+            }
+        }
     }
+
+    /// <summary>Why the host could not spawn a base (shown by the AI panel); null when all went well.</summary>
+    public static string SpawnError;
 
     public void PlayerJoined(PlayerRef player)
     {

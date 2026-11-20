@@ -44,6 +44,7 @@ public class AiCommanderPanel : MonoBehaviour
         if (launcher == null || launcher.Runner == null) return "Not connected: start from the Menu scene and press Host or Join.";
         if (!launcher.Runner.IsRunning) return "Still connecting to the session...";
         if (GameSpawner.Instance == null) return "No GameSpawner in the Game scene (Tools > RTS > Rebuild).";
+        if (GameSpawner.SpawnError != null) return "Base spawn failed: " + GameSpawner.SpawnError + " (see Console).";
         if (launcher.IsHost) return "Your player was not spawned yet; if this stays, check the Console for GameSpawner errors.";
         return "Waiting for the host to spawn your base...";
     }

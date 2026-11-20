@@ -7,6 +7,7 @@
 - Bina yerleştirme hayaleti artık gerçekten yarı saydam (URP Unlit malzemesi opaktı, slotu kapatıyordu).
 - Fog açığı kapandı: görünmeyen düşmanın durduğu yere sağ tık onu saldırıyla ortaya çıkarıyordu; artık oraya yürünüyor.
 - Bağımsız inceleme (ağ/birim scriptleri), 4 hata düzeltildi: (1) iki oyuncu da P1 olabiliyordu (Fusion host'a SON oyuncu numarasını veriyor; host tek başınayken P1, sonra gelen client da P1 hesaplıyordu, iki üs üst üste) — artık host ilk boş slotu bir kez verip saklıyor; (2) aynı kaynağa giden birkaç Villager, kaynak bitince yok olmuş nesneyi okuyordu; (3) `StandOnGround` ışını nesnenin kendi çarpıştırıcısına çarpıyordu, her şey havada doğacaktı; (4) birimler sahibine input authority ile doğuyordu (client tahmini, kendi birimlerin zıplayarak yürüyebilirdi), artık input authority yok.
+- Üs oluşturma bir hata yüzünden başarısız olursa (ör. Fusion'ın prefab tablosunda eksik prefab) Console her karede değil bir kez yazıyor ve AI paneli "Base spawn failed: ..." diyor.
 - `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
 - Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 54/54 (yeni: `PlayerSlots.FirstFree`).
 
