@@ -7,6 +7,7 @@ the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is 
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## Open decisions
+- [ ] Q-1120-2 (MORNING.md): `weaknesses` in units.json that have no matching `strengths`; recommended: align them (no gameplay change).
 - [ ] Q-1120-1 (MORNING.md): resource layout favours each side unevenly (wood only near P2, gold only near P1); recommended: a small forest in each base.
 - [ ] Get written instructor approval for the one-person team (assignment asks for 2 students). Mention it in the report.
 

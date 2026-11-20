@@ -27,6 +27,12 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 - **C:** Haritayı aynala: her iki tarafa da bir orman + bir maden. Zone isimleri ve AI bilgi tabanı daha çok değişir.
 - Önerim: **B** (küçük değişiklik, iki tarafa eşit erken odun). Bekleyen: sadece harita/kaynak düzeni; diğer işler devam ediyor.
 
+**Q-1120-2:** `units.json`'ta bazı `weaknesses` girdileri karşı birimin `strengths`'inde yok (Raider Boat "catapult'a zayıf", Scout ve Villager "spearman/archer'a zayıf"), ama hasar çarpanı sadece `strengths`'ten geliyor; AI bu zayıflıkları kanıt olarak söyleyebilir.
+- **A:** `weaknesses`'i `strengths`'e uydur (çarpanı olmayanları sil). Oyun aynı kalır, AI'nın söylediği hasar kurallarıyla tutarlı olur; RAG indeksini yeniden kurarsın.
+- **B:** Eksik `strengths` ekle (ör. Catapult → Raider Boat). Oyun dengesi değişir.
+- **C:** Bırak.
+- Önerim: **A**. Bekleyen: yok (sadece veri tutarlılığı).
+
 ## Gözden geçir
 - Iron Weapons artık sadece Spearman, Archer ve Cavalry'ye +2 saldırı veriyor (`technologies.json` böyle diyor, AI de bunu okuyor); önce Scout, Catapult ve gemilere de veriyordu. Brief'te "+2 attack for military" yazıyor; tersini istersen JSON'u değiştiririz.
 - Birim ve binalar artık input authority olmadan doğuyor (sahiplik zaten `[Networked] Owner`'da, emirler RPC ile gidiyor). Kendi birimlerinin client'ta akıcı hareket ettiğini kontrol et.
@@ -40,8 +46,6 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 - ParrelSync klonunun kapanma sebebini bulamadım (log'da çökme yok). Build = Host yolu bunu tamamen atlıyor.
 - Gemini ile canlı çalıştırma hâlâ yapılmadı.
 - `AiCommanderPanel` URL'si `http://127.0.0.1:8765` kaldıkça sorun yok: Unity localhost'u "Allow downloads over HTTP = Not allowed" kuralından muaf tutuyor. Gateway'i başka bir PC'nin IP'sine yönlendirirsen `Project Settings > Player > Other Settings > Allow downloads over HTTP` ayarını `Always allowed` yapman gerekir.
-
-- `units.json`'ta bazı `weaknesses` girdileri karşı tarafın `strengths`'inde yok (ör. Raider Boat "catapult'a zayıf", Scout "spearman/archer'a zayıf" diyor ama hasar çarpanı yok). Hasar doğru (sadece `strengths` kullanılıyor), ama AI bunları kanıt olarak gösterebilir. İstersen JSON'u düzeltirim.
 
 ## Nasıl cevap verirsin
 UNITY_FEEDBACK.md dosyasına bugünün tarihiyle bir başlık aç, cevapları yaz (ör. `Q-1114-1: B`,
