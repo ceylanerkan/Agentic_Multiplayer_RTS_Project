@@ -15,6 +15,10 @@
 - Tests: `tools/compile-check` 0 errors / 0 warnings (stubs gained `AddGlobal`, `RemoveGlobal`, `GameObject.Find`, 3-arg
   `DisplayDialog`, `GameLauncher.IsHost`); `pytest -q ai evaluation` 67 passed. dotnet came from apt (`dotnet-sdk-8.0`); dot.net is
   blocked by the proxy here.
+- Review of the host spawn path (it never ran before): `EntityVisuals` reads `TypeKey`/`Owner` lazily, so `InitHost` after
+  `Runner.Spawn` is fine; `OnDestroy` only calls `RemoveGlobal` while the runner is still running.
+- New pytest: every `SimulationBehaviour` in our scripts must call `AddGlobal(this)` (regression guard). 68 passed.
+  C# rule tests (throwaway net8.0 + NUnit): 53/53.
 - Open questions: none. Risk: the fix is not run in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)

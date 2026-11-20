@@ -37,3 +37,16 @@ def test_every_unit_and_building_has_a_generated_prefab():
     for name in ("units", "buildings"):
         keys = {r["key"] for r in json.loads((ROOT / f"ai/rag/knowledge/{name}.json").read_text(encoding="utf-8"))}
         assert keys <= rows, f"{name} without a prefab row in RtsSetupTools.cs: {sorted(keys - rows)}"
+
+
+def test_scene_simulation_behaviours_register_with_the_runner():
+    # Fusion only auto-registers a SimulationBehaviour on the runner's own GameObject. One in a scene must call
+    # AddGlobal itself, or its Runner stays null (UNITY_FEEDBACK 2026-11-19: GameSpawner never spawned any base).
+    scripts = ROOT / "UnityRTS/Assets/Scripts"
+    found = []
+    for path in scripts.rglob("*.cs"):
+        text = path.read_text(encoding="utf-8")
+        if re.search(r"class \w+\s*:\s*SimulationBehaviour\b", text):
+            found.append(path.name)
+            assert "AddGlobal(this)" in text, f"{path.name} is a SimulationBehaviour but never calls Runner.AddGlobal(this)"
+    assert "GameSpawner.cs" in found

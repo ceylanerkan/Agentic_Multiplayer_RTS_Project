@@ -39,7 +39,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
     void OnDestroy()
     {
-        if (registered && Runner != null) Runner.RemoveGlobal(this);
+        if (registered && Runner != null && Runner.IsRunning) Runner.RemoveGlobal(this); // a shut-down runner has already dropped its globals
     }
 
     // Works on host and clients: NetworkPlayerState registers itself when it spawns (input authority = the player).

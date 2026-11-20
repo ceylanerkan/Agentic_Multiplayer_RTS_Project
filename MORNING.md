@@ -5,7 +5,7 @@
 - AI paneli artık "Match not started yet" yerine eksik adımı yazıyor: bağlı değil / bağlanıyor / sahnede `GameSpawner` yok / oyuncu henüz oluşmadı / host'un üssü oluşturması bekleniyor.
 - `Tools > RTS > 2 Setup open Game scene` ve `3 Create Game UI`, sahnede kurulum zaten varsa "Already set up" uyarısı verip hiçbir şey eklemiyor (Game.unity'deki çift nesnelerin sebebi buydu).
 - `docs/setup.md` bölüm 3: ParrelSync çalışmazsa Windows build = Host, editör = Join, adım adım.
-- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 67 geçti.
+- Testler: `tools/compile-check` 0 hata / 0 uyarı, `pytest -q ai evaluation` 68 geçti (yeni: sahnedeki her `SimulationBehaviour` `AddGlobal` çağırmalı), C# kural testleri 53/53.
 
 ## Plan durumu
 Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, Unity testini bekliyor. Plan tarihlerine göre ~7 gün öndeyiz. Sonraki gece: yeni `UNITY_FEEDBACK.md` notları, sonra kalan inceleme/test işleri.
