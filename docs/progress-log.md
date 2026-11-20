@@ -44,6 +44,9 @@
 - A failed base spawn (e.g. a prefab missing from Fusion's prefab table) is logged once instead of every frame, and the AI panel
   shows "Base spawn failed: ..." (`GameSpawner.SpawnError`). `docs/setup.md`: Multiplayer Play Mode as a second ParrelSync
   alternative; defense notes: how a base is spawned.
+- New `ai/gateway/tests/test_gemini_request.py`: `GeminiLLM` builds a real google-genai request (system prompt, tool
+  declarations, user/model/tool history) against a fake client; function calls with `args=None` become `{}`. pytest 70 passed.
+  Report (match life cycle, authority), architecture (slots) and setup.md counts updated.
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)
