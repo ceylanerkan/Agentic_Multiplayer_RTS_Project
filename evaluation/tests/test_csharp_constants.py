@@ -62,3 +62,10 @@ def test_tech_effect_constants_match_technologies_json():
     assert '"spearman", "archer", "cavalry"' in cs
     assert f"+{num('FletchingRange'):g} range and +{num('FletchingLos'):g} line of sight for Archers" in techs["fletching"]
     assert f"+{round((num('HorseCollarFood') - 1) * 100)}% food" in techs["horse_collar"]
+
+
+def test_damage_multipliers_match_rules():
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/DamageCalculator.cs").read_text(encoding="utf-8")
+    num = lambda name: float(re.search(rf"\b{name}\s*=\s*([0-9.]+)f", cs).group(1))
+    assert f"multiplier is {num('CounterBonus'):g} when the attacker counters the target and {num('CounterPenalty'):g} when" in RULES
+    assert f"Catapults deal {num('CatapultVsBuilding'):g}x damage to buildings" in RULES

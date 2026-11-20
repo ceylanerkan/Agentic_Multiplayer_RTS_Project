@@ -59,6 +59,9 @@
 - Rule drift: `TechEffects` gave Iron Weapons +2 attack to every non-Villager, but `technologies.json` (what the AI reads) says
   Spearman, Archer and Cavalry only; code now follows the JSON (EditMode assertions for cavalry/scout/warship) and a new pytest
   ties the TechEffects constants to the JSON effect texts. C# 54/54, pytest 75 passed.
+- New pytest: `DamageCalculator` multipliers (1.5 / 0.75 / 3x vs buildings) match rules.md. Counter pairs come from the JSON
+  `strengths` and match rules.md; some `weaknesses` entries have no matching `strengths` (descriptive only, flagged in MORNING).
+  pytest 76 passed.
 - Open questions: Q-1120-1 (resource layout). Risk: none of this ran in Unity yet.
 
 ## 2026-11-19 (run 4, night 16 fix day)
