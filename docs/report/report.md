@@ -109,7 +109,8 @@ pathing, gathering, construction, production, combat and the win check. Each pla
 calls `Send*`, which is an RPC from InputAuthority to StateAuthority. On the host the relay (a) checks that the
 object belongs to the sender, (b) validates cost, population, prerequisites and zone rules with `GameActionValidator`
 and the production queue rules, and only then (c) changes the state. A client therefore cannot spend resources it
-does not have or command units it does not own.
+does not have or command units it does not own. Units and buildings are spawned without input authority: ownership is
+a networked `Owner` field, so no client predicts or moves them locally.
 
 **Replicated state.** `NetworkPlayerState` (resources, population, age, researched technologies, match result),
 `NetworkUnit` (owner, type, HP, move and attack target; position through `NetworkTransform`), `NetworkBuilding`
@@ -117,8 +118,10 @@ does not have or command units it does not own.
 values for the HUD and panels.
 
 **Match life cycle.** `GameLauncher` starts the Fusion runner (`GameMode.Host` or `GameMode.Client`) with a session
-name, loads the Game scene, and assigns slot 1 to the lowest `PlayerRef` and slot 2 to the next, which every peer
-computes identically. If the opponent disconnects the match ends and both return to the menu. When a player loses the
+name and loads the Game scene. There, `GameSpawner` (registered with the runner through `AddGlobal`) gives each
+joining player the first free slot, stores it in the networked `NetworkPlayerState`, and spawns that player's Town
+Center and three Villagers. The slot is not derived from `PlayerRef` order, because Fusion gives the host the last
+index: a host that starts alone and a client that joins later would otherwise both compute slot 1. If the opponent disconnects the match ends and both return to the menu. When a player loses the
 last Town Center the host sets a result for both players and `GameOverUI` shows Victory or Defeat.
 
 **Fog of war.** Visibility is a pure function: a player sees all own objects and every enemy object inside the line
