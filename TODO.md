@@ -36,8 +36,8 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
   `NetworkPlayerState` + `CommandRelay`.
 
 ## [You] 2. Play tests (report results in UNITY_FEEDBACK.md)
-- [ ] Two instances: each side sees its TC and 3 Villagers (blue disc) in front of the TC; box-select (green rings at the feet) and move;
-      right-click a tree: its label counts down and Wood rises in the HUD after each trip to the TC.
+- [ ] Economy: box-select Villagers (green rings at the feet) and move them; right-click a tree: its label counts down and Wood
+      rises in the HUD after each trip to the TC.
 - [ ] Build a House (Villager selected > `Build House` > click a slot; the ghost turns green near a free slot): the site shows
       "building N%", the Villager stays selected; when done, Pop shows x/10. Select more Villagers and right-click the
       unfinished building: they help and it finishes faster. Train a Villager at the TC.
