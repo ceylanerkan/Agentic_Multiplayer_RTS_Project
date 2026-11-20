@@ -49,6 +49,7 @@ at approval time, and by the host in the RPC handler.
 | Commands | A client never changes state. It calls `CommandRelay.Send*`, an RPC `InputAuthority -> StateAuthority`. The host checks ownership (`FindOwned`) and the rules (`GameActionValidator`, `ProductionQueue.WhyNot`) before acting. |
 | AI actions | The approved plan uses the same `CommandRelay` RPCs as manual play, so the AI cannot bypass authority. |
 | Resources and population | Cost is paid and population is reserved when a unit is queued, so a long queue cannot exceed the cap. |
+| Spawning | `GameSpawner` (a `SimulationBehaviour` in the Game scene) registers itself with `Runner.AddGlobal`; the host spawns each player's `Player` object (input authority = that player), Town Center and 3 Villagers. Units and buildings have no input authority. |
 | Slots | The host gives each joining player the first free slot (`PlayerSlots.FirstFree`) and stores it in the networked `NetworkPlayerState.Slot`; every peer reads that value. (Not by `PlayerRef` order: Fusion gives the host the last index.) |
 | Disconnect | When the other player leaves, the host ends the match and both peers return to the menu (`GameLauncher`). |
 | Match end | When a player's last Town Center is destroyed the host sets `NetworkPlayerState.Result` (1 = won, 2 = lost) for both players; `GameOverUI` shows Victory or Defeat. |
