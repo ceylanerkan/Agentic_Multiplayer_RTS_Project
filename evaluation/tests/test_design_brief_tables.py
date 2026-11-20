@@ -76,3 +76,17 @@ def test_where_and_requirements_match():
         assert key(where) == t["researched_at"], name
         expected = [] if req == "–" else [key(r) for r in req.split(",")]
         assert set(expected) <= set(t["requires"]), name   # the brief omits the obvious "own a Blacksmith"
+
+
+def test_zone_names_agree_everywhere():
+    # brief, both schemas and Unity's ZoneLookup must list the same 10 zones, with the same 3 water zones
+    m = re.search(r"\*\*Land zones:\*\*\s*(.*?)\.\s*\*\*Water zones:\*\*\s*(.*?)\.", BRIEF, re.S)
+    land = {z.strip() for z in m.group(1).replace("\n", " ").split(",")}
+    water = {z.strip() for z in m.group(2).split(",")}
+    for schema in ("action_plan.schema.json", "safe_snapshot.schema.json"):
+        enums = re.findall(r'"enum":\s*\[("P1Base"[^\]]*)\]', (ROOT / "ai/schemas" / schema).read_text(encoding="utf-8"))
+        assert enums and all(set(re.findall(r'"(\w+)"', e)) == land | water for e in enums), schema
+    cs = (ROOT / "UnityRTS/Assets/Scripts/Core/Rules/ZoneLookup.cs").read_text(encoding="utf-8")
+    cs_water = set(re.findall(r'"(\w+)"', re.search(r"Water = new HashSet<string> \{([^}]*)\}", cs).group(1)))
+    assert cs_water == water
+    assert land | water <= set(re.findall(r'"(\w+)"', cs))
