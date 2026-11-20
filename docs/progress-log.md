@@ -65,6 +65,7 @@
 - New `evaluation/tests/test_design_brief_tables.py`: the brief's unit (domain, cost, HP, attack, armor, range, speed),
   building (cost, HP, requirements) and technology (cost, where, requirements) tables and "Trained at" match the knowledge
   JSON; all matched. Zone names agree in the brief, both schemas and `ZoneLookup.cs` (same 3 water zones); `unit_group` enum = 3 named groups + all non-Villager units, as the validator accepts; every `action_type` has a case in the validator and in `AiApprovalFlow`; the 8 event types agree between `PlayerEventLog` and the snapshot schema; the report's MCP tool table lists exactly the 7 server tools. pytest 85 passed.
+- `run_eval.py --real` without `GEMINI_API_KEY` prints a usage error instead of a KeyError traceback.
 - `.env.example`: removed `GATEWAY_HOST`/`GATEWAY_PORT` (never read; the port is on the uvicorn command and the AI panel URL); every other variable the code reads is listed.
 - Defense notes: why units have no input authority, how P1/P2 are decided. Architecture: spawning row. Slides outline: the
   lifecycle lesson and pathfinding as future work (RAG corpus of 33 chunks re-checked; report version table checked against manifest.json and requirements.txt, rank-bm25 and python-dotenv added). setup.md: ParrelSync optional.

@@ -111,6 +111,8 @@ def main():
     if args.real:
         import os
         from gateway.llm import GeminiLLM
+        if not os.environ.get("GEMINI_API_KEY"):
+            ap.error("--real needs GEMINI_API_KEY (in .env at the repository root or in the environment)")
         llm = GeminiLLM(os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
     else:
         llm = MockLLM()
