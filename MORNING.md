@@ -25,7 +25,7 @@ Gece 1–15 bitti; Gece 16 (hata düzeltme) ve 17 (tutarlılık) kısmen bitti, 
 ## Senin kararın gerekiyor
 **Q-1120-1:** Kaynak yerleşimi: design brief'e göre bütün odun EastForest'ta (P2'nin yanı, x=+65), bütün altın WestMine'da (P1'in yanı, x=−65). P1 her odun turu için ~140 m yürüyor, P2 altın için aynı; erken ekonomi iki taraf için farklı.
 - **A:** Olduğu gibi bırak. Brief, RAG bilgisi ve AI cevapları değişmez; demo çalışır ama oyun dengesiz.
-- **B:** Her üssün yanına küçük bir orman (ör. 4 ağaç, `P1Base`/`P2Base` içinde) ekle; EastForest/WestMine kalır. Brief'te kaynak satırı, `rules.md` ve harita testi güncellenir (ben yaparım).
+- **B:** Her üssün yanına küçük bir orman (ör. 4 ağaç, `P1Base`/`P2Base` içinde) ekle; EastForest/WestMine kalır. Değişecekler: `RtsSetupTools` (ağaç yerleşimi, build slot'larıyla çakışmayacak yerde), brief'in kaynak satırı, `rules.md` (RAG) ve harita EditMode testi; şemalar ve zone isimleri değişmez. Sonra senin Rebuild yapman gerekir (ben kodu yaparım).
 - **C:** Haritayı aynala: her iki tarafa da bir orman + bir maden. Zone isimleri ve AI bilgi tabanı daha çok değişir.
 - Önerim: **B** (küçük değişiklik, iki tarafa eşit erken odun). Bekleyen: sadece harita/kaynak düzeni; diğer işler devam ediyor.
 
