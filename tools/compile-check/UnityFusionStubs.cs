@@ -73,7 +73,7 @@ namespace UnityEngine.InputSystem {
 }
 namespace TMPro { using UnityEngine; public class TMP_Text : UnityEngine.UI.Graphic { public UnityEngine.Material fontMaterial; public bool enableAutoSizing; public float fontSizeMin, fontSizeMax; public RectTransform rectTransform; public float outlineWidth; public Color32 outlineColor; public string text; public float fontSize; public TMP_FontAsset font; public TextAlignmentOptions alignment; }
     public class TextMeshProUGUI : TMP_Text { } public class TextMeshPro : TMP_Text { } public class TMP_Settings : UnityEngine.Object { public static TMP_FontAsset defaultFontAsset; } public class TMP_FontAsset : UnityEngine.Object { } public enum TextAlignmentOptions { Center, TopLeft, Left }
-    public class TMP_InputField : UnityEngine.Component { public bool isFocused; public string text; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
+    public class TMP_InputField : UnityEngine.Component { public bool isFocused; public string text; public int characterLimit; public RectTransform textViewport; public TMP_Text textComponent; public UnityEngine.UI.Graphic placeholder; } }
 namespace Fusion
 {
     using UnityEngine;

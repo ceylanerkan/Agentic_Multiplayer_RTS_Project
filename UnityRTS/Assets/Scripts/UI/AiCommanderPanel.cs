@@ -15,6 +15,7 @@ using UnityEngine.UI;
 public class AiCommanderPanel : MonoBehaviour
 {
     [SerializeField] TMP_InputField questionInput;
+    const int MaxQuestionLength = 500;   // = MAX_QUESTION_LEN of the gateway (a pytest checks both)
     [SerializeField] Button askButton, approveButton, rejectButton, whyButton;
     [SerializeField] TMP_Text answerText;      // summary + confidence + evidence + actions
     [SerializeField] TMP_Text statusText;      // loading / errors / approval result
@@ -30,6 +31,8 @@ public class AiCommanderPanel : MonoBehaviour
         // long LLM answers shrink to fit the box instead of running out of the panel
         foreach (var t in new[] { answerText, statusText })
             if (t != null) { t.enableAutoSizing = true; t.fontSizeMin = 12; t.fontSizeMax = t.fontSize; }
+        // the gateway rejects longer questions (MAX_QUESTION_LEN in ai/gateway/app.py); stop the typing here instead
+        if (questionInput != null) questionInput.characterLimit = MaxQuestionLength;
         askButton.onClick.AddListener(() => _ = Ask());
         whyButton.onClick.AddListener(() => _ = Why());
         approveButton.onClick.AddListener(Approve);

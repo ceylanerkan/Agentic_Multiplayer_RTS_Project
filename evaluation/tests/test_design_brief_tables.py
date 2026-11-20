@@ -142,3 +142,10 @@ def test_snapshot_limits_agree_between_unity_and_schema():
     groups = int(re.search(r"MaxGroups = (\d+)", (rules / "SnapshotAssembler.cs").read_text(encoding="utf-8")).group(1))
     assert schema["properties"]["recent_events"]["maxItems"] == events
     assert schema["properties"]["own_army"]["maxItems"] == groups
+
+
+def test_ai_panel_question_limit_matches_gateway():
+    app = (ROOT / "ai/gateway/app.py").read_text(encoding="utf-8")
+    panel = (ROOT / "UnityRTS/Assets/Scripts/UI/AiCommanderPanel.cs").read_text(encoding="utf-8")
+    gateway = int(re.search(r"MAX_QUESTION_LEN = (\d+)", app).group(1))
+    assert f"MaxQuestionLength = {gateway};" in panel and "characterLimit = MaxQuestionLength" in panel
