@@ -1,6 +1,6 @@
 """FastAPI gateway. Unity holds the session token; the LLM never sees it or any player id.
 
-Run (from the repository root): uvicorn --factory ai.gateway.app:create_app --port 8765   (needs GEMINI_API_KEY; tests inject a ScriptedLLM instead)
+Run (from the repository root): uvicorn --factory ai.gateway.app:create_app --port 8765   (needs GEMINI_API_KEY, or LLM_PROVIDER=ollama; tests inject a ScriptedLLM instead)
 """
 import os
 import re
@@ -17,6 +17,7 @@ for p in (AI, AI / "mcp-server", AI / "rag"):
 
 from common.session_store import SessionStore  # noqa: E402
 from gateway.agent import SNAPSHOT_SCHEMA, Agent, AgentError  # noqa: E402
+from gateway.llm import agent_timeout_s, make_llm  # noqa: E402
 from gateway.logs import JsonlLog, short_id  # noqa: E402
 from retriever import Retriever  # noqa: E402
 from server import build_server  # noqa: E402
@@ -52,8 +53,7 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
     def get_llm():
         if llm:
             return llm
-        from gateway.llm import GeminiLLM
-        return GeminiLLM(os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
+        return make_llm()
 
     def auth(token):
         if not token or not store.session_exists(token):
@@ -66,7 +66,7 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
             raise HTTPException(422, "question too long")
         if INJECTION.search(question):
             sec_log.write(session=short_id(token), event="suspected_injection", question=question[:200])
-        steps, timeout = int(os.environ.get("AGENT_MAX_STEPS", 6)), float(os.environ.get("AGENT_TIMEOUT_S", 30))
+        steps, timeout = int(os.environ.get("AGENT_MAX_STEPS", 6)), agent_timeout_s()
         try:
             if os.environ.get("MCP_TRANSPORT", "inprocess") == "stdio":
                 # Demo mode: the MCP server runs as a subprocess and the agent speaks the real MCP protocol over stdio.

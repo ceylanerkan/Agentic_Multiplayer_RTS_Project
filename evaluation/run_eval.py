@@ -1,10 +1,10 @@
 """Evaluation runner. Mock mode (default) uses a keyword-based fake LLM, so it runs offline and in CI.
-Real mode (--real) uses Gemini and needs GEMINI_API_KEY.
+Real mode (--real) uses the model of LLM_PROVIDER (or --provider): gemini needs GEMINI_API_KEY, ollama a local Ollama.
 
 Metrics: tool-call accuracy (all expected tools called, no tool outside the allowed set), valid-plan rate, latency,
 invalid-action rate (actions that the Python copy of GameActionValidator rejects on the fixture state) and the confidence
 of stale-state answers. Outputs: results.json, results.csv, results_table.md.
-Run: python evaluation/run_eval.py [--real]
+Run: python evaluation/run_eval.py [--real [--provider gemini|ollama]]
 """
 import argparse
 import csv
@@ -104,21 +104,23 @@ def markdown_table(summary):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--real", action="store_true")
-    ap.add_argument("--out", default=str(HERE / "results.json"), help="results file or folder (CSV and table are written next to it)")
-    ap.add_argument("--delay", type=float, default=None, help="seconds to wait between prompts (default: 4 with --real because of free-tier rate limits, else 0)")
+    ap.add_argument("--provider", choices=["gemini", "ollama"], help="with --real: overrides LLM_PROVIDER")
+    ap.add_argument("--out", help="results file or folder (CSV and table are written next to it; default: evaluation/results.json, with --real results_<provider>.json)")
+    ap.add_argument("--delay", type=float, default=None, help="seconds to wait between prompts (default: 4 with Gemini because of free-tier rate limits, else 0)")
     args = ap.parse_args()
     load_env()  # GEMINI_API_KEY from .env for --real
     if args.real:
         import os
-        from gateway.llm import GeminiLLM
-        if not os.environ.get("GEMINI_API_KEY"):
+        from gateway.llm import agent_timeout_s, make_llm, provider_name
+        mode = provider_name(args.provider)
+        if mode == "gemini" and not os.environ.get("GEMINI_API_KEY"):
             ap.error("--real needs GEMINI_API_KEY (in .env at the repository root or in the environment)")
-        llm = GeminiLLM(os.environ["GEMINI_API_KEY"], os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
+        llm, timeout_s = make_llm(mode), agent_timeout_s(mode)
     else:
-        llm = MockLLM()
+        mode, llm, timeout_s = "mock", MockLLM(), 30
     retriever, rows = Retriever(), []
     log = JsonlLog(Path(tempfile.mkdtemp()) / "tools.jsonl")
-    delay = args.delay if args.delay is not None else (4.0 if args.real else 0.0)
+    delay = args.delay if args.delay is not None else (4.0 if mode == "gemini" else 0.0)
     for n, line in enumerate((HERE / "prompts.jsonl").read_text().splitlines()):
         if n and delay:
             time.sleep(delay)
@@ -126,7 +128,7 @@ def main():
         store = SessionStore(":memory:")
         sid = store.create_session()
         store.save_snapshot(sid, json.loads((HERE / "fixtures" / f"{p['fixture']}.json").read_text()))
-        agent = Agent(llm, build_server(store, sid, retriever), log)
+        agent = Agent(llm, build_server(store, sid, retriever), log, timeout_s=timeout_s)
         t0, ok_plan, used, plan = time.time(), True, [], {"actions": [], "confidence": None}
         stale_note = "\n\nWARNING: the game snapshot is stale; lower your confidence." if p.get("stale") else ""  # same text as the gateway
         try:
@@ -147,14 +149,14 @@ def main():
                      "tool_ok": not missing and (p["category"] != "knowledge" or set(used) == {"search_game_knowledge"})})
     total_actions = sum(r["actions"] for r in rows)
     stale_rows = [r for r in rows if r["stale"] and r["confidence"] is not None]
-    summary = {"mode": "real" if args.real else "mock", "prompts": len(rows),
+    summary = {"mode": mode, "prompts": len(rows),
                "actions_proposed": total_actions,
                "invalid_action_rate": round(sum(r["invalid_actions"] for r in rows) / total_actions, 3) if total_actions else None,
                "stale_low_confidence_rate": round(sum(r["confidence"] <= 0.5 for r in stale_rows) / len(stale_rows), 3) if stale_rows else None,
                "tool_accuracy": round(sum(r["tool_ok"] for r in rows) / len(rows), 3),
                "valid_plan_rate": round(sum(r["valid_plan"] for r in rows) / len(rows), 3),
                "avg_latency_s": round(sum(r["latency_s"] for r in rows) / len(rows), 3), "rows": rows}
-    out = Path(args.out)
+    out = Path(args.out) if args.out else HERE / ("results.json" if mode == "mock" else f"results_{mode}.json")
     if out.is_dir():  # a folder is fine too: write results.json (+ .csv, _table.md) inside it
         out = out / "results.json"
     out.write_text(json.dumps(summary, indent=1))

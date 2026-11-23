@@ -52,13 +52,14 @@ copy ..\.env.example ..\.env     # then put your GEMINI_API_KEY in .env (the gat
 python rag/build_index.py        # optional: embeddings for hybrid retrieval
 ```
 A Gemini API key can be created at https://aistudio.google.com/apikey (free tier).
+Local model instead (no key, no internet): install Ollama, `ollama pull qwen2.5:7b`, set `LLM_PROVIDER=ollama` in `.env`.
 
 ## 5. Run and test
 ```bash
 # from the repository root
 python -m pytest -q ai evaluation                           # 88 tests, no network, no API key needed
-uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs GEMINI_API_KEY)
-python evaluation/run_eval.py                               # offline mock run; add --real for Gemini
+uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs GEMINI_API_KEY, or LLM_PROVIDER=ollama)
+python evaluation/run_eval.py                               # offline mock run; add --real (and --provider gemini|ollama) for a real model
 dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)
 ```
 Windows shortcut: double-click `tools/run_gateway.bat` (same command as the uvicorn line).

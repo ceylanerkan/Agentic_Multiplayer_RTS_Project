@@ -52,7 +52,7 @@ public class EntityVisuals : MonoBehaviour
         var l = new GameObject(name + "_Label");
         label = l.AddComponent<TextMeshPro>();
         var font = DefaultFont(); if (font != null) label.font = font; // an unset font gives a NullReferenceException
-        label.fontSize = building != null ? 11f : 8f;   // about 25-35 px high at the default camera distance
+        label.fontSize = building != null ? 12f : 11f;   // units too: their HP line was too small to read (play test 2026-11-23)
         label.alignment = TextAlignmentOptions.Center;
         label.rectTransform.sizeDelta = new Vector2(30f, 5f);  // wide enough that names never wrap
         label.outlineWidth = 0.25f; label.outlineColor = new Color32(0, 0, 0, 255);
@@ -101,12 +101,12 @@ public class EntityVisuals : MonoBehaviour
     {
         var data = GameDataProvider.Get();
         if (unit != null && unit.Object != null && unit.Object.IsValid && data.Units.TryGetValue(unit.TypeKey.ToString(), out var u))
-            label.text = Pretty(u.Key) + "\n<size=70%>" + Mathf.CeilToInt(unit.Hp) + "/" + u.Hp + "</size>";
+            label.text = Pretty(u.Key) + "\n<size=90%>" + Mathf.CeilToInt(unit.Hp) + "/" + u.Hp + "</size>";
         else if (building != null && building.Object != null && building.Object.IsValid && data.Buildings.TryGetValue(building.TypeKey.ToString(), out var b))
-            label.text = Pretty(b.Key) + "\n<size=70%>" + (building.Completed ? Mathf.CeilToInt(building.Hp) + "/" + b.Hp
+            label.text = Pretty(b.Key) + "\n<size=90%>" + (building.Completed ? Mathf.CeilToInt(building.Hp) + "/" + b.Hp
                                                                           : "building " + Mathf.RoundToInt(building.BuildProgress * 100f) + "%") + "</size>";
         else if (node != null && node.Object != null && node.Object.IsValid)
-            label.text = Pretty(node.Resource) + "\n<size=70%>" + Mathf.CeilToInt(node.Amount) + "</size>";
+            label.text = Pretty(node.Resource) + "\n<size=90%>" + Mathf.CeilToInt(node.Amount) + "</size>";
     }
 
     /// <summary>"raider_boat" -> "Raider Boat" (rule in RTS.Core, tested). Also used by SelectionPanel.</summary>

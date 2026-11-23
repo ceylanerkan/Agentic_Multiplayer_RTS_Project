@@ -1,5 +1,5 @@
 @echo off
-rem Starts the AI gateway for the Unity AI panel (needs GEMINI_API_KEY in .env, packages from ai/requirements.txt).
+rem Starts the AI gateway for the Unity AI panel (needs GEMINI_API_KEY in .env, or LLM_PROVIDER=ollama; packages from ai/requirements.txt).
 cd /d "%~dp0.."
 rem use the virtual environment from docs/setup.md section 4 when it exists (its packages are not in the global Python)
 set PY=python

@@ -15,7 +15,7 @@ public class AiGatewayClient
     readonly int timeoutSeconds;
     string token;
 
-    public AiGatewayClient(string baseUrl = "http://127.0.0.1:8765", int timeoutSeconds = 40)
+    public AiGatewayClient(string baseUrl = "http://127.0.0.1:8765", int timeoutSeconds = 130)   // longer than the gateway's agent timeout (120 s with a local model)
     {
         this.baseUrl = baseUrl.TrimEnd('/');
         this.timeoutSeconds = timeoutSeconds;
