@@ -62,7 +62,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     void Update()
     {
         TryRegister();
-        if (Runner == null || !Runner.IsRunning || !Runner.IsServer) return;
+        if (Runner == null || !Runner.IsRunning || !Runner.IsServer || SceneLoading) return;
         foreach (var p in Runner.ActivePlayers)
         {
             if (players.ContainsKey(p)) continue;
@@ -77,12 +77,16 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
         }
     }
 
+    // Fusion refuses a synchronous Spawn while its scene manager is still loading (NetworkObjectProviderDefault returns Retry and
+    // Spawn throws "Failed to load prefab synchronously"); Update spawns the base as soon as the load is finished.
+    bool SceneLoading => Runner.SceneManager != null && Runner.SceneManager.IsBusy;
+
     /// <summary>Why the host could not spawn a base (shown by the AI panel); null when all went well.</summary>
     public static string SpawnError;
 
     public void PlayerJoined(PlayerRef player)
     {
-        if (!Runner.IsServer || players.ContainsKey(player)) return; // already has a base (also called from Update)
+        if (!Runner.IsServer || SceneLoading || players.ContainsKey(player)) return; // already has a base (also called from Update)
         MatchEnd.Reset();
         // first free slot, decided once here and stored in NetworkPlayerState.Slot (not recomputed from player ids)
         var taken = new List<int>();

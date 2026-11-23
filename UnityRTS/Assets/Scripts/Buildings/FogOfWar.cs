@@ -27,6 +27,8 @@ public class FogOfWar : MonoBehaviour
         w = resolution; h = Mathf.Max(8, Mathf.RoundToInt(resolution * aspect));
         tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
         pixels = new Color32[w * h];
+        for (int i = 0; i < pixels.Length; i++) pixels[i] = new Color32(0, 0, 0, 150); // dark until the local player exists (a new texture is white)
+        tex.SetPixels32(pixels); tex.Apply(false);
         quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         Destroy(quad.GetComponent<Collider>()); // must not block raycasts
         quad.transform.SetParent(transform, false);
