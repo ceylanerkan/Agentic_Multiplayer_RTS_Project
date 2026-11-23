@@ -1,6 +1,6 @@
 # Report
 
-`report.md` is the IEEE-structured report (Abstract, I-XII). Open items are marked **[TODO live]** (numbers from the live Gemini run,
+`report.md` is the IEEE-structured report (Abstract, I-XII). Open items are marked **[TODO live]** (numbers from the live run with the local LLM,
 two-instance test results, demo video link), plus the author line and the instructor approval note at the top.
 
 Export to PDF (A4, two columns, needs pandoc and a LaTeX engine):

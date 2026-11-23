@@ -3,7 +3,7 @@
 **CSE-377 Game Programming, final project report (IEEE structure).**
 Author: *[student name and number]*. Team size: one student (written instructor approval: *[date / mention]*).
 
-> Draft status: sections marked **[TODO live]** need numbers from the live Gemini run or screenshots from the
+> Draft status: sections marked **[TODO live]** need numbers from the live run with the local LLM or screenshots from the
 > Unity editor. Everything else describes code that exists in this repository.
 
 ## Abstract
@@ -11,8 +11,8 @@ Author: *[student name and number]*. Team size: one student (written instructor 
 We built a small two-player real-time strategy game in Unity 6 with Photon Fusion 2 in Host Mode. Players gather
 wood, food and gold, build a base, train a counter-based army and fleet, advance one age and win by destroying the
 opponent's Town Center. On top of the game sits an AI Strategic Commander. The player asks a question; Unity sends a
-visibility-filtered snapshot to a Python gateway; a Gemini agent decides which of seven read-only MCP tools to call,
-retrieves game knowledge with a local RAG index, and returns a schema-validated action plan. Nothing happens until the
+visibility-filtered snapshot to a Python gateway; an agent with a local LLM (Ollama, `qwen2.5:7b`) decides which of seven read-only MCP
+tools to call, retrieves game knowledge with a local RAG index, and returns a schema-validated action plan. Nothing happens until the
 player approves the plan, and an approved plan travels through the same authoritative command path as manual play.
 We describe the design, the multiplayer authority model, the MCP and RAG components, the security boundaries around
 hidden information, and an evaluation with a fixed prompt set.
@@ -78,7 +78,7 @@ Unity (host or client, Fusion 2)                      Python (ai/)
  AiCommanderPanel <-- AiAnswer <------------------------------  validates snapshot, saves it (SQLite)
  Approve -> GameActionValidator -> CommandRelay RPC                  |
           -> host authority                                          v
-                                                       Agent loop <-> Gemini (function calling)
+                                                       Agent loop <-> local LLM in Ollama (tool calling)
                                                           | MCP over stdio
                                                           v
                                                        MCP server: 7 read-only tools -> snapshot, RAG
@@ -155,7 +155,8 @@ agent can explain them.
 | `estimate_plan_cost` | total cost, missing resources, population check for up to 10 items |
 | `search_game_knowledge` | RAG over game knowledge (top 1-5 chunks with source ids) |
 
-**Agent loop.** The gateway runs a provider-neutral loop (maximum 6 steps, 30 s). The model decides which tools to
+**Agent loop.** The gateway runs a provider-neutral loop (maximum 6 steps, 120 s). The LLM runs on the player's machine in
+Ollama, so no API key and no internet connection are needed; the gateway loads the model when it starts. The model decides which tools to
 call; every call is logged as JSON (tool, arguments, start and end time, status, result count). A compound question
 such as "What should I do about the cavalry at NorthGate?" typically calls the enemy tool, the resource tool, the
 knowledge tool and the cost tool, while "What does Iron Weapons do?" calls only the knowledge tool. Tests with a
@@ -233,7 +234,7 @@ integrity of the game state and (3) the player's consent.
 4. *Triple validation of plans.* JSON Schema in the gateway, `GameActionValidator` at approval time, host authority in
    the RPC handler. The host also checks what a client cannot see: a technology already queued in another building is
    refused (it would be paid twice), and a building can only go on a free build slot in the validated zone.
-5. *Bounded behaviour.* Maximum 6 agent steps, 30 s, clamped `top_k`, limited query and question length, 20 events.
+5. *Bounded behaviour.* Maximum 6 agent steps, 120 s, clamped `top_k`, limited query and question length, 20 events.
 6. *Prompt injection.* Tool results and retrieved text are marked as data and the system prompt says so; suspicious
    questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,
    because no tool can return it.
@@ -241,8 +242,8 @@ integrity of the game state and (3) the player's consent.
 **Tests.** Security tests S1-S17 are listed in `evaluation/security-tests.md`: injection question, extra hidden field,
 missing or wrong token, identity switch across two sessions, tool call with a player id, oversized `top_k` and query,
 a poisoned knowledge chunk, invalid plans (five kinds), a snapshot contract test between Unity's export and the
-schema, and re-validation after the state changed. **[TODO live]** Rows marked TODO in that file need the live Gemini
-run.
+schema, and re-validation after the state changed. **[TODO live]** Rows marked TODO in that file need the live run
+with the local LLM.
 
 **Known limitation: client-side fog of war.** Fusion interest management is off, so each client receives all networked
 objects and hides enemies only visually. A modified client can read hidden positions. Fixing this would need
@@ -262,7 +263,7 @@ the validator on the fixture state), and the share of stale-state answers with c
 
 *Table II. Offline run with the scripted mock model (`python evaluation/run_eval.py`).*
 
-| Metric | Mock | Live Gemini |
+| Metric | Mock | Live (local `qwen2.5:7b`) |
 |---|---|---|
 | Prompts | 21 | 21 |
 | Tool-call accuracy | 100% | **[TODO live]** |
@@ -279,7 +280,7 @@ rejected by the validator, which is the intended behaviour and the observed limi
 literal player request even when it is illegal, so the validator is necessary.** **[TODO live]** Add the observed
 failures of the real model (for example a missing prerequisite or a wrong zone) and the 2-3 slowest prompts.
 
-*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S17; most are automated, the live Gemini column is open).
+*Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S17; most are automated, the live column is open).
 
 **Unity side.** 53 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
 event log, production queue, tech effects, snapshot assembly, approval, the decision log and the contract between the
@@ -334,8 +335,8 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | Photon Fusion | 2.0.13 (Host Mode) |
 | Unity packages | AI Navigation 2.0.12, Input System 1.19.0, Newtonsoft JSON 3.2.2, Test Framework 1.6.0, uGUI 2.0.0, ParrelSync |
 | Python | 3.10+ |
-| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0, `jsonschema` >= 4.23, `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
-| LLM | Gemini (default `gemini-2.5-flash`, configurable) |
+| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0 (optional, only for the Gemini adapter), `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
+| LLM | Local: Ollama 0.40 with `qwen2.5:7b` (default). A Gemini adapter exists but is not used |
 
 **C. Tests.** Python: `python -m pytest -q ai evaluation` (88 tests, no network, no API key). C#: Unity Test Runner,
 EditMode, assembly `RTS.Tests.EditMode` (54 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
