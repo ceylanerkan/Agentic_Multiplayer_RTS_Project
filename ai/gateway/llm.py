@@ -61,8 +61,28 @@ class GeminiLLM(LLM):
 
 
 # 4096 is enough for a question with all tools (about 2000 tokens) and leaves more of the model on a 6 GB GPU than 8192
-OPTIONS = {"temperature": 0, "num_ctx": 4096}
+# num_predict: a small model sometimes never stops writing (one question ran into the 120 s timeout); a plan needs about 100 tokens
+OPTIONS = {"temperature": 0, "num_ctx": 4096, "num_predict": 500}
 KEEP_ALIVE = "30m"   # the default (5 min) unloads the model between two questions of a match
+
+
+def plan_grammar(schema):
+    """The plan schema in the form Ollama can enforce: its grammar ignores if/then, so a RESEARCH action without tech_type
+    slipped through. Here each action_type is its own variant with its required fields, and $refs are resolved."""
+    defs, fields = schema["$defs"], schema["$defs"]["action"]["properties"]
+
+    def resolve(prop):
+        return {"type": "string", "enum": defs[prop["$ref"].split("/")[-1]]["enum"]} if "$ref" in prop else prop
+
+    variants = []
+    for rule in schema["$defs"]["action"]["allOf"]:
+        name = rule["if"]["properties"]["action_type"]["const"]
+        props = {"action_type": {"type": "string", "enum": [name]},
+                 **{k: resolve(fields[k]) for k in rule["then"]["required"]}, "reason": fields["reason"]}
+        variants.append({"type": "object", "properties": props, "required": list(props), "additionalProperties": False})
+    props = {k: schema["properties"][k] for k in ("summary", "confidence", "evidence")}
+    props["actions"] = {"type": "array", "maxItems": schema["properties"]["actions"]["maxItems"], "items": {"anyOf": variants}}
+    return {"type": "object", "properties": props, "required": list(props), "additionalProperties": False}
 
 
 class OllamaLLM(LLM):
@@ -91,8 +111,9 @@ class OllamaLLM(LLM):
                 "keep_alive": KEEP_ALIVE, "options": OPTIONS}
         if len(history) > 1 and history[-1]["role"] == "user":  # the agent's repair retry: force the plan schema
             from gateway.agent import PLAN_SCHEMA
-            body["format"] = PLAN_SCHEMA
+            body["format"] = plan_grammar(PLAN_SCHEMA)
         else:
+            body["options"] = {**OPTIONS, "num_predict": 250}  # cut off a runaway answer early; the repair step then writes the plan
             body["tools"] = [{"type": "function", "function": {
                 "name": t["name"], "description": t["description"], "parameters": t["schema"]}} for t in tools]
         req = urllib.request.Request(self.url, json.dumps(body).encode(), {"Content-Type": "application/json"})
