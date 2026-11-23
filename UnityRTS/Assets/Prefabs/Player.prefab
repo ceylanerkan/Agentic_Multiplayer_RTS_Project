@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &790129152190289334
+--- !u!1 &2706799936052339126
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,10 +8,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8947105291772645833}
-  - component: {fileID: 6788977598735000445}
-  - component: {fileID: 4047423159378113854}
-  - component: {fileID: 3630352994320311082}
+  - component: {fileID: 1490044803000935628}
+  - component: {fileID: 2890784098939558646}
+  - component: {fileID: 1326740254082023038}
+  - component: {fileID: 613787129767887784}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -19,13 +19,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8947105291772645833
+--- !u!4 &1490044803000935628
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 790129152190289334}
+  m_GameObject: {fileID: 2706799936052339126}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -34,33 +34,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6788977598735000445
+--- !u!114 &2890784098939558646
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 790129152190289334}
+  m_GameObject: {fileID: 2706799936052339126}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
-  SortKey: 4232706950
+  SortKey: 3473209
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 4047423159378113854}
-  - {fileID: 3630352994320311082}
+  - {fileID: 1326740254082023038}
+  - {fileID: 613787129767887784}
   ForceRemoteRenderTimeframe: 0
---- !u!114 &4047423159378113854
+--- !u!114 &1326740254082023038
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 790129152190289334}
+  m_GameObject: {fileID: 2706799936052339126}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70e31f8694be338468ab91b2887e5225, type: 3}
@@ -75,13 +75,13 @@ MonoBehaviour:
   _Age: 0
   _Result: 0
   _TechMask: 0
---- !u!114 &3630352994320311082
+--- !u!114 &613787129767887784
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 790129152190289334}
+  m_GameObject: {fileID: 2706799936052339126}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f003360be0789aa4eb385ebf14634c56, type: 3}
