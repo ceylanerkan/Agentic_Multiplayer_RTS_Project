@@ -651,6 +651,14 @@ namespace RTS.Tests
             Assert.AreEqual("EastForest", z.ZoneAt(65 + 6, -30 + 6));
             Assert.AreEqual("SouthField", z.ZoneAt(0 - 5, -35 + 5));
             Assert.AreEqual("WestMine", z.ZoneAt(-65 - 7, -30 + 7));
+            // small forest of each base (2 x 2, spacing 4): inside the own base and at least 8 outside the build slots
+            foreach (int side in new[] { -1, 1 })
+                foreach (int x in new[] { 87, 91 })
+                    foreach (int tz in new[] { 23, 27 })
+                    {
+                        Assert.AreEqual(side < 0 ? "P1Base" : "P2Base", z.ZoneAt(x * side, tz));
+                        Assert.GreaterOrEqual(x - (65 + 14), 8, "tree too close to the outer build slots");
+                    }
         }
 
         [Test]

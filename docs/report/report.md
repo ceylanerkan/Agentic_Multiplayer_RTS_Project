@@ -36,11 +36,12 @@ evaluation, lessons learned, conclusion and the appendix.
 
 ## II. Game Design
 
-**Setting.** One symmetric map with seven land zones (P1Base, P2Base, NorthGate, SouthField, EastForest, WestMine,
+**Setting.** One map with mirrored bases and seven land zones (P1Base, P2Base, NorthGate, SouthField, EastForest, WestMine,
 Center) and three water zones along the north edge (P1Harbor, OpenSea, P2Harbor). Every point of the map belongs to
 exactly one of the ten zones; the zones are the vocabulary shared by the game, the snapshot and the AI plans.
 
-**Economy.** Three finite resources: wood (trees), food (berry bushes), gold (mines). A Villager gathers 0.6 units per
+**Economy.** Three finite resources: wood (trees), food (berry bushes), gold (mines). Most wood is in EastForest and most
+gold in WestMine; each base also has a small forest of 4 trees, so both players can start with nearby wood. A Villager gathers 0.6 units per
 second, carries 10 and must walk back to a Town Center to deposit. Each player starts with one Town Center, three
 Villagers and 200 wood, 200 food, 100 gold. Population is capped at 50: the Town Center and every House give +5.
 

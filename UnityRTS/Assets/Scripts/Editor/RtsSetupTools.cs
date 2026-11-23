@@ -211,6 +211,8 @@ public static class RtsSetupTools
         PlaceNodes(nodeRoot.transform, "Tree", new Vector3(65, 0, -30), 8, 6f);
         PlaceNodes(nodeRoot.transform, "BerryBush", new Vector3(0, 0, -35), 6, 5f);
         PlaceNodes(nodeRoot.transform, "GoldMine", new Vector3(-65, 0, -30), 5, 7f);
+        // small forest on the outer side of each base (2 x 2, mirrored), clear of the build slots: early wood is equally near
+        foreach (int side in new[] { -1, 1 }) PlaceNodes(nodeRoot.transform, "Tree", new Vector3(89 * side, 0, 27), 4, 4f, 2);
 
         // spawner
         var spawn = new GameObject("Spawner"); spawn.transform.SetParent(root.transform);
@@ -372,13 +374,13 @@ public static class RtsSetupTools
         Save(go, name);
     }
 
-    static void PlaceNodes(Transform parent, string prefabName, Vector3 centre, int count, float spacing)
+    static void PlaceNodes(Transform parent, string prefabName, Vector3 centre, int count, float spacing, int columns = 3)
     {
         var prefab = Prefab(prefabName);
         for (int i = 0; i < count; i++)
         {
             var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
-            inst.transform.position = centre + new Vector3((i % 3 - 1) * spacing, 0f, (i / 3 - 1) * spacing);
+            inst.transform.position = centre + new Vector3((i % columns - (columns - 1) * 0.5f) * spacing, 0f, (i / columns - 1) * spacing);
             // stand on the ground (y = 0): lift by half the mesh height instead of a fixed offset
             inst.transform.position += Vector3.up * inst.GetComponent<Renderer>().bounds.extents.y;
         }

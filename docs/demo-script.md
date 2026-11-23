@@ -20,7 +20,7 @@ Controls: **WASD / arrows** move the camera, **mouse wheel** zooms, **left click
   screens, HP in the selection panel drops identically.
 
 ## 2. Resource and production
-- Select a Villager, right-click a tree in `EastForest`: it walks, gathers 10, walks back, the **Wood** counter in the HUD rises.
+- Select a Villager, right-click a tree of the small forest in your own base: it walks, gathers 10, walks back, the **Wood** counter in the HUD rises.
 - Select a Villager, click **Build House** in the selection panel, move the green ghost onto a build slot, click. The
   Villager builds it (progress in the panel and on the building's label). Population capacity goes 5 -> 10 in the HUD.
 - Select the Town Center, click **Train Villager**: the queue progress appears; the Villager spawns when it finishes.

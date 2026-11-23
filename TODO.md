@@ -7,8 +7,8 @@ the final deliverables. Scripts are in `UnityRTS/Assets/Scripts/`; rule code is 
 compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 
 ## Open decisions
-- [ ] Q-1120-2 (MORNING.md): `weaknesses` in units.json that have no matching `strengths`; recommended: align them (no gameplay change).
-- [ ] Q-1120-1 (MORNING.md): resource layout favours each side unevenly (wood only near P2, gold only near P1); recommended: a small forest in each base.
+- [x] (A, done 2026-11-23) Q-1120-2 (MORNING.md): `weaknesses` in units.json that have no matching `strengths`; recommended: align them (no gameplay change).
+- [x] (B, done 2026-11-23) Q-1120-1 (MORNING.md): resource layout favours each side unevenly (wood only near P2, gold only near P1); recommended: a small forest in each base.
 - [ ] Get written instructor approval for the one-person team (assignment asks for 2 students). Mention it in the report.
 
 ## [You] 1. Rebuild the generated scenes and prefabs (fixes from UNITY_FEEDBACK 2026-11-18 and 2026-11-19)
@@ -68,7 +68,7 @@ compile errors the first time you open them: paste them into UNITY_FEEDBACK.md.
 ## Agent work still open
 - [ ] Night 16-18 of `docs/nightly-plan.md`: fixes from the next UNITY_FEEDBACK.md entries (four code reviews and the
       2026-11-18/19 feedback are done), the final consistency pass after the last Unity test, and the submission checklist on the last run.
-- [ ] Q-1120-1 answer: if B, a small forest in each base (`RtsSetupTools`, design brief, `rules.md`, map EditMode test).
+- [x] (done 2026-11-23) Q-1120-1 answer: if B, a small forest in each base (`RtsSetupTools`, design brief, `rules.md`, map EditMode test).
 - [ ] Known gaps to decide after the play test: unit pathing around obstacles (straight lines now), ships on a NavMesh agent type (zone rule is used instead), gather/attack animations, sound.
       Graphics stay placeholders on purpose (team discs + labels give the readability); say so in the demo.
 

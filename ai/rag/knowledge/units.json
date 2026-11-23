@@ -12,7 +12,7 @@
     "requires": [],
     "stats": {"hp": 25, "attack": 3, "armor": 0, "range": 0.8, "speed": 3.5, "line_of_sight": 7},
     "strengths": [],
-    "weaknesses": ["spearman", "archer", "cavalry", "warship"],
+    "weaknesses": ["cavalry", "warship"],
     "description": "Economic unit. Gathers wood, food and gold (carries 10 per trip) and constructs buildings. Must return resources to a Town Center to deposit them. Very weak in combat."
   },
   {
@@ -76,7 +76,7 @@
     "requires": ["barracks"],
     "stats": {"hp": 40, "attack": 2, "armor": 0, "range": 1.0, "speed": 6.0, "line_of_sight": 12},
     "strengths": [],
-    "weaknesses": ["spearman", "archer"],
+    "weaknesses": [],
     "description": "Fast, cheap explorer with the longest line of sight of any land unit. Used to reveal the map under fog of war and to watch enemy movements; almost useless in a fight. Needs no gold and is available in Age I."
   },
   {
@@ -108,8 +108,8 @@
     "requires": ["dock"],
     "stats": {"hp": 70, "attack": 6, "armor": 0, "range": 1.0, "speed": 6.0, "line_of_sight": 8},
     "strengths": ["warship"],
-    "weaknesses": ["archer", "catapult"],
-    "description": "Small, fast rowing boat crewed by warriors. Boards enemy ships at close range and deals 1.5x damage to Warships. It moves only on water and, being a melee unit, can only attack ships and Docks. Archers and Catapults on the shore deal 1.5x damage to it. Available in Age I."
+    "weaknesses": ["archer"],
+    "description": "Small, fast rowing boat crewed by warriors. Boards enemy ships at close range and deals 1.5x damage to Warships. It moves only on water and, being a melee unit, can only attack ships and Docks. Archers on the shore deal 1.5x damage to it. Available in Age I."
   },
   {
     "id": "unit_warship_v1",

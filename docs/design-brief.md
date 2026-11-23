@@ -14,19 +14,19 @@ All values below are our own design (not Age of Empires data). The canonical num
 
 ## 2. Rules summary
 
-**Resources:** wood (trees, EastForest), food (berries, SouthField), gold (mines, WestMine).
+**Resources:** wood (trees, EastForest, plus 4 trees in each base), food (berries, SouthField), gold (mines, WestMine).
 Villagers gather 0.6/s, carry 10, deposit at the Town Center.
 **Start:** 1 Town Center, 3 Villagers, 200 wood / 200 food / 100 gold, population 3/5.
 
 | Unit | Domain | Cost | HP | Atk | Armor | Range | Speed | Trained at | Strong vs | Weak vs |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Villager | land | 50F | 25 | 3 | 0 | 0.8 | 3.5 | Town Center | – | everything |
+| Villager | land | 50F | 25 | 3 | 0 | 0.8 | 3.5 | Town Center | – | Cavalry, Warship |
 | Spearman | land | 50F 30W | 50 | 5 | 1 | 1 | 3.2 | Barracks | Cavalry | Archer |
 | Archer | land | 35W 35G | 30 | 5 | 0 | 6 | 3.4 | Barracks | Spearman, Raider Boat | Cavalry, Warship |
 | Cavalry | land | 70F 60G | 100 | 8 | 2 | 1 | 5.5 | Stable (Age II) | Archer, Villager, Catapult | Spearman |
-| Scout | land | 50F 20W | 40 | 2 | 0 | 1 | 6.0 | Barracks | – (line of sight 12) | Spearman, Archer |
+| Scout | land | 50F 20W | 40 | 2 | 0 | 1 | 6.0 | Barracks | – (line of sight 12) | – |
 | Catapult | land | 150W 80G | 80 | 12 | 1 | 8 | 2.0 | Blacksmith (Age II) | Warship, buildings (3×) | Cavalry |
-| Raider Boat | water | 60W 15G | 70 | 6 | 0 | 1 | 6.0 | Dock | Warship | Archer, Catapult |
+| Raider Boat | water | 60W 15G | 70 | 6 | 0 | 1 | 6.0 | Dock | Warship | Archer |
 | Warship | water | 150W 60G | 220 | 9 | 2 | 7 | 3.5 | Dock (Age II) | Archer, Villager | Raider Boat, Catapult |
 
 Damage = max(1, attack × multiplier − armor); multiplier 1.5 when countering, 0.75 when countered. Catapults
