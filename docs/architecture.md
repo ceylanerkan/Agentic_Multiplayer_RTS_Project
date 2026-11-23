@@ -6,7 +6,7 @@ Unity (host/client, Fusion 2)           Python (ai/)
  AiCommanderPanel ◄── AiAnswer ◄───────────────────────────────────  │ validates snapshot schema (unknown fields rejected)
  Approve ► GameActionValidator ► CommandRelay RPC ► host authority     │ saves it in SQLite under the session token
                                                                        ▼
-                                                    Agent loop (≤6 steps, 30 s) ◄─► LLM (Gemini / Ollama / scripted)
+                                                    Agent loop (≤6 steps, 30 s) ◄─► LLM (Ollama local / scripted)
                                                                        │ tool calls
                                                                        ▼
                                                     MCP server: 7 read-only tools ─► SQLite snapshot, RAG retriever

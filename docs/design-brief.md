@@ -1,6 +1,6 @@
 # M1 Design Brief — Agentic Multiplayer RTS
 
-CSE-377 Game Programming · Unity 6 · Photon Fusion 2 (Host Mode) · Python MCP server · Gemini · local RAG
+CSE-377 Game Programming · Unity 6 · Photon Fusion 2 (Host Mode) · Python MCP server · local LLM (Ollama) · local RAG
 
 ## 1. Game concept
 A small two-player, Age-of-Empires-inspired RTS on one symmetric map with a sea along its north edge. Players
@@ -82,7 +82,7 @@ flowchart TD
     P[Player] --> U[Unity 6 client / host]
     U -- "safe snapshot (FilterFor player) + question + session token" --> G[AI Gateway - FastAPI]
     G --> A[Agent runner]
-    A <--> L[Gemini LLM - function calling]
+    A <--> L[Local LLM in Ollama - tool calling]
     A <--> M[MCP client]
     M <--> S[Custom RTS MCP server]
     S --> T1[get_player_resources]

@@ -1,6 +1,6 @@
 """Provider-neutral LLM interface. The agent only knows `LLM.step(...)`.
 
-LLM_PROVIDER in .env picks the model: "gemini" (default, needs GEMINI_API_KEY) or "ollama" (local, no key).
+LLM_PROVIDER in .env picks the model: "ollama" (default: local model, no key) or "gemini" (needs GEMINI_API_KEY).
 """
 import json
 import os
@@ -60,11 +60,22 @@ class GeminiLLM(LLM):
         return LLMReply(text=None if calls else resp.text, tool_calls=calls)
 
 
+# 4096 is enough for a question with all tools (about 2000 tokens) and leaves more of the model on a 6 GB GPU than 8192
+OPTIONS = {"temperature": 0, "num_ctx": 4096}
+KEEP_ALIVE = "30m"   # the default (5 min) unloads the model between two questions of a match
+
+
 class OllamaLLM(LLM):
     """Local model through Ollama's /api/chat with tools (https://ollama.com). Standard library only, no extra package."""
 
     def __init__(self, model, base_url="http://127.0.0.1:11434", timeout_s=120):
         self.model, self.url, self.timeout_s = model, base_url.rstrip("/") + "/api/chat", timeout_s
+
+    def warm_up(self):
+        """Loads the model into memory (about 10 s), so the first question of a match does not wait for it."""
+        body = {"model": self.model, "messages": [], "keep_alive": KEEP_ALIVE, "options": OPTIONS}
+        req = urllib.request.Request(self.url, json.dumps(body).encode(), {"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=self.timeout_s).close()
 
     def step(self, system, history, tools):
         messages = [{"role": "system", "content": system}]
@@ -77,7 +88,7 @@ class OllamaLLM(LLM):
             else:
                 messages.append({"role": "tool", "tool_name": h["name"], "content": json.dumps(h["result"])})
         body = {"model": self.model, "messages": messages, "stream": False,
-                "options": {"temperature": 0, "num_ctx": 8192}}
+                "keep_alive": KEEP_ALIVE, "options": OPTIONS}
         if len(history) > 1 and history[-1]["role"] == "user":  # the agent's repair retry: force the plan schema
             from gateway.agent import PLAN_SCHEMA
             body["format"] = PLAN_SCHEMA
@@ -93,7 +104,7 @@ class OllamaLLM(LLM):
 
 
 def provider_name(provider=None):
-    name = (provider or os.environ.get("LLM_PROVIDER") or "gemini").strip().lower()
+    name = (provider or os.environ.get("LLM_PROVIDER") or "ollama").strip().lower()
     if name not in ("gemini", "ollama"):
         raise ValueError(f"LLM_PROVIDER must be gemini or ollama, not {name!r}")
     return name

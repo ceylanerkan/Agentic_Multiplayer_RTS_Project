@@ -2,7 +2,7 @@
 
 Total time about 12 minutes. Two Windows instances on one machine (or the editor plus one build). Before the demo:
 
-1. Terminal 1, repository root: `uvicorn --factory ai.gateway.app:create_app --port 8765` (needs `GEMINI_API_KEY` in `.env`, or `LLM_PROVIDER=ollama`).
+1. Terminal 1, repository root: `uvicorn --factory ai.gateway.app:create_app --port 8765` (needs a running Ollama; wait for `local model is ready`). Use the Windows builds, not the editor: the GPU is shared with the model.
    For scenario 3 you can start it with `MCP_TRANSPORT=stdio` and a file `SESSION_DB_PATH` to show the real MCP protocol.
 2. Unity: both instances start in the `Menu` scene. Instance A types session name `demo` and clicks **Host**,
    instance B types `demo` and clicks **Join**. Both load `Game`.
@@ -66,5 +66,5 @@ Controls: **WASD / arrows** move the camera, **mouse wheel** zooms, **left click
 
 ## If something fails
 - Gateway not reachable: the AI panel shows "AI gateway error ..."; restart uvicorn, press Ask again.
-- No Gemini quota or internet: set `LLM_PROVIDER=ollama` in `.env` and restart the gateway (local model, slower). If that fails too, play the backup video (`docs/demo-video` / your recording) for scenarios 3-8.
+- Ollama not running: start it (`ollama serve`) and restart the gateway. If that fails, play the backup video (`docs/demo-video` / your recording) for scenarios 3-8.
 - Instance cannot join: both must use the same session name; check the Photon App ID in the Fusion Hub.

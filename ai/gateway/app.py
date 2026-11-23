@@ -1,10 +1,11 @@
 """FastAPI gateway. Unity holds the session token; the LLM never sees it or any player id.
 
-Run (from the repository root): uvicorn --factory ai.gateway.app:create_app --port 8765   (needs GEMINI_API_KEY, or LLM_PROVIDER=ollama; tests inject a ScriptedLLM instead)
+Run (from the repository root): uvicorn --factory ai.gateway.app:create_app --port 8765   (needs a running Ollama, or LLM_PROVIDER=gemini + GEMINI_API_KEY; tests inject a ScriptedLLM instead)
 """
 import os
 import re
 import sys
+import threading
 from pathlib import Path
 
 import jsonschema
@@ -50,10 +51,24 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
     app = FastAPI(title="RTS AI gateway")
     last_plan = {}  # session -> (question, plan) for "ask why"
 
+    def warm_up():
+        # load the models before the first question; a failure here is reported by that question
+        try:
+            retriever.search("warm up")
+            model = get_llm()
+            if hasattr(model, "warm_up"):
+                model.warm_up()
+                print("AI gateway: local model is ready.", flush=True)
+        except Exception as e:
+            print(f"AI gateway: warm-up failed ({type(e).__name__}: {e}). Is Ollama running?", flush=True)
+
     def get_llm():
         if llm:
             return llm
         return make_llm()
+
+    if llm is None:
+        threading.Thread(target=warm_up, daemon=True).start()
 
     def auth(token):
         if not token or not store.session_exists(token):

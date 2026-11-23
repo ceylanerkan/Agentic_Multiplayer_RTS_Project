@@ -48,17 +48,17 @@ cd ai
 python -m venv .venv
 .venv\Scripts\activate          # Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt   # sentence-transformers is large; without it retrieval uses BM25 only
-copy ..\.env.example ..\.env     # then put your GEMINI_API_KEY in .env (the gateway and run_eval load it)
+ollama pull qwen2.5:7b            # local LLM, install Ollama first: https://ollama.com
 python rag/build_index.py        # optional: embeddings for hybrid retrieval
 ```
-A Gemini API key can be created at https://aistudio.google.com/apikey (free tier).
-Local model instead (no key, no internet): install Ollama, `ollama pull qwen2.5:7b`, set `LLM_PROVIDER=ollama` in `.env`.
+The LLM runs locally in Ollama: no API key, no internet. Settings are optional: copy `.env.example` to `.env` to change them
+(for example `LLM_PROVIDER=gemini` with a `GEMINI_API_KEY`).
 
 ## 5. Run and test
 ```bash
 # from the repository root
 python -m pytest -q ai evaluation                           # 88 tests, no network, no API key needed
-uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs GEMINI_API_KEY, or LLM_PROVIDER=ollama)
+uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs a running Ollama)
 python evaluation/run_eval.py                               # offline mock run; add --real (and --provider gemini|ollama) for a real model
 dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)
 ```

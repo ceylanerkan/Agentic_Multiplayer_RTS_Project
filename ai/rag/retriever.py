@@ -47,7 +47,10 @@ class Retriever:
     def _embed_query(self, query):
         if self._embedder is None:
             from sentence_transformers import SentenceTransformer
-            self._embedder = SentenceTransformer(self._model_name)
+            try:
+                self._embedder = SentenceTransformer(self._model_name, local_files_only=True)  # no network: local and fast
+            except Exception:  # not downloaded yet
+                self._embedder = SentenceTransformer(self._model_name)
         return self._embedder.encode([query], normalize_embeddings=True)[0].tolist()
 
     def search(self, query, top_k=3):

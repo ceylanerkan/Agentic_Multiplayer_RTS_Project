@@ -1,5 +1,5 @@
 """Evaluation runner. Mock mode (default) uses a keyword-based fake LLM, so it runs offline and in CI.
-Real mode (--real) uses the model of LLM_PROVIDER (or --provider): gemini needs GEMINI_API_KEY, ollama a local Ollama.
+Real mode (--real) uses the model of LLM_PROVIDER (or --provider): ollama (default) needs a local Ollama, gemini GEMINI_API_KEY.
 
 Metrics: tool-call accuracy (all expected tools called, no tool outside the allowed set), valid-plan rate, latency,
 invalid-action rate (actions that the Python copy of GameActionValidator rejects on the fixture state) and the confidence
