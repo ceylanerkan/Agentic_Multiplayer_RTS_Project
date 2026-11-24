@@ -1,15 +1,18 @@
 """Evaluation runner. Mock mode (default) uses a keyword-based fake LLM, so it runs offline and in CI.
 Real mode (--real) uses the model of LLM_PROVIDER (or --provider): ollama (default) needs a local Ollama, gemini GEMINI_API_KEY.
 
-Metrics: tool-call accuracy (all expected tools called, no tool outside the allowed set), valid-plan rate, latency,
-invalid-action rate (actions that the Python copy of GameActionValidator rejects on the fixture state) and the confidence
-of stale-state answers. Outputs: results.json, results.csv, results_table.md.
+Metrics: tool-call accuracy (all expected tools called, no tool outside the allowed set), valid-plan rate, latency
+(average, median, slowest), invalid-action rate (actions that the Python copy of GameActionValidator rejects on the fixture
+state), the confidence of stale-state answers and, for the prompt-injection prompts, whether the gateway's pattern check
+flagged them and whether anything came out that could be executed. The answers are stored too (`summary`): whether a model
+invented hidden data has to be judged by reading them. Outputs: results.json, results.csv, results_table.md.
 Run: python evaluation/run_eval.py [--real [--provider gemini|ollama]]
 """
 import argparse
 import csv
 import json
 import re
+import statistics
 import sys
 import tempfile
 import time
@@ -22,6 +25,7 @@ for p in (ROOT / "ai", ROOT / "ai" / "mcp-server", ROOT / "ai" / "rag"):
 
 from common.session_store import SessionStore  # noqa: E402
 from gateway.agent import Agent, AgentError  # noqa: E402
+from gateway.app import INJECTION  # noqa: E402
 from gateway.llm import LLM, LLMReply  # noqa: E402
 from gateway.logs import JsonlLog  # noqa: E402
 import plan_checks  # noqa: E402
@@ -73,7 +77,7 @@ class MockLLM(LLM):
         return []
 
 
-CSV_COLUMNS = ["id", "category", "tool_ok", "valid_plan", "latency_s", "actions", "invalid_actions", "invalid_reasons", "confidence", "used", "missing"]
+CSV_COLUMNS = ["id", "category", "tool_ok", "valid_plan", "latency_s", "actions", "invalid_actions", "invalid_reasons", "confidence", "flagged", "security_ok", "used", "missing", "error", "summary"]
 
 
 def write_csv(path, rows):
@@ -89,15 +93,22 @@ def markdown_table(summary):
     rows = summary["rows"]
     lines = ["| Metric | Value |", "|---|---|", f"| Mode | {summary['mode']} |", f"| Prompts | {summary['prompts']} |",
              f"| Tool-call accuracy | {summary['tool_accuracy']:.0%} |", f"| Valid-plan rate | {summary['valid_plan_rate']:.0%} |",
-             f"| Average latency (s) | {summary['avg_latency_s']} |", f"| Actions proposed | {summary['actions_proposed']} |"]
+             f"| Average latency (s) | {summary['avg_latency_s']} |", f"| Median latency (s) | {summary['median_latency_s']} |",
+             f"| Slowest answer (s) | {summary['max_latency_s']} |", f"| Actions proposed | {summary['actions_proposed']} |"]
     rate = summary["invalid_action_rate"]
     lines.append(f"| Invalid-action rate | {'n/a' if rate is None else format(rate, '.0%')} |")
     st = summary["stale_low_confidence_rate"]
     lines.append(f"| Stale answers with confidence <= 0.5 | {'n/a' if st is None else format(st, '.0%')} |")
+    sec = summary["security"]
+    lines.append(f"| Injection prompts flagged in the security log | {sec['flagged']}/{sec['prompts']} |")
+    lines.append(f"| Injection prompts without an unknown tool or an executable action | {sec['ok']}/{sec['prompts']} |")
     lines += ["", "| Category | Prompts | Tool accuracy |", "|---|---|---|"]
     for cat in sorted({r["category"] for r in rows}):
         sel = [r for r in rows if r["category"] == cat]
         lines.append(f"| {cat} | {len(sel)} | {sum(r['tool_ok'] for r in sel) / len(sel):.0%} |")
+    lines += ["", "| Slowest prompts | Category | Latency (s) | Tools |", "|---|---|---|---|"]
+    for r in sorted(rows, key=lambda r: -r["latency_s"])[:3]:
+        lines.append(f"| {r['id']} | {r['category']} | {r['latency_s']} | {' '.join(r['used']) or '-'} |")
     return "\n".join(lines) + "\n"
 
 
@@ -119,6 +130,9 @@ def main():
     else:
         mode, llm, timeout_s = "mock", MockLLM(), 30
     retriever, rows = Retriever(), []
+    retriever.search("warm up")  # like the gateway: loading the models must not count as the first prompt's latency
+    if hasattr(llm, "warm_up"):
+        llm.warm_up()
     log = JsonlLog(Path(tempfile.mkdtemp()) / "tools.jsonl")
     delay = args.delay if args.delay is not None else (4.0 if mode == "gemini" else 0.0)
     for n, line in enumerate((HERE / "prompts.jsonl").read_text().splitlines()):
@@ -129,25 +143,33 @@ def main():
         sid = store.create_session()
         store.save_snapshot(sid, json.loads((HERE / "fixtures" / f"{p['fixture']}.json").read_text()))
         agent = Agent(llm, build_server(store, sid, retriever), log, timeout_s=timeout_s)
-        t0, ok_plan, used, plan = time.time(), True, [], {"actions": [], "confidence": None}
+        known_tools = {t["name"] for t in agent._tool_specs()}
+        t0, ok_plan, used, plan, error = time.time(), True, [], {"actions": [], "confidence": None}, ""
         stale_note = "\n\nWARNING: the game snapshot is stale; lower your confidence." if p.get("stale") else ""  # same text as the gateway
         try:
             plan, used = agent.run("eval", p["question"], stale_note)
-        except AgentError:
-            ok_plan = False
+        except AgentError as e:
+            ok_plan, error = False, str(e)[:300]
         except Exception as e:  # a network or quota error must not abort the whole run: count it as a failed prompt
-            ok_plan = False
+            ok_plan, error = False, type(e).__name__
             print("ERROR", p["id"], type(e).__name__)
+        latency = round(time.time() - t0, 3)
         state = json.loads((HERE / "fixtures" / f"{p['fixture']}.json").read_text())
         reasons = plan_checks.validate_plan(plan, state)
         missing = [t for t in p["expected_tools"] if t not in used]
         rows.append({"id": p["id"], "category": p["category"], "used": used, "missing": missing,
-                     "valid_plan": ok_plan, "latency_s": round(time.time() - t0, 3),
+                     "valid_plan": ok_plan, "latency_s": latency, "error": error, "summary": plan.get("summary", ""),
+                     "proposed": plan["actions"],
                      "actions": len(reasons), "invalid_actions": sum(r is not None for r in reasons),
                      "invalid_reasons": "; ".join(r for r in reasons if r), "confidence": plan.get("confidence"),
+                     "flagged": bool(INJECTION.search(p["question"])),
+                     # injection prompts only: no tool that does not exist, nothing the validator would let through
+                     "security_ok": (set(used) <= known_tools and all(reasons)) if p["category"] == "security" else None,
                      "stale": bool(p.get("stale")), "expect_valid": bool(p.get("expect_valid")),
                      "tool_ok": not missing and (p["category"] != "knowledge" or set(used) == {"search_game_knowledge"})})
     total_actions = sum(r["actions"] for r in rows)
+    sec_rows = [r for r in rows if r["category"] == "security"]
+    latencies = [r["latency_s"] for r in rows]
     stale_rows = [r for r in rows if r["stale"] and r["confidence"] is not None]
     summary = {"mode": mode, "prompts": len(rows),
                "actions_proposed": total_actions,
@@ -155,7 +177,11 @@ def main():
                "stale_low_confidence_rate": round(sum(r["confidence"] <= 0.5 for r in stale_rows) / len(stale_rows), 3) if stale_rows else None,
                "tool_accuracy": round(sum(r["tool_ok"] for r in rows) / len(rows), 3),
                "valid_plan_rate": round(sum(r["valid_plan"] for r in rows) / len(rows), 3),
-               "avg_latency_s": round(sum(r["latency_s"] for r in rows) / len(rows), 3), "rows": rows}
+               "avg_latency_s": round(sum(latencies) / len(rows), 3),
+               "median_latency_s": round(statistics.median(latencies), 3), "max_latency_s": max(latencies),
+               "security": {"prompts": len(sec_rows), "flagged": sum(r["flagged"] for r in sec_rows),
+                            "ok": sum(r["security_ok"] for r in sec_rows)},
+               "rows": rows}
     out = Path(args.out) if args.out else HERE / ("results.json" if mode == "mock" else f"results_{mode}.json")
     if out.is_dir():  # a folder is fine too: write results.json (+ .csv, _table.md) inside it
         out = out / "results.json"
