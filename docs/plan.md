@@ -6,8 +6,8 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 ## Şu an ne durumda
 | Bölüm (puan) | Durum | Eksik |
 |---|---|---|
-| RTS oyunu (20) | Tek oyunculu çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis | savaş, araştırma, gemi, mancınık, kazanma denenmedi |
-| Multiplayer (15) | Kod hazır | **iki oyuncu hiç denenmedi** |
+| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat | araştırma, Stable, gemi, mancınık denenmedi |
+| Multiplayer (15) | 24 Kasım: iki build ile kontrol listesinin hepsi oldu (öğrenci denedi) | M3 için ekran kaydı |
 | MCP (15) | 7 araç, testler, log | Inspector ekran görüntüleri |
 | LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı (11-30 sn) | knowledge sorusu ve RAG kanıtı Unity'de denenmedi |
 | Onay + güvenlik (10) | Approve, Reject ve validator reddi oyunda görüldü | gizli bilgi (injection) sorusu, Ask why |
@@ -25,18 +25,20 @@ Son push: `7979713` (kod); 24 Kasım commit'leri henüz push edilmedi. Tam `pyte
 
 ## Yapılacaklar
 
-### 1. İki oyuncu (24-25 Kasım) - sıradaki iş, en riskli
+### 1. İki oyuncu (24 Kasım) - bitti, yalnız kayıt eksik
 - [x] Claude: ağ kodu okundu, testten önce üç düzeltme: Photon bölgesi kodda `eu` (build ve editör ayrı bölge seçip "GameNotFound"
       vermesin), runner ayrı nesnede (host düşünce GameLauncher silinmesin), maç bitince AI paneli hata vermiyor.
-- [ ] Öğrenci: gateway'i kapat, `ollama stop qwen2.5:7b`. Unity: `Tools > RTS > Set build window (1280x720, windowed)`,
+- [x] Öğrenci: gateway'i kapat, `ollama stop qwen2.5:7b`. Unity: `Tools > RTS > Set build window (1280x720, windowed)`,
       `File > Build Profiles` > Windows > Build And Run, klasör `UnityRTS/Builds/Win`.
-- [ ] Öğrenci: build'de `test1` > Host, editörde Play > `test1` > Join.
-- [ ] Kontrol: P1/P2 doğru, üsler iki uçta, hareket iki ekranda aynı, saldırıda HP iki ekranda aynı düşüyor, sis düşmanı
+- [x] Öğrenci: build'de `test1` > Host, editörde Play > `test1` > Join.
+- [x] Kontrol: P1/P2 doğru, üsler iki uçta, hareket iki ekranda aynı, saldırıda HP iki ekranda aynı düşüyor, sis düşmanı
       saklıyor, TC yıkılınca Victory/Defeat, biri çıkınca diğeri Menu'ye dönüyor.
       Kazanma için ordu gerekmez: 3 köylü düşman TC'sine gidip sağ tık, TC ~3 dakikada düşer. Sert kapanmada 10 sn bekle.
-- [ ] Claude: çıkan hataları düzelt. Öğrenci: kısa kayıt al (M3 kanıtı).
+- [x] Claude: logda tek kusur, oturum kapanırken HUD'un bir karelik hatası; düzeltildi (yeni build'de görülecek).
+- [ ] Öğrenci: kısa kayıt al (M3 kanıtı). `tools/run_two_players.bat` build'i iki kez, ayrı loglarla açar.
 
-### 2. Oyunun denenmemiş kısımları (25 Kasım)
+### 2. Oyunun denenmemiş kısımları (24-25 Kasım) - sıradaki iş
+- [x] Claude: kaynak toplamayı beklememek için editör menüsü `Tools > RTS > Test: +1000 resources` (build'e girmez).
 - [ ] Öğrenci: araştırma (Age II, Iron Weapons), Stable/Cavalry, Blacksmith/Catapult, Dock/gemi, TC'den Villager.
 - [ ] Claude: hatalar. Bir özellik zor düzeliyorsa (gemiler önce) demodan çıkarılır, raporda sınır olarak yazılır.
 

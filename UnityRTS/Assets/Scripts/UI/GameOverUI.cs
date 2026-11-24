@@ -20,6 +20,8 @@ public class GameOverUI : MonoBehaviour
             state = CommandRelay.Local.GetComponent<NetworkPlayerState>();
             if (state == null) return;
         }
+        // the session is shutting down: the object still exists for a frame, but its [Networked] values can no longer be read
+        if (state.Object == null || !state.Object.IsValid) return;
         if (state.Result == 0 || panel == null || panel.activeSelf) return;
         panel.SetActive(true);
         if (resultText != null) resultText.text = state.Result == 1 ? "VICTORY" : "DEFEAT";
