@@ -85,33 +85,21 @@ public class SelectionPanel : MonoBehaviour
             {
                 var k = uk; var udef = data.Units[k];
                 var action = new PlanAction { ActionType = "TRAIN_UNIT", UnitType = k };
-                AddButton("Train " + EntityVisuals.Pretty(k), udef, action, state, () => relay.SendTrain(k, b.Object.Id), null, () => QueueBlock(b, false));
+                AddButton("Train " + EntityVisuals.Pretty(k), udef, action, state, () => relay.SendTrain(k, b.Object.Id), null, () => QueueBlock(b, k, false));
             }
             foreach (var tk in bdef.Researches)
             {
                 var k = tk; var tdef = data.Techs[k];
                 var action = new PlanAction { ActionType = "RESEARCH", TechType = k };
-                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k), () => QueueBlock(b, true) ?? ResearchingElsewhere(k, me));
+                AddButton("Research " + EntityVisuals.Pretty(k), tdef, action, state, () => relay.SendResearch(k, b.Object.Id), () => state.HasTech(k), () => NetworkBuilding.BeingResearched(k, me) ? "already being researched" : QueueBlock(b, k, true));
             }
         }
     }
 
-    // The real queue lives on the host; the networked summary (QueueCount, CurrentKey) is enough for the two common refusals.
-    static string QueueBlock(NetworkBuilding b, bool research)
+    // the building may have been destroyed since the buttons were made
+    static string QueueBlock(NetworkBuilding b, string key, bool research)
     {
-        if (b == null || b.Object == null || !b.Object.IsValid) return null;
-        if (b.QueueCount >= ProductionQueue.MaxLength) return "queue is full";
-        if (!research && b.CurrentIsResearch && b.CurrentKey.ToString() == ProductionQueue.BlockingResearch) return "cannot train while researching Age II";
-        return null;
-    }
-
-    // the host refuses a technology that one of the player's buildings is already researching (it would be paid twice)
-    static string ResearchingElsewhere(string tech, Fusion.PlayerRef owner)
-    {
-        foreach (var o in NetworkBuilding.All)
-            if (o.Owner == owner && o.Object != null && o.Object.IsValid && o.CurrentIsResearch && o.CurrentKey.ToString() == tech)
-                return "already being researched";
-        return null;
+        return b == null || b.Object == null || !b.Object.IsValid ? null : b.WhyNotQueue(key, research);
     }
 
     void AddButton(string label, DefRecord def, PlanAction action, NetworkPlayerState state, System.Action onClick, System.Func<bool> alreadyDone = null, System.Func<string> blocked = null)

@@ -39,6 +39,9 @@ Son push: `7979713` (kod); 24 Kasım commit'leri henüz push edilmedi. Tam `pyte
 
 ### 2. Oyunun denenmemiş kısımları (24-25 Kasım) - sıradaki iş
 - [x] Claude: kaynak toplamayı beklememek için editör menüsü `Tools > RTS > Test: +1000 resources` (build'e girmez).
+- [x] Claude: denemeden önce kod okundu, beş düzeltme: Dock kıyıya alındı (Raider Boat yetişemiyordu), gemiler yan yana çıkıyor,
+      Age II neden başlamıyor düğmede yazıyor, AI onayı kuyruk/yer engelini "sent" demeden söylüyor, bir planda iki BUILD iki köylüye gidiyor.
+      Unity derleyicisiyle derlendi, oyunda denenmedi.
 - [ ] Öğrenci: araştırma (Age II, Iron Weapons), Stable/Cavalry, Blacksmith/Catapult, Dock/gemi, TC'den Villager.
 - [ ] Claude: hatalar. Bir özellik zor düzeliyorsa (gemiler önce) demodan çıkarılır, raporda sınır olarak yazılır.
 
@@ -65,6 +68,8 @@ Son push: `7979713` (kod); 24 Kasım commit'leri henüz push edilmedi. Tam `pyte
 - [ ] Teslim.
 
 ## Rapora girecek gerçek gözlemler
+- Kural "Dock denizden de vurulur" diyordu ama Dock kıyıdan 5 m içerideydi, Raider Boat 4 m'ye vuruyordu: yerleşim 3 m kuzeye alındı.
+- AI onayı, host'un sessizce reddedeceği eylemlere de "sent" diyordu (boş yapı yeri yok, Age II araştırılırken eğitim).
 - Değerlendirme ilk soruda RAG modelinin yüklenmesini de ölçüyordu (30 sn'yi aşıp başarısız sayıldı); artık önce ısınıyor.
 - AI düşünürken maç bitince panel yok edilmiş düğmelere erişiyordu (`MissingReferenceException`).
 - 19-23 Kasım: üs oluşmadı (GameSpawner runner'a kayıtlı değildi; sonra sahne yüklenirken Spawn reddedildi). İkisi de düzeldi.

@@ -80,7 +80,28 @@ public class NetworkBuilding : NetworkBehaviour
     }
 
     // ---- production queue (host only) ----
-    public string WhyNotQueue(string key, bool isResearch) { return queue.WhyNot(key, isResearch); }
+    /// <summary>Why this building cannot queue the item, or null. The queue lives on the host; a client judges by the networked
+    /// summary, which is enough for the button texts and the AI approval (the host checks again).</summary>
+    public string WhyNotQueue(string key, bool isResearch)
+    {
+        if (HasStateAuthority) return queue.WhyNot(key, isResearch);
+        if (QueueCount >= ProductionQueue.MaxLength) return "queue is full";
+        if (QueueCount == 0) return null;
+        string current = CurrentKey.ToString();
+        if (!isResearch && CurrentIsResearch && current == ProductionQueue.BlockingResearch) return "cannot train while researching Age II";
+        if (isResearch && key == ProductionQueue.BlockingResearch && !CurrentIsResearch) return "finish training before researching Age II";
+        return null;
+    }
+
+    /// <summary>Is one of this player's buildings researching the technology now? The host would refuse it (paid twice).</summary>
+    public static bool BeingResearched(string techKey, PlayerRef owner)
+    {
+        foreach (var b in All)
+            if (b.Object != null && b.Object.IsValid && b.Owner == owner
+                && (b.HasStateAuthority ? b.IsResearching(techKey) : b.CurrentIsResearch && b.CurrentKey.ToString() == techKey)) return true;
+        return false;
+    }
+
     /// <summary>Host only: is this technology already in this building's queue?</summary>
     public bool IsResearching(string techKey) { return queue.IsResearching(techKey); }
 
@@ -116,12 +137,13 @@ public class NetworkBuilding : NetworkBehaviour
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
             float clear = FootprintHalf() + 1.5f;   // next to the building, not inside or on top of it
             // four spots in a row, so units trained one after another do not stand inside each other
-            Vector3 spawn = transform.position + new Vector3(clear, 0, -clear - (trainedCount++ % 4) * 1.6f);
+            int spot = trainedCount++ % 4;
+            Vector3 spawn = transform.position + new Vector3(clear, 0, -clear - spot * 1.6f);
             if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null)
             {
                 // Ships appear in the player's own harbor (a water zone), not on the shore next to the Dock.
                 Vector3 harbor;
-                if (ZoneMap.Instance.TryGetCentre(st != null && st.Slot == 2 ? "P2Harbor" : "P1Harbor", out harbor)) spawn = harbor;
+                if (ZoneMap.Instance.TryGetCentre(st != null && st.Slot == 2 ? "P2Harbor" : "P1Harbor", out harbor)) spawn = harbor + new Vector3((spot - 1.5f) * 4f, 0, 0);
             }
             GameSpawner.Instance.SpawnUnit(Owner, item.Key, spawn);
             GameEvents.Report(Owner, "UNIT_TRAINED", transform.position, item.Key);

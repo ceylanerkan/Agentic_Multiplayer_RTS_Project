@@ -201,7 +201,7 @@ public static class RtsSetupTools
             for (int i = 0; i < 2; i++)
             {
                 var s = new GameObject("Slot_" + (side < 0 ? "P1" : "P2") + "_Coast" + i); s.transform.SetParent(slotRoot.transform);
-                s.transform.position = b + new Vector3(-8 + i * 16, 0, 15);
+                s.transform.position = b + new Vector3(-8 + i * 16, 0, 18); // at the waterline (coast z = 45): a Raider Boat (reach 4) must reach the Dock
                 s.AddComponent<BuildSlot>().coastal = true;
             }
         }

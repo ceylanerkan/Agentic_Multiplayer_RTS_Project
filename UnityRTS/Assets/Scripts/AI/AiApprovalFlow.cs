@@ -26,13 +26,14 @@ public static class AiApprovalFlow
 
         var results = ApprovalEvaluator.Evaluate(actions, relay.GetComponent<NetworkPlayerState>().ToCore(), validator);
         var entry = new DecisionEntry { PlanId = Log.NextPlanId(), Decision = "approved", GameTime = Time.time };
-        int done = 0, skipped = 0; string firstReason = null; note = null;
+        int done = 0, skipped = 0; string firstReason = null; note = null; builders.Clear();
         for (int i = 0; i < actions.Count; i++)
         {
             entry.Actions.Add(ActionCosts.Describe(actions[i], data));
             entry.Validator.Add(results[i].Ok ? "OK" : results[i].Reason);
+            blocked = null;
             if (results[i].Ok && Execute(actions[i], relay)) done++;
-            else { skipped++; if (firstReason == null) firstReason = results[i].Ok ? "no suitable building or unit" : results[i].Reason; }
+            else { skipped++; if (firstReason == null) firstReason = results[i].Ok ? blocked ?? "no suitable building or unit" : results[i].Reason; }
         }
         Save(entry);
         string result = skipped == 0 ? "Approved " + entry.PlanId + ": " + done + " action(s) sent."
@@ -57,7 +58,9 @@ public static class AiApprovalFlow
         catch (System.Exception ex) { Debug.LogWarning("Decision log not written: " + ex.Message); }
     }
 
-    static string note;   // extra remark for the status line (set by Execute)
+    static string note;      // extra remark for the status line (set by Execute)
+    static string blocked;   // why the host would refuse an action that passed the validator (set by Execute)
+    static readonly HashSet<NetworkUnit> builders = new HashSet<NetworkUnit>(); // Villagers this plan already sent to a building site
 
     // ---- executing one validated action ----
     static bool Execute(PlanAction a, CommandRelay relay)
@@ -75,6 +78,8 @@ public static class AiApprovalFlow
                 {
                     if (left == 0) break;
                     if (b.Owner != me || !b.Completed || !data.Buildings[b.TypeKey.ToString()].Trains.Contains(a.UnitType)) continue;
+                    string why = b.WhyNotQueue(a.UnitType, false); // e.g. the Town Center is researching Age II
+                    if (why != null) { blocked = why; continue; }
                     int space = System.Math.Max(0, System.Math.Min(left, ProductionQueue.MaxLength - b.QueueCount));
                     for (int i = 0; i < space; i++) relay.SendTrain(a.UnitType, b.Object.Id);
                     left -= space; queued += space;
@@ -85,7 +90,9 @@ public static class AiApprovalFlow
             }
             case "RESEARCH":
             {
-                var b = BestBuilding(me, x => data.Buildings[x.TypeKey.ToString()].Researches.Contains(a.TechType));
+                if (NetworkBuilding.BeingResearched(a.TechType, me)) { blocked = "already being researched"; return false; }
+                var b = BestBuilding(me, x => data.Buildings[x.TypeKey.ToString()].Researches.Contains(a.TechType)
+                                              && (blocked = x.WhyNotQueue(a.TechType, true)) == null);
                 if (b == null) return false;
                 relay.SendResearch(a.TechType, b.Object.Id);
                 return true;
@@ -95,6 +102,9 @@ public static class AiApprovalFlow
                 var builder = PickVillager(me);
                 Vector3 centre;
                 if (builder == null || ZoneMap.Instance == null || !ZoneMap.Instance.TryGetCentre(a.TargetZone, out centre)) return false;
+                if (BuildSlot.All.Count > 0 && BuildSlot.FindNear(a.TargetZone, a.BuildingType == "dock", centre) == null)
+                    { blocked = "no free build slot in " + a.TargetZone; return false; }
+                builders.Add(builder);
                 relay.SendBuild(a.BuildingType, centre, a.TargetZone, builder.Object.Id); // the host snaps to the nearest free slot
                 return true;
             }
@@ -124,15 +134,17 @@ public static class AiApprovalFlow
 
     static NetworkUnit PickVillager(Fusion.PlayerRef me)
     {
-        NetworkUnit any = null;
+        NetworkUnit any = null, busy = null;
         foreach (var u in NetworkUnit.All)
         {
             var g = u.GetComponent<VillagerGatherer>();
             if (u.Owner != me || g == null) continue;
-            if (!g.Busy) return u;     // prefer an idle Villager
             if (any == null) any = u;
+            if (builders.Contains(u)) continue; // a second BUILD of the same plan would pull it off the first site
+            if (!g.Busy) return u;              // prefer an idle Villager
+            if (busy == null) busy = u;
         }
-        return any;
+        return busy != null ? busy : any;
     }
 
     static bool InGroup(NetworkUnit u, string group)

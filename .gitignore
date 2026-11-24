@@ -78,6 +78,8 @@ evaluation/results.json
 
 # Build-time copy of ai/rag/knowledge (see KnowledgeBuildCopy.cs)
 UnityRTS/Assets/StreamingAssets/knowledge/
+UnityRTS/Assets/StreamingAssets.meta
+UnityRTS/Assets/StreamingAssets/knowledge.meta
 UnityRTS/Assets/StreamingAssets/knowledge.meta
 ai/exports/
 evaluation/results.csv

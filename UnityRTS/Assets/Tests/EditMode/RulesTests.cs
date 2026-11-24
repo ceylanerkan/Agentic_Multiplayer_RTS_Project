@@ -643,7 +643,7 @@ namespace RTS.Tests
                 for (int i = 0; i < 6; i++)   // normal slots
                     Assert.AreEqual(own, z.ZoneAt(bx - 14 + (i % 3) * 14, bz + (i < 3 ? -12 : 0)), "slot " + i);
                 for (int i = 0; i < 2; i++)   // coastal slots must be in the own (land) base, or the Dock can never be built
-                    Assert.AreEqual(own, z.ZoneAt(bx - 8 + i * 16, bz + 15), "coastal slot " + i);
+                    Assert.AreEqual(own, z.ZoneAt(bx - 8 + i * 16, bz + 18), "coastal slot " + i);
                 Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(bx, 65)));   // ships spawn at the harbour centre
                 Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(bx, 44)));  // the coast is at z = 45
             }
