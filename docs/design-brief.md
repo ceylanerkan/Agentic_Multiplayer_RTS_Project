@@ -45,7 +45,7 @@ their own domain; ranged units (Archer, Catapult, Warship) shoot across the shor
 | Technology | Cost | Where | Requires | Effect |
 |---|---|---|---|---|
 | Age II | 400F 100G | Town Center | Barracks | unlocks Stable, Cavalry, Catapult, Warship, Fletching |
-| Iron Weapons | 100F 50G | Blacksmith | – | +2 attack for military |
+| Iron Weapons | 100F 50G | Blacksmith | – | +2 attack for Spearman, Archer and Cavalry |
 | Fletching | 60F 60W | Blacksmith | Age II | Archer +1 range/LOS |
 | Horse Collar | 75F 75W | Town Center | – | +20% food gather |
 

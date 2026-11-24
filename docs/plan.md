@@ -1,4 +1,4 @@
-# Güncel plan (23 Kasım 2026 gecesi itibarıyla)
+# Güncel plan (24 Kasım 2026 sabahı itibarıyla)
 
 Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.md`, `MORNING.md` ve
 `docs/nightly-plan.md` eski gece ajanından kalma; silinmeyecek ama oradaki adımlara (ör. Gemini anahtarı) uyulmayacak.
@@ -14,7 +14,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | Değerlendirme (10) | Araç hazır | 21 soruluk canlı çalıştırma |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
-Son push: `7979713` (kod). Tam `pytest` en son PR #5'te çalıştı (88 geçti), ondan sonraki değişikliklerde çalışmadı.
+Son push: `7979713` (kod); 24 Kasım commit'leri henüz push edilmedi. Tam `pytest` en son PR #5'te çalıştı (88 geçti), ondan sonraki değişikliklerde çalışmadı.
 
 ## Kararlar
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
@@ -26,11 +26,14 @@ Son push: `7979713` (kod). Tam `pytest` en son PR #5'te çalıştı (88 geçti),
 ## Yapılacaklar
 
 ### 1. İki oyuncu (24-25 Kasım) - sıradaki iş, en riskli
+- [x] Claude: ağ kodu okundu, testten önce üç düzeltme: Photon bölgesi kodda `eu` (build ve editör ayrı bölge seçip "GameNotFound"
+      vermesin), runner ayrı nesnede (host düşünce GameLauncher silinmesin), maç bitince AI paneli hata vermiyor.
 - [ ] Öğrenci: gateway'i kapat, `ollama stop qwen2.5:7b`. Unity: `Tools > RTS > Set build window (1280x720, windowed)`,
       `File > Build Profiles` > Windows > Build And Run, klasör `UnityRTS/Builds/Win`.
 - [ ] Öğrenci: build'de `test1` > Host, editörde Play > `test1` > Join.
 - [ ] Kontrol: P1/P2 doğru, üsler iki uçta, hareket iki ekranda aynı, saldırıda HP iki ekranda aynı düşüyor, sis düşmanı
       saklıyor, TC yıkılınca Victory/Defeat, biri çıkınca diğeri Menu'ye dönüyor.
+      Kazanma için ordu gerekmez: 3 köylü düşman TC'sine gidip sağ tık, TC ~3 dakikada düşer. Sert kapanmada 10 sn bekle.
 - [ ] Claude: çıkan hataları düzelt. Öğrenci: kısa kayıt al (M3 kanıtı).
 
 ### 2. Oyunun denenmemiş kısımları (25 Kasım)
@@ -38,7 +41,7 @@ Son push: `7979713` (kod). Tam `pytest` en son PR #5'te çalıştı (88 geçti),
 - [ ] Claude: hatalar. Bir özellik zor düzeliyorsa (gemiler önce) demodan çıkarılır, raporda sınır olarak yazılır.
 
 ### 3. AI değerlendirmesi (26 Kasım)
-- [ ] Claude: `evaluation/run_eval.py`'ye **ortanca ve en yavaş gecikme** (ödev 12.1 şartı) ve prompt-injection sonucu.
+- [x] Claude: `evaluation/run_eval.py`'ye **ortanca ve en yavaş gecikme** (ödev 12.1 şartı) ve prompt-injection sonucu. (Modeller artık ölçümden önce ısınıyor.)
 - [ ] Claude: `C:\anaconda\python evaluation/run_eval.py --real` (21 soru, tahminen 10 dk, Unity kapalı). Çıktı
       `evaluation/results_ollama.*`, commit'lenir. `MCP_TRANSPORT=stdio` ile bir kez gerçek MCP çalıştırması.
 - [ ] Claude: 7 MCP aracının geçerli/geçersiz girdi logu; `evaluation/security-tests.md` canlı sütunu.
@@ -47,8 +50,8 @@ Son push: `7979713` (kod). Tam `pytest` en son PR #5'te çalıştı (88 geçti),
       Ask why.
 
 ### 4. Teslim dosyaları (27-28 Kasım)
-- [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda), C# test sayısı her yerde **54** (47 ve 53 yazan
-      satırlar var), design brief'te Iron Weapons satırı ("military" değil: Spearman, Archer, Cavalry).
+- [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
+- [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda).
 - [ ] Claude: raporu IEEE A4 Word/PDF yap, `docs/slides-outline.md`'den sunum (.pptx). `docs/demo-script.md`'yi son hâle göre düzelt.
 - [ ] Öğrenci: rapora ad, numara ve hoca onayı; yedek demo videosu (9 senaryo, `docs/demo-script.md`).
 - [ ] Öğrenci: hocaya tek kişilik takım için yazılı onay sor (PDF 2 kişi diyor). Claude mesaj taslağını yazar.
@@ -60,6 +63,8 @@ Son push: `7979713` (kod). Tam `pytest` en son PR #5'te çalıştı (88 geçti),
 - [ ] Teslim.
 
 ## Rapora girecek gerçek gözlemler
+- Değerlendirme ilk soruda RAG modelinin yüklenmesini de ölçüyordu (30 sn'yi aşıp başarısız sayıldı); artık önce ısınıyor.
+- AI düşünürken maç bitince panel yok edilmiş düğmelere erişiyordu (`MissingReferenceException`).
 - 19-23 Kasım: üs oluşmadı (GameSpawner runner'a kayıtlı değildi; sonra sahne yüklenirken Spawn reddedildi). İkisi de düzeldi.
 - Model araştırma planında `tech_type` yazmadı (Ollama grameri if/then'i uygulamıyor): her eylem için ayrı varyant yapıldı.
 - Model durmadan yazıp 120 sn sınırına takıldı: cevap uzunluğu sınırlandı, plan onarım adımında yazdırılıyor.
