@@ -62,11 +62,13 @@ public class AiCommanderPanel : MonoBehaviour
         try
         {
             var (answer, error) = await client.Ask(snap, q);
+            if (this == null) return;   // the match ended while the AI was thinking: the panel is gone
             SetBusy(false, error ?? "");
             if (answer != null) ShowAnswer(answer);
         }
         catch (Exception e)   // "_ = Ask()" would swallow it and leave the panel busy for the rest of the match
         {
+            if (this == null) return;
             Debug.LogException(e);
             SetBusy(false, "Error: " + e.GetType().Name + " (see Console)");
         }
@@ -79,11 +81,13 @@ public class AiCommanderPanel : MonoBehaviour
         try
         {
             var (answer, error) = await client.AskWhy();
+            if (this == null) return;
             SetBusy(false, error ?? "");
             if (answer != null) statusText.text = "Why: " + answer.Plan.Summary; // read-only explanation, no actions to approve
         }
         catch (Exception e)
         {
+            if (this == null) return;
             Debug.LogException(e);
             SetBusy(false, "Error: " + e.GetType().Name + " (see Console)");
         }

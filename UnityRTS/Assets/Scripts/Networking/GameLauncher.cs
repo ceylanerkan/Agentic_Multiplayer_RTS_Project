@@ -19,6 +19,8 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
 
     [SerializeField] string menuSceneName = "Menu";
     [SerializeField] string gameSceneName = "Game";
+    // Without a fixed region each process pings and picks its own "best" one; a room in another region is "not found".
+    [SerializeField] string photonRegion = "eu";
 
     NetworkRunner runner;
     bool matchRunning;        // true once two players are in the Game scene
@@ -58,10 +60,13 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
         sessionName = string.IsNullOrWhiteSpace(sessionName) ? "room1" : sessionName.Trim();
         returningToMenu = false; matchRunning = false; LastMessage = "";
 
-        runner = gameObject.AddComponent<NetworkRunner>();
+        // On its own object: Fusion destroys the runner's GameObject when the session ends (e.g. the host left), and this
+        // launcher must survive that to load the menu. The runner makes its object DontDestroyOnLoad itself.
+        var runnerObject = new GameObject("NetworkRunner");
+        runner = runnerObject.AddComponent<NetworkRunner>();
         runner.ProvideInput = true;
         runner.AddCallbacks(this);
-        var sceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
+        var sceneManager = runnerObject.AddComponent<NetworkSceneManagerDefault>();
 
         var args = new StartGameArgs
         {
@@ -70,6 +75,13 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
             PlayerCount = PlayerSlots.MaxPlayers,
             SceneManager = sceneManager,
         };
+        // in code, not in PhotonAppSettings.asset: that file holds the App ID and is not in git
+        if (!string.IsNullOrEmpty(photonRegion) && Fusion.Photon.Realtime.PhotonAppSettings.TryGetGlobal(out var photon))
+        {
+            var app = photon.AppSettings.GetCopy();
+            app.FixedRegion = photonRegion;
+            args.CustomPhotonAppSettings = app;
+        }
         // Only the host picks the scene; clients load whatever the host loaded.
         if (mode == GameMode.Host) args.Scene = SceneRef.FromIndex(BuildIndexOf(gameSceneName));
 
@@ -107,15 +119,10 @@ public class GameLauncher : MonoBehaviour, INetworkRunnerCallbacks
     async System.Threading.Tasks.Task CleanUp()
     {
         matchRunning = false;
-        if (runner != null)
-        {
-            runner.RemoveCallbacks(this);
-            var r = runner; runner = null;
-            await r.Shutdown(destroyGameObject: false); // the runner sits on this DontDestroyOnLoad object: do not destroy it
-            Destroy(r);
-            var sm = GetComponent<NetworkSceneManagerDefault>();
-            if (sm != null) Destroy(sm);
-        }
+        var r = runner; runner = null;
+        if (r == null) return; // Fusion already shut it down and destroyed it
+        r.RemoveCallbacks(this);
+        await r.Shutdown(); // also destroys the runner's own GameObject
     }
 
     // ---- INetworkRunnerCallbacks ----
