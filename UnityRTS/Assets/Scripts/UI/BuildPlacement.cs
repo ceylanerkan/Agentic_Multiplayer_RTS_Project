@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Building placement ghost. A UI button calls BeginPlacement("house"). A translucent cube follows the mouse; a building can
+/// Building placement ghost. A UI button calls BeginPlacement("house"). The model on a coloured plate follows the mouse; a building can
 /// stand anywhere on land outside the enemy base where the ground is free, a Dock only on the shore (the ghost snaps to it).
 /// Green = valid and affordable, red = invalid. Left click sends the BUILD command with the selected Villager;
 /// right click or Esc cancels; with Shift the next one can be placed at once. A Wall is drawn: press, move, release; all selected
@@ -26,6 +26,8 @@ public class BuildPlacement : MonoBehaviour
     readonly List<GameObject> pieces = new List<GameObject>(); // ghosts of a wall
     Material badMaterial;
     bool drawing; Vector3 drawStart;
+    float ghostHeight = 2f;
+    readonly List<Material> ghostMaterials = new List<Material>(); readonly List<Color> ghostColours = new List<Color>(); // of the model, tinted green or red
 
     /// <summary>A line for the HUD while placing ("Wall: 12 pieces, 60 wood"), or null.</summary>
     public static string Hint { get; private set; }
@@ -60,7 +62,24 @@ public class BuildPlacement : MonoBehaviour
         }
         ghostMaterial.renderQueue = 3200; // after the fog of war: the colour must stay clear
         ghostRenderer.sharedMaterial = ghostMaterial;
-        if (key != "wall") return;
+        if (key != "wall")
+        {
+            // the plate shows the ground it takes, the model what it will be (without a model: the cube)
+            var model = GlbModel.Spawn(key == "gate" ? "gateframe" : key, null);
+            ghostHeight = ghost.transform.localScale.y;
+            if (model == null) return;
+            ghostHeight = 0.1f;
+            Vector3 size = ghost.transform.localScale; ghost.transform.localScale = new Vector3(size.x * 1.3f, ghostHeight, size.z * 1.3f);
+            model.transform.SetParent(ghost.transform, false);
+            model.transform.localScale = new Vector3(1f / (size.x * 1.3f), 1f / ghostHeight, 1f / (size.z * 1.3f));
+            foreach (var r in model.GetComponentsInChildren<Renderer>())
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++) { mats[i] = new Material(GlbModel.ForTeam(mats[i], false)); ghostMaterials.Add(mats[i]); ghostColours.Add(mats[i].color); }
+                r.sharedMaterials = mats; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            return;
+        }
         ghost.SetActive(false);
         if (badMaterial == null) badMaterial = new Material(ghostMaterial);
         badMaterial.renderQueue = 3200; badMaterial.color = Bad; ghostMaterial.color = Good;
@@ -72,6 +91,8 @@ public class BuildPlacement : MonoBehaviour
     {
         buildingKey = null; drawing = false; Hint = null;
         if (ghost != null) Destroy(ghost);
+        foreach (var m in ghostMaterials) Destroy(m);
+        ghostMaterials.Clear(); ghostColours.Clear();
         foreach (var g in pieces) if (g != null) Destroy(g);
         pieces.Clear();
     }
@@ -94,8 +115,9 @@ public class BuildPlacement : MonoBehaviour
                                         buildingKey == "dock" ? ShoreSnapRadius : SnapRadius, BuildSite.Gap, relay.Object.InputAuthority, out target);
         bool ok = free && CanAfford(relay);
         Vector3 at = free ? target : BuildSite.IsWall(buildingKey) ? new Vector3(WallLine.Snap(point.x), 0, WallLine.Snap(point.z)) : point;
-        ghost.transform.position = new Vector3(at.x, TerrainShape.Surface(at.x, at.z) + ghost.transform.localScale.y * 0.5f - 0.25f, at.z);
+        ghost.transform.position = new Vector3(at.x, TerrainShape.Surface(at.x, at.z) + (ghostHeight < 0.2f ? 0.12f : ghostHeight * 0.5f - 0.25f), at.z);
         ghostMaterial.color = ok ? Good : Bad;
+        for (int i = 0; i < ghostMaterials.Count; i++) ghostMaterials[i].color = ghostColours[i] * (ok ? new Color(0.75f, 1.15f, 0.75f) : new Color(1.2f, 0.42f, 0.40f));
 
         if (ok && mouse.leftButton.wasPressedThisFrame && !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
         {

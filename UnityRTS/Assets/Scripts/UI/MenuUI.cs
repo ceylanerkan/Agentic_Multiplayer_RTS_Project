@@ -25,7 +25,7 @@ public class MenuUI : MonoBehaviour
     Sprite round;
     bool help;
 
-    void Awake() { Instance = this; Build(); }
+    void Awake() { Instance = this; Build(); MenuLandscape.Build(); }
 
     void Start()
     {

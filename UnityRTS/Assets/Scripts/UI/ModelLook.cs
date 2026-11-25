@@ -238,6 +238,24 @@ public class ModelLook : MonoBehaviour
         holder.SetParent(seat, true); // moves with the back of the horse
     }
 
+    /// <summary>A model without a game object behind it (menu): unit or building key.</summary>
+    public static GameObject Statue(string key, Transform parent, Vector3 at, float turn, float size, bool enemy)
+    {
+        Units.TryGetValue(key, out var d);
+        var go = d != null && d.Person ? Person(d.File, parent) : GlbModel.Spawn(d != null ? d.File : key, parent);
+        if (go == null) return null;
+        go.transform.localPosition = at; go.transform.localRotation = Quaternion.Euler(0, turn, 0);
+        if (d != null && d.Person) { Fit(go.transform, d.Height * size); Prepare(go.transform, d); if (d.Spear) GiveSpear(go.transform); }
+        else go.transform.localScale = Vector3.one * size * (d != null ? d.Scale : 1f);
+        foreach (var r in go.GetComponentsInChildren<Renderer>(true))
+        {
+            var mats = r.sharedMaterials;
+            for (int i = 0; i < mats.Length; i++) mats[i] = GlbModel.ForTeam(mats[i], enemy);
+            r.sharedMaterials = mats;
+        }
+        return go;
+    }
+
     // ---- team ----
     public void SetTeam(bool enemy)
     {

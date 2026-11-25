@@ -178,6 +178,7 @@ public static class AutoPlayTest
     static IEnumerator StartMatch()
     {
         yield return For(() => GameLauncher.Instance != null, 30);
+        if (Environment.GetEnvironmentVariable("RTS_AUTOPLAY_LOOKS") == "1") { yield return 1f; Screen("menu", 0f); }
         GameLauncher.Instance.StartHost("autotest", true);   // practice: no second player needed
         yield return For(() => CommandRelay.Local != null && CommandRelay.Local.Object != null && Units("villager").Count == 3 && Done("town_center") != null, 90);
         Check("host session, Town Center and 3 Villagers", ok, ok ? Stock() : "GameLauncher: " + GameLauncher.LastMessage + " / " + GameSpawner.SpawnError);
@@ -373,6 +374,9 @@ public static class AutoPlayTest
         if (d != null) Shot("dock", d.transform.position + new Vector3(0, 30, -30), d.transform.position + new Vector3(0, 0, 12));
     }
 
+    /// <summary>Metres from the shore towards the sea.</summary>
+    static float PastShore(NetworkUnit u) { var p = u.transform.position; return p.z - TerrainShape.CoastZ(p.x); }
+
     static IEnumerator Ships()
     {
         var boat = Units("raider_boat").FirstOrDefault(); var warship = Units("warship").FirstOrDefault(); var archer = Units("archer").FirstOrDefault();
@@ -380,12 +384,12 @@ public static class AutoPlayTest
         // land rule
         Relay.SendMove(boat.Object.Id, new Vector3(-65, 0, 0));
         yield return For(() => !boat.HasMoveTarget, 30);
-        Check("a ship stops at the shore", ok && ZoneLookup.IsWater(Zone(boat.transform.position)), Zone(boat.transform.position) + " z=" + boat.transform.position.z.ToString("0"));
+        Check("a ship stops at the shore", ok && PastShore(boat) > -0.8f, "shore " + PastShore(boat).ToString("0.0") + " m behind it"); // the coast winds, the grid has 1 m cells
         if (archer != null)
         {
             Relay.SendMove(archer.Object.Id, new Vector3(-65, 0, 65));
             yield return For(() => !archer.HasMoveTarget, 60);
-            Check("a land unit stops at the shore", ok && !ZoneLookup.IsWater(Zone(archer.transform.position)), Zone(archer.transform.position) + " z=" + archer.transform.position.z.ToString("0"));
+            Check("a land unit stops at the shore", ok && PastShore(archer) < 0.8f, "shore " + (-PastShore(archer)).ToString("0.0") + " m before it");
         }
         // a Raider Boat must reach every Dock: 2.4 m is about the farthest from the water where one can stand
         var dock = GameSpawner.Instance.SpawnBuilding(Foe, "dock", new Vector3(57, 0, TerrainShape.CoastZ(57) - 2.4f), true);
@@ -669,6 +673,7 @@ public static class AutoPlayTest
         Shot("ships", new Vector3(-58, 8, 46), new Vector3(-58, 0, 57));
         Shot("base", new Vector3(-66, 24, 0), new Vector3(-66, 0, 24));
         RtsCamera.LookAt(V(-68, 8)); yield return 0.5f; Screen("day", 0.30f); yield return 0.5f;
+        BuildPlacement.Instance.BeginPlacement("barracks"); yield return 0.3f; var g = (GameObject)typeof(BuildPlacement).GetField("ghost", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BuildPlacement.Instance); g.transform.position = new Vector3(-60, 1.2f, 4); Shot("ghost", new Vector3(-60, 8, -6), new Vector3(-60, 1, 4)); BuildPlacement.Instance.Cancel();
         RtsCamera.LookAt(V(-96, -10)); yield return 1f; Screen("mountain", 0.30f); yield return 0.5f;
         RtsCamera.LookAt(V(-40, -78)); yield return 2f; Screen("south", 0.30f); yield return 0.5f;
         RtsCamera.LookAt(V(-6, 4)); yield return 2f; Screen("river", 0.30f); yield return 0.5f;
