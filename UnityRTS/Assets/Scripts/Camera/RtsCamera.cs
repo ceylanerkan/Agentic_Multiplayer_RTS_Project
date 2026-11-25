@@ -25,7 +25,7 @@ public class RtsCamera : MonoBehaviour
         float ground = 0f;
         for (int dx = -6; dx <= 6; dx += 6)
             for (int dz = 0; dz <= 12; dz += 6) ground = Mathf.Max(ground, TerrainShape.Surface(p.x + dx, p.z + dz));
-        return ground + Mathf.SmoothStep(5f, 19f, TerrainShape.Outside(p.x, p.z) / 20f);
+        return ground + Mathf.SmoothStep(5f, 19f, TerrainShape.Foot(p.x, p.z) / 20f);
     }
 
     /// <summary>Once, when the local player's Town Center exists: move the camera so that it looks at it (P2 would otherwise start at P1's base).</summary>

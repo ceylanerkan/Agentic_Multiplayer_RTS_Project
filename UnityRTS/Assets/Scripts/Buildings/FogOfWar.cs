@@ -6,12 +6,11 @@ using UnityEngine;
 /// Client-side fog of war for the local player (the network still sends everything: known limitation, see report).
 /// Every 0.25 s: ask VisibilityService which objects the local player sees, hide the renderers of the others,
 /// and paint a low-resolution dark overlay over the map where nothing is seen.
-/// Add it to an empty GameObject in the Game scene and set the map centre and size.
+/// Add it to an empty GameObject in the Game scene.
 /// </summary>
 public class FogOfWar : MonoBehaviour
 {
-    [SerializeField] Vector2 mapCentre = Vector2.zero;
-    [SerializeField] Vector2 mapSize = new Vector2(200, 160);
+    static readonly Vector2 mapCentre = new Vector2(0, 1), mapSize = new Vector2(232, 170); // to the foot of the mountains (TerrainShape.Foot)
     [SerializeField] float interval = 0.25f;
 
     const int Resolution = 128;        // texture pixels along the long side

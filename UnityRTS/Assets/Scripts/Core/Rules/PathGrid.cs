@@ -17,19 +17,19 @@ namespace RTS.Core.Rules
 
         readonly int w, h;
         readonly float minX, minZ;
-        readonly bool[] water, river, blocked; // river: both land units and ships
+        readonly bool[] water, river, rock, blocked; // river: both land units and ships; rock: the mountains, nobody
         // search state, reused: an entry counts only when its stamp is the current search
         readonly float[] cost;
         readonly int[] from, seen, closed;
         int search;
 
-        public PathGrid(float minX, float minZ, float maxX, float maxZ, Func<float, float, bool> isWater, Func<float, float, bool> isRiver = null)
+        public PathGrid(float minX, float minZ, float maxX, float maxZ, Func<float, float, bool> isWater, Func<float, float, bool> isRiver = null, Func<float, float, bool> isRock = null)
         {
             this.minX = minX; this.minZ = minZ;
             w = (int)Math.Ceiling((maxX - minX) / Cell); h = (int)Math.Ceiling((maxZ - minZ) / Cell);
-            water = new bool[w * h]; river = new bool[w * h]; blocked = new bool[w * h];
+            water = new bool[w * h]; river = new bool[w * h]; rock = new bool[w * h]; blocked = new bool[w * h];
             cost = new float[w * h]; from = new int[w * h]; seen = new int[w * h]; closed = new int[w * h];
-            for (int i = 0; i < water.Length; i++) { water[i] = isWater(X(i), Z(i)); river[i] = isRiver != null && isRiver(X(i), Z(i)); }
+            for (int i = 0; i < water.Length; i++) { water[i] = isWater(X(i), Z(i)); river[i] = isRiver != null && isRiver(X(i), Z(i)); rock[i] = isRock != null && isRock(X(i), Z(i)); }
         }
 
         public void SetBlocks(List<Block> blocks)
@@ -61,7 +61,7 @@ namespace RTS.Core.Rules
         /// <summary>Is the cell land for land units or water for ships (buildings do not count)?</summary>
         public bool OwnDomain(float x, float z, bool ship) { int i = Index(x, z); return i >= 0 && Own(i, ship); }
 
-        bool Own(int i, bool ship) { return river[i] || water[i] == ship; }
+        bool Own(int i, bool ship) { return !rock[i] && (river[i] || water[i] == ship); }
 
         bool Free(int i, bool ship) { return i >= 0 && !blocked[i] && Own(i, ship); }
 

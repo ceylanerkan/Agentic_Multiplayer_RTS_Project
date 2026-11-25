@@ -16,7 +16,7 @@ namespace RTS.Core.Rules
     /// </summary>
     public static class BuildSite
     {
-        public const float MapHalfX = 100f, MapMinZ = -70f, MapMaxZ = 80f; // ground and sea of the generated map (RtsSetupTools)
+        public const float MapHalfX = 114f, MapMinZ = -84f, MapMaxZ = 80f; // the sea ends here; the land ends at the mountains (TerrainShape.Rock)
         public const float Gap = 1f;             // free ground between two buildings
         public const float ShoreDistance = 2.5f; // Dock: water is at most this far from its centre (a Raider Boat reaches 4)
 
@@ -25,6 +25,9 @@ namespace RTS.Core.Rules
                                     Func<float, float, string> zoneAt, List<Block> blocks, float gap = Gap)
         {
             if (Math.Abs(x) + halfX > MapHalfX || z - halfZ < MapMinZ) return "outside the map";
+            foreach (float sx in Signs)
+                foreach (float sz in Signs)
+                    if (TerrainShape.Rock(x + sx * halfX, z + sz * halfZ)) return "outside the map";
             string zone = zoneAt(x, z);
             if (zone == null || ZoneLookup.IsWater(zone)) return "buildings stand on land";
             if (zone == (slot == 1 ? "P2Base" : "P1Base")) return "cannot build in the enemy base";

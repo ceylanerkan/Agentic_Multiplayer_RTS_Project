@@ -61,23 +61,24 @@ public class GroundMesh : MonoBehaviour
         GetComponent<MeshCollider>().sharedMesh = solid;
     }
 
-    /// <summary>For the shader: r = how open the place is (dark gullies, bright crests), g = how much it belongs to the mountains.</summary>
+    /// <summary>For the shader: r = how open the place is (dark gullies, bright crests), g = how much it belongs to the mountains, b = the rocks at their foot.</summary>
     Color32[] Shade(Vector3[] v)
     {
         var c = new Color32[v.Length];
         for (int j = 0; j < gridH; j++)
             for (int i = 0; i < gridW; i++)
             {
-                int a = j * gridW + i; float open = 1f, o = TerrainShape.Outside(v[a].x, v[a].z), mountain = 0f;
-                if (o > 0f)
+                int a = j * gridW + i; float open = 1f, o = TerrainShape.Foot(v[a].x, v[a].z), mountain = 0f, scree = 0f;
+                if (o > -2f)
                 {
                     int dx = i < FarColumns || i >= gridW - FarColumns ? 2 : 5; // about 6 m
                     int l = Mathf.Max(i - dx, 0), r = Mathf.Min(i + dx, gridW - 1), b = Mathf.Max(j - 5, 0) * gridW, f = Mathf.Min(j + 5, gridH - 1) * gridW;
                     float higher = (heights[j * gridW + l] + heights[j * gridW + r] + heights[b + i] + heights[f + i] + heights[b + l] + heights[b + r] + heights[f + l] + heights[f + r]) / 8f - heights[a];
                     open = Mathf.Clamp(1f - 0.075f * Mathf.Max(higher, 0f) + 0.03f * Mathf.Clamp(-higher, 0f, 6f), 0.35f, 1.15f);
-                    mountain = Mathf.SmoothStep(0f, 1f, (o + (Mathf.PerlinNoise(v[a].x * 0.077f + 300f, v[a].z * 0.077f + 300f) - 0.5f) * 8f - 3f) / 12f);
+                    mountain = Mathf.SmoothStep(0f, 1f, (o + 1.2f) / 3f);
+                    scree = Mathf.SmoothStep(0f, 1f, (o + 0.5f) / 2f) * (1f - Mathf.SmoothStep(0f, 1f, (o - 5f) / 7f));
                 }
-                c[a] = new Color32((byte)(open * 200f), (byte)(mountain * 255f), 0, 255);
+                c[a] = new Color32((byte)(open * 200f), (byte)(mountain * 255f), (byte)(scree * 255f), 255);
             }
         for (int a = gridW * gridH; a < c.Length; a++) c[a] = new Color32(200, 0, 0, 255);
         return c;

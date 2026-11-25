@@ -82,7 +82,8 @@ namespace RTS.Tests
             Assert.AreEqual("cannot build in the enemy base", why("house", 65, 20));
             Assert.AreEqual("buildings stand on land", why("house", -65, 60));
             Assert.AreEqual("too close to the water", why("house", -65, 44));
-            Assert.AreEqual("outside the map", why("house", -99.5f, 5));
+            Assert.AreEqual("outside the map", why("house", -112.5f, 5));
+            Assert.IsNull(why("house", -97, 5));                                    // the land ends at the foot of the mountains, not before
             Assert.IsNull(why("dock", -80, 43));
             Assert.IsNull(why("dock", 22, 43));                                     // NorthGate lies at the sea too
             Assert.AreEqual("a Dock must stand on the shore", why("dock", -80, 40));
@@ -435,7 +436,7 @@ namespace RTS.Tests
         {
             var s = Fresh();
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "archer", TargetZone = "OpenSea" }, s).Ok);
-            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "warship", TargetZone = "Center" }, s).Ok);
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "warship", TargetZone = "WestMine" }, s).Ok); // no river there
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "warship", TargetZone = "OpenSea" }, s).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, s).Ok);
         }
@@ -704,9 +705,18 @@ namespace RTS.Tests
                 Assert.AreEqual(coast, TerrainShape.CoastZ(-x), 0.001f);
                 Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(x, TerrainShape.ZoneZ(x, coast - 0.3f))), "land at " + x);
                 Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(x, TerrainShape.ZoneZ(x, coast + 0.3f))), "water at " + x);
-                Assert.Greater(TerrainShape.Height(x, coast - 1), TerrainShape.SeaLevel); Assert.Less(TerrainShape.Height(x, coast + 1), TerrainShape.SeaLevel);
+                if (TerrainShape.RiverBank(x, coast - 1) > 6f) Assert.Greater(TerrainShape.Height(x, coast - 1), TerrainShape.SeaLevel); // not at the mouth of the river
+                Assert.Less(TerrainShape.Height(x, coast + 1), TerrainShape.SeaLevel);
             }
             Assert.Less(System.Math.Abs(TerrainShape.Height(-61, 21) - TerrainShape.Height(-69, 29)), 0.35f);
+            // the mountains begin 1..15 m behind the old edge, the same for both halves; the sea is free
+            for (float zz = -60; zz < 40; zz += 3)
+            {
+                Assert.IsFalse(TerrainShape.Rock(98, zz), "free at " + zz); Assert.IsTrue(TerrainShape.Rock(113, zz), "rock at " + zz);
+                Assert.AreEqual(TerrainShape.Foot(105, zz), TerrainShape.Foot(-105, zz), 0.001f);
+                Assert.Greater(TerrainShape.Height(113, zz), TerrainShape.Height(99, zz) + 1f, "a wall of rocks at " + zz);
+            }
+            Assert.IsFalse(TerrainShape.Rock(113, 60));
             // the river: ships sail from the sea to the south edge, land units wade through, banks are dry
             var rivers = new PathGrid(-100, -70, 100, 80, (x, zz) => ZoneLookup.IsWater(z.ZoneAt(x, TerrainShape.ZoneZ(x, zz))), TerrainShape.InRiver);
             rivers.SetBlocks(new List<Block>());

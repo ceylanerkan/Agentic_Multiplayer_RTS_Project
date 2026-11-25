@@ -28,7 +28,7 @@ namespace RTS.Core.Rules
         {
             // own base: a grove on the outer side, a small one on the inner side, berries and two gold mines in front
             new Group("tree", -89, 27, 7, 8, 8, 2.7f), new Group("tree", -38, 31, 3.5f, 6, 4, 2.7f),
-            new Group("berry", -74, 5, 6, 3.5f, 5, 2.4f), new Group("gold", -60, 0, 5, 3, 2, 4.6f),
+            new Group("berry", -74, 5, 6, 3.5f, 5, 2.4f), new Group("gold", -60, 2.5f, 5, 3, 2, 4.6f),
             // outer field: gold and a forest
             new Group("gold", -68, -36, 9, 6, 4, 5f), new Group("tree", -86, -32, 9, 11, 9, 2.7f), new Group("berry", -50, -24, 4, 3, 2, 2.4f),
             // between the players: worth fighting for

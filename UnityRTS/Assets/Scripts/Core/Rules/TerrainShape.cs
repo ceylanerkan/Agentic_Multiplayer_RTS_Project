@@ -65,23 +65,29 @@ namespace RTS.Core.Rules
             float dx = a - 65f, dz = z - 25f;
             h *= 0.2f + 0.8f * Smooth(13f, 30f, (float)Math.Sqrt(dx * dx + dz * dz));
             h += Mountains(x, z, inland);
-            return SeaLevel + (h - SeaLevel) * Smooth(-0.5f, 10f, inland); // the beach
+            float beach = Smooth(-0.5f, 10f, inland), cliff = Smooth(-0.5f, 3f, inland), rocky = Smooth(0f, 3f, Foot(x, z));
+            return SeaLevel + (h - SeaLevel) * (beach + (cliff - beach) * rocky); // the beach, or cliffs where the mountains meet the sea
         }
 
         /// <summary>Where something stands: on the land or, over the sea, on the water.</summary>
         public static float Surface(float x, float z) { return Math.Max(SeaLevel, Height(x, z)); }
 
-        // ---- the mountains around the map, only scenery ----
-        /// <summary>Metres outside the map on the land sides, 0 inside.</summary>
-        public static float Outside(float x, float z)
+        // ---- the mountains around the map; where they begin, the land units' world ends ----
+        /// <summary>Metres behind the foot of the mountains, negative on the map side. The foot winds (x 100..110 and z -70..-80) and is mirrored.</summary>
+        public static float Foot(float x, float z)
         {
-            float ox = Math.Max(Math.Abs(x) - 98f, 0f), oz = Math.Max(-68f - z, 0f);
-            return (float)Math.Sqrt(ox * ox + oz * oz);
+            float a = Math.Abs(x), ox = a - 92f, oz = -62f - z;                              // a rectangle with round corners
+            float d = ox > 0f && oz > 0f ? (float)Math.Sqrt(ox * ox + oz * oz) : Math.Max(ox, oz);
+            if (d < 0f) return d - 13f;
+            return d - 13f - 3.4f * Noise(a / 15f + 3f, z / 15f, 61) - 1.2f * Noise(a / 5f, z / 5f, 62);
         }
+
+        /// <summary>Too steep to walk or build on: the mountains, from just behind their foot.</summary>
+        public static bool Rock(float x, float z) { return Foot(x, z) > 0.6f && z < CoastZ(x) && !InRiver(x, z); }
 
         static float Mountains(float x, float z, float inland)
         {
-            float o = Outside(x, z);
+            float o = Foot(x, z);
             if (o <= 0f) return 0f;
             // the place is shifted by noise: crests and gullies instead of round cones
             float wx = x + 9f * Noise(x / 31f, z / 31f, 11) + 3.2f * Noise(x / 10f, z / 10f, 13), wz = z + 9f * Noise(x / 31f, z / 31f, 12) + 3.2f * Noise(x / 10f, z / 10f, 14);
@@ -96,9 +102,10 @@ namespace RTS.Core.Rules
             float h = p * (0.70f + 0.66f * Ridges(wx / 27f, wz / 27f)) + Smooth(3f, 30f, o) * (2.2f + 3f * Noise(x / 23f, z / 23f, 5));
             float g = 1f - Math.Abs(Noise(wx / 10f + 0.3f, wz / 10f, 45)), fine = 1f - Math.Abs(Noise(wx / 4.7f, wz / 4.7f, 46));
             h += Smooth(4f, 15f, p) * (3.4f * (g * g - 0.55f) + 1.1f * (fine * fine - 0.55f)); // gullies
-            h *= Smooth(0f, 30f, o + 5f * Noise(x / 19f, z / 19f, 7) * Smooth(0f, 10f, o));    // foothills, with an uneven edge
-            if (Math.Abs(x) < 60f) h *= Smooth(1f, 22f, RiverBank(x, z));                      // the valley the river comes from
-            return Math.Max(h * Smooth(3f, 42f, inland), -0.6f);                               // lower towards the sea
+            h = Math.Max(h * Smooth(0f, 26f, o), 0f);
+            h *= 0.22f + 0.78f * Smooth(0f, 42f, inland);                                      // lower towards the sea
+            h += Smooth(0f, 5f, o) * (3.2f + 1.6f * Noise(x / 7f, z / 7f, 63)) * (1f - 0.5f * Smooth(14f, 30f, o)); // a wall of rocks at the foot: here the map ends
+            return Math.Abs(x) < 60f ? h * Smooth(0.5f, 20f, RiverBank(x, z)) : h;             // the valley the river comes from
         }
 
         // x, z, height, radius: a row south of the map, rows behind each other beside it

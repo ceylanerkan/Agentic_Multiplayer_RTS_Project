@@ -53,7 +53,7 @@ Shader "RTS/Ground"
             TEXTURE2D(_Earth); TEXTURE2D(_EarthN); TEXTURE2D(_Rock); TEXTURE2D(_RockN);
 
             struct Attributes { float4 position : POSITION; float3 normal : NORMAL; float2 uv : TEXCOORD0; half4 colour : COLOR; };
-            struct Varyings { float4 position : SV_POSITION; float2 uv : TEXCOORD0; float3 world : TEXCOORD1; float3 normal : TEXCOORD2; float fog : TEXCOORD3; half2 shade : TEXCOORD4; };
+            struct Varyings { float4 position : SV_POSITION; float2 uv : TEXCOORD0; float3 world : TEXCOORD1; float3 normal : TEXCOORD2; float fog : TEXCOORD3; half3 shade : TEXCOORD4; };
 
             Varyings Vert(Attributes i)
             {
@@ -62,7 +62,7 @@ Shader "RTS/Ground"
                 o.position = TransformWorldToHClip(o.world);
                 o.normal = TransformObjectToWorldNormal(i.normal);
                 o.uv = i.uv;
-                o.shade = half2(i.colour.r * 1.275, i.colour.g); // 200 = open ground
+                o.shade = half3(i.colour.r * 1.275, i.colour.g, i.colour.b); // 200 = open ground
                 o.fog = ComputeFogFactor(o.position.z);
                 return o;
             }
@@ -134,7 +134,7 @@ Shader "RTS/Ground"
                 half3 cliff = rock * tint * (0.92 + 0.47 * (0.5 + 0.5 * sin(y * 1.15 + n1 * 2.6 + n2 * 1.2))); // layers
                 half3 low = lerp(grass * 0.55 + dry * 0.25, grass * half3(0.36, 0.50, 0.38), smoothstep(-0.2, 0.35, n2 * 0.5 + n1 * 0.6)); // meadow, forest
                 low = lerp(low, dry * 0.45 + rock * 0.4, smoothstep(7, 12, y + n2 * 2.5 + n1 * 2));
-                half3 mountain = lerp(low, cliff, smoothstep(0.22, 0.38, slope + n2 * 0.05 + n3 * 0.03));
+                half3 mountain = lerp(low, cliff, max(smoothstep(0.22, 0.38, slope + n2 * 0.05 + n3 * 0.03), i.shade.z * smoothstep(-0.5, 0.1, n2 * 0.6 + n3 * 0.3 + slope)));
                 half broken = (bright - 0.12) * 10; // the stones look out of the edge of the snow
                 half snow = smoothstep(-1, 1, y - _SnowLine - n1 * 2.6 - n2 * 1.2 - broken * 0.9 + n3 * 0.5)
                           * (1 - smoothstep(-0.035, 0.035, slope - 0.38 - clamp((y - 18) * 0.008, 0, 0.14) + n2 * 0.03 + broken * 0.02));

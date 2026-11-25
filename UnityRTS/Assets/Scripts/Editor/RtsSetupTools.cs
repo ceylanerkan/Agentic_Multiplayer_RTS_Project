@@ -17,7 +17,7 @@ using UnityEngine.UI;
 ///   Tools > RTS > 1 Create placeholder prefabs
 ///   Tools > RTS > 2 Setup open Game scene          (open Assets/Scenes/Game.unity first)
 ///   Tools > RTS > 3 Create Game UI                 (same scene; layout is plain, restyle as you like)
-/// Map layout (x -100..100, z -70..80): land up to z = 45, sea north of it; bases at x = -65 / +65.
+/// Map layout (about x -105..105, z -75..80, mountains around it): land up to z = 45, sea north of it; bases at x = -65 / +65.
 /// Everything here is a starting point: move the objects in the scene as you like.
 /// </summary>
 public static class RtsSetupTools
@@ -179,10 +179,7 @@ public static class RtsSetupTools
         // gameplay systems and camera
         var sys = new GameObject("Systems"); sys.transform.SetParent(root.transform);
         sys.AddComponent<SelectionManager>(); sys.AddComponent<UnitCommandInput>(); sys.AddComponent<BuildPlacement>();
-        var fog = sys.AddComponent<FogOfWar>();
-        var fso = new SerializedObject(fog);
-        fso.FindProperty("mapCentre").vector2Value = new Vector2(0, 5); fso.FindProperty("mapSize").vector2Value = new Vector2(210, 160);
-        fso.ApplyModifiedPropertiesWithoutUndo();
+        sys.AddComponent<FogOfWar>();
         var cam = Camera.main;
         if (cam != null)
         {
