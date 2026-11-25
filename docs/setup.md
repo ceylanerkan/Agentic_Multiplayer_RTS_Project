@@ -79,6 +79,12 @@ Windows shortcut: double-click `tools/run_gateway.bat` (same command as the uvic
 Set `OLLAMA_NUM_GPU=99` (in `.env`) when the whole model fits on the graphics card beside the game: 40 instead of 25 tokens/s on a 6 GB card.
 Set `MCP_TRANSPORT=stdio` (in `.env`) to run the MCP server as a subprocess with the real MCP protocol.
 C# rule tests: Unity > Window > General > Test Runner > EditMode (`RulesTests`).
+Automatic match (about 9 minutes, no window; close the editor first, needs the Photon App ID and internet): plays a hosted match through the
+real commands and writes `evaluation/unity_autoplay.md`. With `set RTS_AUTOPLAY_AI=1` and a running gateway it also asks the AI panel
+(`unity_autoplay_ai.md`). Mouse input and the look of the UI are not tested.
+```bat
+"C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe" -batchmode -projectPath UnityRTS -executeMethod AutoPlayTest.Run -logFile autoplay.log
+```
 
 ## 6. Unity scenes and prefabs
 The scripts need scenes, prefabs and components that only the editor can create. The exact steps (scene objects, prefab

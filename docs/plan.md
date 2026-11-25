@@ -6,17 +6,17 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 ## Şu an ne durumda
 | Bölüm (puan) | Durum | Eksik |
 |---|---|---|
-| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat | araştırma, Stable, gemi, mancınık denenmedi |
+| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock ve gemiler otomatik maçta (66/66) | fare ile ve gözle deneme |
 | Multiplayer (15) | 24 Kasım: iki build ile kontrol listesinin hepsi oldu (öğrenci denedi) | M3 için ekran kaydı |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
-| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı) | knowledge sorusu ve RAG kanıtı Unity'de denenmedi |
-| Onay + güvenlik (10) | Approve, Reject ve validator reddi oyunda görüldü | gizli bilgi (injection) sorusu, Ask why |
+| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | kanıtta kaynak id'si yok |
+| Onay + güvenlik (10) | Approve, Reject, validator reddi, gizli bilgi sorusu ve Ask why oyunda çalıştı | - |
 | Değerlendirme (10) | 25 Kasım: araç %100, geçerli plan %100, güvenlik 2/2, reddedilen eylem 2/7 | yalnız rapora tabloların girmesi |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
-Son push: `7979713` (kod); 24-25 Kasım commit'leri henüz push edilmedi.
+Son push: `7dc5ea0`; otomatik maç ve sonrası henüz push edilmedi.
 Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelineGlobalSettings`, `ProjectSettings`, `UnityConnectSettings`) commit'lenmedi.
 
 ## Kararlar
@@ -24,7 +24,8 @@ Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelin
 - **Laya + qwen (öğrenci 25 Kasım'da "Laya'yı kullanmak istiyorum" dedi):** Laya metin yazmaz, yalnız araç seçer; planı qwen yazar ve isterse
   ek araç çağırır. Ayardan kapatılabilir, hata olursa bugünkü yol çalışır. Hocaya "şart mı, öneri mi?" sorulacak.
 - **Harita:** her üsse 4 ağaç. **Build:** Mono (IL2CPP kurulu değil, ödev istemiyor).
-- **Unity editörünü öğrenci kullanır**, sonuçları sohbete yazar; kodu, Python'u ve belgeleri Claude yapar.
+- **Unity editörünü öğrenci kullanır**, sonuçları sohbete yazar; kodu, Python'u ve belgeleri Claude yapar. Öğrencinin isteğiyle (25 Kasım) Claude editör
+  kapalıyken penceresiz otomatik maç (`AutoPlayTest`) çalıştırabilir: yaklaşık 9 dk, AI'sız hafif, AI ile boş RAM 0,3 GB'a iner.
 - **Test az:** her değişiklikte tam test yok, planda olmayan yeni test yok. Push'tan önce sorulur, commit küçük tutulur.
 - 29 Kasım'dan sonra yeni özellik yok.
 
@@ -47,8 +48,14 @@ Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelin
 - [x] Claude: denemeden önce kod okundu, beş düzeltme: Dock kıyıya alındı (Raider Boat yetişemiyordu), gemiler yan yana çıkıyor,
       Age II neden başlamıyor düğmede yazıyor, AI onayı kuyruk/yer engelini "sent" demeden söylüyor, bir planda iki BUILD iki köylüye gidiyor.
       Unity derleyicisiyle derlendi, oyunda denenmedi.
-- [ ] Öğrenci: araştırma (Age II, Iron Weapons), Stable/Cavalry, Blacksmith/Catapult, Dock/gemi, TC'den Villager.
-- [ ] Claude: hatalar. Bir özellik zor düzeliyorsa (gemiler önce) demodan çıkarılır, raporda sınır olarak yazılır.
+- [x] Claude: otomatik maç `Assets/Scripts/Editor/AutoPlayTest.cs` (build'e girmez; komut `docs/setup.md` bölüm 5): host oturumu, gerçek komutlar, 2. oyuncu
+      vekil. Villager, House, Barracks, Age II, Iron Weapons, Fletching, Horse Collar, Stable/Cavalry, Catapult, Dock/gemi, toplama, AI onayı, zafer ve retler:
+      **66/66** (`evaluation/unity_autoplay.md`), Unity logunda hata yok.
+- [x] Claude: otomatik maçın bulduğu üç hata düzeltildi ve yeniden oynandı: (1) AI ve en yakın yer seçimi kıyı yerini Barracks/Blacksmith'e veriyordu, Dock
+      kurulamıyordu; (2) Raider Boat düşman Dock'una ulaşamıyordu (düz yol kıyıda kesiliyordu, artık kıyı boyunca kayıyor); (3) bir bina 4'ten fazla birlik
+      üretince birlikler iç içe çıkıyordu.
+- [ ] Öğrenci: son build'den sonra kısa bakış (fare ile bina yerleştirme, düğmeler, gemiyle saldırı). Otomatik maç fareyi ve görünüşü denemez.
+- Bilinen sınır: üs başına 7 bina yeri var; bütün bina türleri kurulunca 3 House kalır, nüfus en çok 20 (kuraldaki üst sınır 50). Raporda sınır olarak yazılır.
 
 ### 3. AI değerlendirmesi ve hız (25 Kasım) - 3a ile başla
 - [x] Claude: `evaluation/run_eval.py`'ye **ortanca ve en yavaş gecikme** (ödev 12.1 şartı) ve prompt-injection sonucu.
@@ -84,14 +91,15 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [x] Claude: 21 soru Laya kapalı/açık: ortalama 5,23 -> 3,75 sn, ortanca 3,52 -> 2,95, güvenlik 2/2, geçerli plan %100, reddedilen eylem 2/7 ikisinde de.
       Kabul şartlarının hepsi tuttu. **Bedeli:** araç doğruluğu %100 -> %86 (p02 fazla araç, p05 ve p11 maliyet hesabı yok), p08 "okçu süvariyi yener".
 - [x] Claude: gerçek gateway'de üç soruyla denendi; `tools/run_gateway.bat` Laya ortamını kendisi bulur.
-- [ ] Öğrenci: Unity + gateway + Ollama + Laya birlikte bellek (Laya yaklaşık 1,7 GB) ve kartın yetmesi oyunda denenmedi.
+- [x] Claude: Unity (penceresiz) + gateway + Ollama (`OLLAMA_NUM_GPU=99`) + Laya birlikte, 13 dk: sığdı. Kart 4,6 / 6,1 GB, gateway+Laya 2,2 GB, Unity 2,3 GB,
+      boş RAM en az 0,3 GB (VS Code açıkken). Beş cevap 1,4-3,8 sn (`evaluation/unity_autoplay_ai.md`). Pencereli oyunun kart kullanımı ölçülmedi.
 
 **3c. Kalan**
 - [ ] Claude: `evaluation/security-tests.md` canlı sütunu (`evaluation/live_security.json`).
 - [ ] Claude: bilgi sorusunda kanıta kaynak id'si (`tech_iron_weapons_v1`) yazılmıyor, yalnız araç adı var; gateway eklesin (oyundaki kontrolden önce).
-- [ ] Öğrenci: MCP Inspector ekran görüntüleri (`python ai/mcp-server/make_session.py late_game` komutu yazdırır). Oyunda:
-      "What does Iron Weapons do?" (kaynak id görünmeli), gizli bilgi sorusu, "Train 20 archers right now." > Approve (reddedilmeli),
-      Ask why.
+- [x] Claude: oyunda (otomatik maç) "What does Iron Weapons do?", gizli bilgi sorusu, "Train 20 archers right now." ve Ask why çalıştı. 20 okçuda model artık
+      eylem önermiyor, yani validator reddi bu soruyla gösterilemez: demoya başka örnek gerek. "Enemy cavalry..." sorusunda da eylem önermedi (boş yer 2).
+- [ ] Öğrenci: MCP Inspector ekran görüntüleri (`python ai/mcp-server/make_session.py late_game` komutu yazdırır).
 - [ ] Öğrenci: hocaya sor: "Laya'yı mı kastettiniz, kullanmak şart mı?"
 
 ### 4. Teslim dosyaları (27-28 Kasım)
@@ -109,6 +117,9 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [ ] Teslim.
 
 ## Rapora girecek gerçek gözlemler
+- Otomatik maç üç hata buldu (kıyı yeri, Raider Boat'un yolu, iç içe birlikler); hiçbirini birim testleri ve kod okuma göstermemişti.
+- Oyundaki canlı hata: "Training a House would add 5 free population, allowing you to train 2 archers" (House eğitilmez, 2 + 5 = 7 olur).
+- "Ask why" cevabı planın özetini aynen tekrar etti.
 - Kural "Dock denizden de vurulur" diyordu ama Dock kıyıdan 5 m içerideydi, Raider Boat 4 m'ye vuruyordu: yerleşim 3 m kuzeye alındı.
 - AI onayı, host'un sessizce reddedeceği eylemlere de "sent" diyordu (boş yapı yeri yok, Age II araştırılırken eğitim).
 - Model süresinin %92'si yazma; 250 token sınırında kesilen düz yazı tek başına %32 idi (Ollama logu, 138 çağrı).
