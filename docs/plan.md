@@ -67,6 +67,9 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 - [x] Claude (öğrencinin denemesinden, 25 Kasım): yeni menü ve bekleme odası (maç ikinci oyuncuyla başlar, "Practice alone" ayrı), düzensiz ve aynalı kaynaklar
       (`MapLayout`), balık + Fishing Boat, zemine yapışan sis (`Resources/FogOfWar.shader`), kıvrımlı kıyı ve tepeler (`TerrainShape`, `GroundMesh`).
       **Öğrenci kendisi test ediyor** (Claude'un otomatik maçları bu değişikliklerle henüz çalışmadı). Sahne: `Tools > RTS > Refresh map resources and menu`.
+- [x] Claude (öğrencinin isteği, 25 Kasım): fotoğraf dokulu zemin ve dalgalı su, haritanın ortasından nehir, harita çevresinde karlı dağlar; kamera artık
+      dağların üstüne kadar gider ve orada yükselir (`RtsCamera`), sis dağlarda ince. Dağların şekli Unity dışında hesaplandı (37 ms, iki yarı aynalı); **shader'ı
+      ve kamerayı öğrenci deneyecek**. Refresh gerekmez.
 - [ ] En son: görünüş asset ve material'larla değiştirilecek (öğrencinin isteği).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan

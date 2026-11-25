@@ -47,8 +47,11 @@ Shader "RTS/FogOfWar"
                 depth = lerp(UNITY_NEAR_CLIP_VALUE, 1, depth);
                 #endif
                 float3 world = ComputeWorldSpacePosition(uv, depth, UNITY_MATRIX_I_VP);
-                float2 map = saturate((world.xz - _FogMap.xy) * _FogMap.zw); // land outside the map continues the fog of its edge
-                return half4(_FogColor.rgb, SAMPLE_TEXTURE2D(_FogTex, sampler_FogTex, map).a);
+                float2 map = (world.xz - _FogMap.xy) * _FogMap.zw;
+                // outside the map the fog of the edge goes on, but thin over high ground: the mountains can be seen (nobody can be there)
+                float2 over = max(max(-map, map - 1), 0) / _FogMap.zw; // metres
+                half thin = 1 - 0.72 * smoothstep(0, 12, length(over)) * smoothstep(0.5, 4, world.y);
+                return half4(_FogColor.rgb, SAMPLE_TEXTURE2D(_FogTex, sampler_FogTex, saturate(map)).a * thin);
             }
             ENDHLSL
         }
