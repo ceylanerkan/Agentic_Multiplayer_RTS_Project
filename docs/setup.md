@@ -73,7 +73,7 @@ Then set `TOOL_ROUTER=laya` in `.env`; `tools/run_gateway.bat` uses that environ
 python -m pytest -q ai evaluation                           # 88 tests, no network, no API key needed
 uvicorn --factory ai.gateway.app:create_app --port 8765     # AI gateway for the Unity AI panel (needs a running Ollama)
 python evaluation/run_eval.py                               # offline mock run; add --real (and --provider gemini|ollama) for a real model
-dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)
+powershell -ExecutionPolicy Bypass -File tools/compile-check/check.ps1   # optional: compile all C# scripts without starting Unity (20 s)
 ```
 Windows shortcut: double-click `tools/run_gateway.bat` (same command as the uvicorn line).
 Set `OLLAMA_NUM_GPU=99` (in `.env`) when the whole model fits on the graphics card beside the game: 40 instead of 25 tokens/s on a 6 GB card.

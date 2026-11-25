@@ -1,13 +1,9 @@
-# Compile check without Unity
+# Compile check without starting Unity
 
-`UnityFusionStubs.cs` contains minimal fake `UnityEngine`, `TMPro` and `Fusion` types. `CompileCheck.csproj` compiles our
-gameplay, networking and UI scripts against them, so typos and type errors are found without the editor.
-It does NOT check real Unity or Fusion APIs (the stubs are written from memory; member names used by our scripts were also checked against `UnityRTS/Assets/Photon/Fusion/Assemblies/Fusion.Runtime.xml`): a clean build here is necessary, not sufficient.
+    powershell -ExecutionPolicy Bypass -File tools/compile-check/check.ps1
 
-    dotnet build tools/compile-check/CompileCheck.csproj
+Compiles the rules, the game, the editor scripts, the tests and the test build against the real Unity, Fusion and package assemblies
+with the compiler inside the Unity installation (about 20 seconds). Needs Unity 6000.4.9f1 and a project that was opened in Unity once
+(`UnityRTS/Library`); no .NET SDK. It does not run Fusion's weaver and does not build shaders: the Unity build stays the final check.
 
-Needs the .NET 8 SDK (`dotnet --version`). On Ubuntu without access to dot.net: `apt-get install dotnet-sdk-8.0`.
-
-(`GameLauncher.cs` and `AiGatewayClient.cs` are not included: the stub declares a small `GameLauncher`, and the gateway client needs
-`UnityWebRequest`. `MenuUI.cs`, `RtsSetupTools.cs` and `PlayFromMenu.cs` are included with stub editor APIs. Obsolete-API warnings
-(CS0618) are only visible in Unity: the stubs only declare the current APIs.)
+(Until 25 November this folder compiled the scripts against hand-written stubs, because no Unity was available then.)
