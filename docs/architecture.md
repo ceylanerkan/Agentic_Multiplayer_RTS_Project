@@ -56,7 +56,8 @@ at approval time, and by the host in the RPC handler.
 | Match end | When a player's last Town Center is destroyed the host sets `NetworkPlayerState.Result` (1 = won, 2 = lost) for both players; `GameOverUI` shows Victory or Defeat. |
 | Events | Per-player event log. The host decides what a player may know and sends each event to its owner with an RPC (`StateAuthority -> InputAuthority`); every peer stores only its own log. |
 | Fog of war | `VisibilityService.FilterFor` (engine-free) decides what a player sees. Rendering (`FogOfWar`) and the AI snapshot (`AiSnapshotBuilder`) both call it. Interest management is off, so a modified client could read hidden positions: a known limitation, the AI is not affected. |
-| Land and water | Zones come from the nearest `ZoneVolume` centre (`ZoneLookup`, every point has a zone). Land units cannot leave land zones and ships cannot leave water zones (`DomainRules`). |
+| Land and water | Zones come from the nearest `ZoneVolume` centre (`ZoneLookup`, every point has a zone). Land units cannot leave land zones and ships cannot leave water zones (`DomainRules`); a unit stopped by the coast moves on along it (`NetworkUnit.SlideAlongShore`). |
+| Build slots | A Dock needs a coastal `BuildSlot`; other buildings get one only when no inland slot of the base is free (`BuildSlot.FindNear`, used by the ghost, the AI approval and the host). |
 | Presentation | Purely local, no network state: `EntityVisuals` adds a team disc (own blue, enemy red) and a name/HP label to every unit and building and an amount label to resources; it copies the body's visibility, so fog of war hides it too. `SelectionManager` draws the selection rings. |
 | Editor tooling | `RtsSetupTools` generates the Menu and Game scenes, the placeholder prefabs and the UI; `PlayFromMenu` makes play mode start in the Menu scene, because the Game scene only works when the `NetworkRunner` loads it. |
 

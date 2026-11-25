@@ -23,7 +23,6 @@ public class NetworkBuilding : NetworkBehaviour
     [Networked] public float CurrentProgress { get; set; }               // 0..1
 
     readonly ProductionQueue queue = new ProductionQueue();
-    int trainedCount;   // host only: picks the spawn spot
     ConstructionState construction;
 
     public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
@@ -136,18 +135,34 @@ public class NetworkBuilding : NetworkBehaviour
         {
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
             float clear = FootprintHalf() + 1.5f;   // next to the building, not inside or on top of it
-            // four spots in a row, so units trained one after another do not stand inside each other
-            int spot = trainedCount++ % 4;
-            Vector3 spawn = transform.position + new Vector3(clear, 0, -clear - spot * 1.6f);
-            if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null)
+            Vector3 first = transform.position + new Vector3(clear, 0, -clear), column = new Vector3(0, 0, -1.6f), row = new Vector3(1.6f, 0, 0);
+            Vector3 harbor;
+            if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null
+                && ZoneMap.Instance.TryGetCentre(st != null && st.Slot == 2 ? "P2Harbor" : "P1Harbor", out harbor))
             {
                 // Ships appear in the player's own harbor (a water zone), not on the shore next to the Dock.
-                Vector3 harbor;
-                if (ZoneMap.Instance.TryGetCentre(st != null && st.Slot == 2 ? "P2Harbor" : "P1Harbor", out harbor)) spawn = harbor + new Vector3((spot - 1.5f) * 4f, 0, 0);
+                first = harbor + new Vector3(-6f, 0, -4f); column = new Vector3(4f, 0, 0); row = new Vector3(0, 0, 4f);
             }
-            GameSpawner.Instance.SpawnUnit(Owner, item.Key, spawn);
+            GameSpawner.Instance.SpawnUnit(Owner, item.Key, FreeSpot(first, column, row));
             GameEvents.Report(Owner, "UNIT_TRAINED", transform.position, item.Key);
         }
+    }
+
+    /// <summary>First of twelve spots (rows of four) where no unit stands, so trained units do not appear inside each other.</summary>
+    static Vector3 FreeSpot(Vector3 first, Vector3 column, Vector3 row)
+    {
+        for (int i = 0; i < 12; i++)
+        {
+            Vector3 p = first + column * (i % 4) + row * (i / 4);
+            bool free = true;
+            foreach (var u in NetworkUnit.All)
+            {
+                Vector3 d = u.transform.position - p; d.y = 0;
+                if (d.sqrMagnitude < 1f) { free = false; break; }
+            }
+            if (free) return p;
+        }
+        return first;
     }
 
     void Mirror()

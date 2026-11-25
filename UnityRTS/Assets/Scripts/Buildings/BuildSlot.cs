@@ -37,22 +37,17 @@ public class BuildSlot : MonoBehaviour
     void OnEnable() { All.Add(this); }
     void OnDisable() { All.Remove(this); }
 
-    /// <summary>First free slot in the zone (for a Dock: a free coastal one), or null.</summary>
-    public static BuildSlot FindFree(string zone, bool needCoastal)
-    {
-        foreach (var s in All)
-            if (!s.occupied && s.Zone == zone && (!needCoastal || s.coastal)) return s;
-        return null;
-    }
-
-    /// <summary>The free slot in the zone (coastal for a Dock) that is nearest to pos, or null.</summary>
+    /// <summary>
+    /// The free slot in the zone that is nearest to pos, or null. A Dock needs a coastal slot; every other building gets
+    /// one only when no inland slot is free, otherwise a Barracks takes the place of the Dock.
+    /// </summary>
     public static BuildSlot FindNear(string zone, bool needCoastal, Vector3 pos)
     {
         BuildSlot best = null; float bestD = float.MaxValue;
         foreach (var s in All)
         {
             if (s.occupied || s.Zone != zone || (needCoastal && !s.coastal)) continue;
-            float d = (s.transform.position - pos).sqrMagnitude;
+            float d = (s.transform.position - pos).sqrMagnitude + (s.coastal && !needCoastal ? 1e6f : 0f);
             if (d < bestD) { bestD = d; best = s; }
         }
         return best;

@@ -65,12 +65,30 @@ public class NetworkUnit : NetworkBehaviour
             Vector3 next = pos + to.normalized * step;
             // Domain rule: land units never enter water zones, ships never enter land zones (the zone map decides).
             // This is the simple version; a baked NavMesh per agent type can replace it later.
-            if (ZoneMap.Instance != null)
-            {
-                bool water = ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(next));
-                if (!DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], water)) { HasMoveTarget = false; BlockedByShore = true; return; }
-            }
+            if (!CanStandAt(next) && !SlideAlongShore(pos, to.x, step, out next)) { HasMoveTarget = false; BlockedByShore = true; return; }
             transform.position = next;
         }
+    }
+
+    bool CanStandAt(Vector3 p)
+    {
+        return ZoneMap.Instance == null
+            || DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(p)));
+    }
+
+    /// <summary>
+    /// The shore cuts the straight way: go on parallel to it (the coast runs along x) until the target is straight ahead.
+    /// Otherwise a Raider Boat could never reach a Dock, which stands on the land side, from the other end of the sea.
+    /// </summary>
+    bool SlideAlongShore(Vector3 pos, float dx, float step, out Vector3 next)
+    {
+        next = pos;
+        if (Mathf.Abs(dx) <= step) return false;
+        foreach (float away in new[] { 0f, 0.1f, -0.1f }) // a unit exactly on the shoreline may need a small step away from it
+        {
+            next = pos + new Vector3(Mathf.Sign(dx) * step, 0, away);
+            if (CanStandAt(next)) return true;
+        }
+        return false;
     }
 }
