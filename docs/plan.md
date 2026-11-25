@@ -64,6 +64,10 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 - [x] Claude (öğrencinin isteği, 25 Kasım): **yol bulma** (`PathGrid`: 1 m ızgarada A*, yalnız host; bina ve kaynakların etrafından, kara/su ayrı; yolda bina
       kurulursa yol yenilenir). Önceden birlikler düz gidip binaların içinden geçiyordu. C# testleri 55/55, en uzun arama 1,1 ms. Sınır: birlikler birbirinden kaçınmaz.
 - Kod değişirse yeniden build (`AutoBuild.Game`).
+- [x] Claude (öğrencinin denemesinden, 25 Kasım): yeni menü ve bekleme odası (maç ikinci oyuncuyla başlar, "Practice alone" ayrı), düzensiz ve aynalı kaynaklar
+      (`MapLayout`), balık + Fishing Boat, zemine yapışan sis (`Resources/FogOfWar.shader`), kıvrımlı kıyı ve tepeler (`TerrainShape`, `GroundMesh`).
+      **Öğrenci kendisi test ediyor** (Claude'un otomatik maçları bu değişikliklerle henüz çalışmadı). Sahne: `Tools > RTS > Refresh map resources and menu`.
+- [ ] En son: görünüş asset ve material'larla değiştirilecek (öğrencinin isteği).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
       kalktı; eskiden 7 yer yüzünden nüfus 20'de kalıyordu. C# testleri 54/54, otomatik maç 76/76. Eski build ve yeni editör uyuşmaz: yeniden build.

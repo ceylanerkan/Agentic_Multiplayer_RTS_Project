@@ -58,6 +58,9 @@ namespace RTS.Core.Rules
             return cx < 0 || cz < 0 || cx >= w || cz >= h ? -1 : cz * w + cx;
         }
 
+        /// <summary>Is the cell land for land units or water for ships (buildings do not count)?</summary>
+        public bool OwnDomain(float x, float z, bool ship) { int i = Index(x, z); return i >= 0 && water[i] == ship; }
+
         bool Free(int i, bool ship) { return i >= 0 && !blocked[i] && water[i] == ship; }
 
         public bool Free(float x, float z, bool ship) { return Free(Index(x, z), ship); }

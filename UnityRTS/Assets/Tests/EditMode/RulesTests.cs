@@ -695,6 +695,16 @@ namespace RTS.Tests
                 Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(bx, 65)));   // ships spawn at the harbour centre
                 Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(bx, 44)));  // the coast is at z = 45
             }
+            // the winding coast: the same for both halves, zones and ground agree on it, flat ground at the Town Centers
+            for (float x = -95; x <= 95; x += 5)
+            {
+                float coast = TerrainShape.CoastZ(x);
+                Assert.AreEqual(coast, TerrainShape.CoastZ(-x), 0.001f);
+                Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(x, TerrainShape.ZoneZ(x, coast - 0.3f))), "land at " + x);
+                Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(x, TerrainShape.ZoneZ(x, coast + 0.3f))), "water at " + x);
+                Assert.Greater(TerrainShape.Height(x, coast - 1), TerrainShape.SeaLevel); Assert.Less(TerrainShape.Height(x, coast + 1), TerrainShape.SeaLevel);
+            }
+            Assert.Less(System.Math.Abs(TerrainShape.Height(-61, 21) - TerrainShape.Height(-69, 29)), 0.35f);
             // resources (MapLayout): the same for both halves, land resources on land, fish in the water, free ground around the Town Centers
             var nodes = MapLayout.Build();
             var left = nodes.FindAll(n => n.X < 0); var right = nodes.FindAll(n => n.X > 0);
@@ -708,7 +718,8 @@ namespace RTS.Tests
             }
             foreach (var n in nodes)
             {
-                Assert.AreEqual(n.Kind == "fish", ZoneLookup.IsWater(z.ZoneAt(n.X, n.Z)), n.Kind + " at " + n.X + ", " + n.Z);
+                Assert.AreEqual(n.Kind == "fish", ZoneLookup.IsWater(z.ZoneAt(n.X, TerrainShape.ZoneZ(n.X, n.Z))), n.Kind + " at " + n.X + ", " + n.Z);
+                Assert.AreEqual(n.Kind == "fish", TerrainShape.Height(n.X, n.Z) < TerrainShape.SeaLevel, "height of " + n.Kind);
                 Assert.Less(System.Math.Abs(n.X), 99f); Assert.Greater(n.Z, -69f); Assert.Less(n.Z, n.Kind == "fish" ? 78f : 43f);
                 Assert.Greater((System.Math.Abs(n.X) - 65) * (System.Math.Abs(n.X) - 65) + (n.Z - 25) * (n.Z - 25), 9 * 9, "too close to a Town Center");
             }

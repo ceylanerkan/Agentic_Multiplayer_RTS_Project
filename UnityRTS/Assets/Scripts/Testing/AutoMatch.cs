@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Fusion;
+using RTS.Core.Rules;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -210,7 +211,8 @@ public class AutoMatch : MonoBehaviour
         yield return Frames(3);
     }
 
-    IEnumerator Hover(Vector3 ground) { yield return Look(ground); yield return MoveMouse(OnScreen(ground)); yield return Frames(2); }
+    static Vector3 OnGround(Vector3 p) { p.y = TerrainShape.Surface(p.x, p.z); return p; }
+    IEnumerator Hover(Vector3 ground) { yield return Look(ground); yield return MoveMouse(OnScreen(OnGround(ground))); yield return Frames(2); }
     IEnumerator ClickOn(Vector3 p, bool right = false) { yield return Look(new Vector3(p.x, 0, p.z)); yield return Click(OnScreen(p), right); }
 
     IEnumerator ClickButton(string name)
@@ -285,7 +287,7 @@ public class AutoMatch : MonoBehaviour
         yield return Hover(tc.transform.position + new Vector3(5.5f, 0, 0));
         Check("at the edge of the Town Center: moves beside it", Green(), "mouse 5.5 m beside the centre, ghost " + (Ghost().x - tc.transform.position.x).ToString("0.0") + " m");
         yield return Hover(place);
-        yield return Click(OnScreen(place));
+        yield return Click(OnScreen(OnGround(place)));
         yield return For(() => Buildings("house").Count == 1, 5);
         var house = Buildings("house").FirstOrDefault();
         Check("a click places the House there", ok && Flat(house.transform.position - place) < 0.6f, ok ? At(house.transform.position) : "no site");
@@ -295,22 +297,23 @@ public class AutoMatch : MonoBehaviour
         yield return ClickButton("Build Barracks");
         yield return Hover(new Vector3(40, 0, 10));
         bool green = Green(); int count = NetworkBuilding.All.Count;
-        yield return Click(OnScreen(new Vector3(40, 0, 10)), true);
+        yield return Click(OnScreen(OnGround(new Vector3(40, 0, 10))), true);
         Check("a right click cancels the ghost, nobody walks off", green && !BuildPlacement.Instance.Active && NetworkBuilding.All.Count == count && sel.Units.All(u => !u.HasMoveTarget));
         yield return ClickButton("Build Dock");
         yield return Hover(new Vector3(52, 0, 25));
         Check("Dock inland: red", !Green());
-        yield return Hover(new Vector3(52, 0, 38));
-        Check("Dock near the shore: green, straight to the shore", Green() && Ghost().z >= 42.4f && Mathf.Abs(Ghost().x - 52f) < 1f, At(Ghost()));
+        var near = new Vector3(52, 0, TerrainShape.CoastZ(52) - 7f);
+        yield return Hover(near);
+        Check("Dock near the shore: green, straight to the shore", Green() && Ghost().z >= TerrainShape.CoastZ(Ghost().x) - 3.2f && Mathf.Abs(Ghost().x - 52f) < 5f, At(Ghost()));
         Picture("ghost_dock");
-        yield return Click(OnScreen(new Vector3(52, 0, 38)));
+        yield return Click(OnScreen(OnGround(near)));
         yield return For(() => Buildings("dock").Count == 1, 5);
-        Check("a click places the Dock on the shore", ok && Buildings("dock")[0].transform.position.z >= 42.4f, ok ? At(Buildings("dock")[0].transform.position) : "no site");
+        Check("a click places the Dock on the shore", ok && Buildings("dock")[0].transform.position.z >= TerrainShape.CoastZ(Buildings("dock")[0].transform.position.x) - 3.2f, ok ? At(Buildings("dock")[0].transform.position) : "no site");
 
         section = "commands";
         yield return ClickOn(v[1].transform.position);
         var goal = new Vector3(45, 0, 2);
-        yield return ClickOn(goal, true);
+        yield return ClickOn(OnGround(goal), true);
         yield return For(() => Flat(v[1].transform.position - goal) < 1f, 30);
         Check("a right click moves a Villager", ok, At(v[1].transform.position));
         yield return ClickOn(v[2].transform.position);

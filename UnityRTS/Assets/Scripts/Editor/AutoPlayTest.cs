@@ -358,7 +358,7 @@ public static class AutoPlayTest
     static IEnumerator Dock()
     {
         yield return Build("dock");
-        Check("the Dock stands on the shore", Done("dock") != null && Done("dock").transform.position.z >= 42f, Done("dock") != null ? At(Done("dock").transform.position) : "");
+        Check("the Dock stands on the shore", Done("dock") != null && Done("dock").transform.position.z >= TerrainShape.CoastZ(Done("dock").transform.position.x) - 3.2f, Done("dock") != null ? At(Done("dock").transform.position) : "");
         yield return Train("raider_boat", "dock");
         yield return Train("warship", "dock");
         yield return Train("raider_boat", "dock");
@@ -385,15 +385,15 @@ public static class AutoPlayTest
             yield return For(() => !archer.HasMoveTarget, 60);
             Check("a land unit stops at the shore", ok && !ZoneLookup.IsWater(Zone(archer.transform.position)), Zone(archer.transform.position) + " z=" + archer.transform.position.z.ToString("0"));
         }
-        // a Raider Boat must reach every Dock: 42.6 is the farthest from the water (coast z = 45) where one can stand
-        var dock = GameSpawner.Instance.SpawnBuilding(Foe, "dock", new Vector3(57, 0, 42.6f), true);
+        // a Raider Boat must reach every Dock: 2.4 m is about the farthest from the water where one can stand
+        var dock = GameSpawner.Instance.SpawnBuilding(Foe, "dock", new Vector3(57, 0, TerrainShape.CoastZ(57) - 2.4f), true);
         yield return 0.5f;
         float hp = dock.Hp;
         Relay.SendAttack(boat.Object.Id, dock.Object.Id);
         yield return For(() => dock.Hp < hp, 120);
         Check("Raider Boat attacks an enemy Dock from the sea", ok, ok ? "damage " + (hp - dock.Hp).ToString("0.0") : "boat at " + boat.transform.position + " in " + Zone(boat.transform.position) + ", blocked: " + boat.BlockedByShore);
         // a Warship shoots across the shoreline, a Raider Boat cannot hit a land unit
-        var spear = GameSpawner.Instance.SpawnUnit(Foe, "spearman", new Vector3(warship.transform.position.x, 0, 43));
+        var spear = GameSpawner.Instance.SpawnUnit(Foe, "spearman", new Vector3(warship.transform.position.x, 0, TerrainShape.CoastZ(warship.transform.position.x) - 2f));
         yield return 0.5f;
         float sp = spear.Hp;
         Relay.SendAttack(warship.Object.Id, spear.Object.Id);
@@ -507,7 +507,7 @@ public static class AutoPlayTest
         yield return For(() => Done("barracks").QueueCount == 0, 40);
         var sites = new List<NetworkBuilding>();
         var wanted = new[] { new KeyValuePair<string, Vector3>("house", new Vector3(-88, 0, 4)), new KeyValuePair<string, Vector3>("house", new Vector3(-40.5f, 0, -12)),
-                             new KeyValuePair<string, Vector3>("barracks", new Vector3(3, 0, -2)), new KeyValuePair<string, Vector3>("dock", new Vector3(10, 0, 43)) };
+                             new KeyValuePair<string, Vector3>("barracks", new Vector3(3, 0, -2)), new KeyValuePair<string, Vector3>("dock", new Vector3(10, 0, TerrainShape.CoastZ(10) - 1.8f)) };
         foreach (var w in wanted)
         {
             yield return Place(w.Key, w.Value);

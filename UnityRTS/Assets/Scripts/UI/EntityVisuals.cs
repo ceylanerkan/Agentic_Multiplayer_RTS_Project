@@ -69,7 +69,7 @@ public class EntityVisuals : MonoBehaviour
 
         if (disc != null)
         {
-            disc.position = new Vector3(p.x, p.y - (labelHeight - 1.2f) * 0.5f + 0.06f, p.z);   // feet; the selection ring lies just below
+            disc.position = new Vector3(p.x, RTS.Core.Rules.TerrainShape.Surface(p.x, p.z) + 0.14f, p.z);   // on the ground; the selection ring lies just below
             discRenderer.enabled = visible;
         }
         label.transform.position = p + Vector3.up * (labelHeight * 0.5f + 0.4f);
@@ -101,7 +101,7 @@ public class EntityVisuals : MonoBehaviour
             if (cam != null && mouse != null)
             {
                 var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
-                mouseValid = new Plane(Vector3.up, new Vector3(0, 0.8f, 0)).Raycast(ray, out float d);
+                mouseValid = new Plane(Vector3.up, new Vector3(0, 1.5f, 0)).Raycast(ray, out float d);
                 if (mouseValid) mouseGround = ray.GetPoint(d);
             }
         }

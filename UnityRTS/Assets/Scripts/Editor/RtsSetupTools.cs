@@ -141,13 +141,7 @@ public static class RtsSetupTools
         if (!File.Exists(PrefabDir + "/Player.prefab")) CreatePrefabs();
         var root = new GameObject("MapAndSystems");
 
-        // ground and sea (visual only; zones are the logical map)
-        var ground = GameObject.CreatePrimitive(PrimitiveType.Cube); ground.name = "Ground";
-        ground.transform.SetParent(root.transform); ground.transform.position = new Vector3(0, -0.5f, -12.5f); ground.transform.localScale = new Vector3(200, 1, 115);
-        ground.GetComponent<Renderer>().sharedMaterial = Mat("GroundMat", "0.42,0.5,0.32"); // dull olive: units and green trees stand out
-        var sea = GameObject.CreatePrimitive(PrimitiveType.Cube); sea.name = "Sea";
-        sea.transform.SetParent(root.transform); sea.transform.position = new Vector3(0, -0.6f, 62.5f); sea.transform.localScale = new Vector3(200, 1, 35);
-        sea.GetComponent<Renderer>().sharedMaterial = Mat("SeaMat", "0.1,0.3,0.7");
+        FurnishGround(root.transform);
 
         // zone centres: nearest centre wins, so the coast lies halfway between a land and a water centre (z = 45)
         // (RulesTests.GeneratedMapLayout_PutsShoreAndResourcesInTheRightZones repeats these numbers: change both together)
@@ -389,6 +383,18 @@ public static class RtsSetupTools
         Save(go, go.name);
     }
 
+    /// <summary>Ground (GroundMesh builds it from TerrainShape) and sea; old ones are replaced.</summary>
+    static void FurnishGround(Transform root)
+    {
+        foreach (var name in new[] { "Ground", "Sea" }) { var old = root.Find(name); if (old != null) Object.DestroyImmediate(old.gameObject); }
+        var ground = new GameObject("Ground"); ground.transform.SetParent(root, false); ground.transform.SetAsFirstSibling();
+        ground.AddComponent<MeshFilter>(); ground.AddComponent<MeshRenderer>().sharedMaterial = Mat("GroundMat", "0.42,0.5,0.32"); ground.AddComponent<MeshCollider>();
+        ground.AddComponent<GroundMesh>();
+        var sea = GameObject.CreatePrimitive(PrimitiveType.Cube); sea.name = "Sea";
+        sea.transform.SetParent(root, false); sea.transform.position = new Vector3(0, RTS.Core.Rules.TerrainShape.SeaLevel - 0.5f, 110); sea.transform.localScale = new Vector3(500, 1, 180);
+        sea.GetComponent<Renderer>().sharedMaterial = Mat("SeaMat", "0.1,0.3,0.7");
+    }
+
     /// <summary>All resources of MapLayout (an old "Resources" object is replaced).</summary>
     static void PlaceResources(Transform root)
     {
@@ -398,8 +404,9 @@ public static class RtsSetupTools
         {
             string name = n.Kind == "tree" ? "Tree" : n.Kind == "berry" ? "BerryBush" : n.Kind == "gold" ? "GoldMine" : "Fish";
             var inst = (GameObject)PrefabUtility.InstantiatePrefab(Prefab(name), parent);
-            float lift = n.Kind == "tree" ? 1.7f : n.Kind == "berry" ? 0.7f : n.Kind == "gold" ? 0.8f : 0.15f; // pivots are in the middle; the sea lies at -0.1
-            inst.transform.position = new Vector3(n.X, lift * n.Scale, n.Z);
+            float lift = n.Kind == "tree" ? 1.7f : n.Kind == "berry" ? 0.7f : n.Kind == "gold" ? 0.8f : 0.15f; // pivots are in the middle
+            float ground = n.Kind == "fish" ? RTS.Core.Rules.TerrainShape.SeaLevel + 0.1f : RTS.Core.Rules.TerrainShape.Height(n.X, n.Z) - 0.08f;
+            inst.transform.position = new Vector3(n.X, ground + lift * n.Scale, n.Z);
             inst.transform.rotation = Quaternion.Euler(0, n.Turn, 0);
             inst.transform.localScale = Vector3.one * n.Scale;
         }
@@ -486,6 +493,7 @@ public static class RtsSetupTools
         EditorSceneManager.MarkSceneDirty(menu); EditorSceneManager.SaveScene(menu);
 
         var game = EditorSceneManager.OpenScene("Assets/Scenes/Game.unity", OpenSceneMode.Single);
+        FurnishGround(GameObject.Find("MapAndSystems").transform);
         PlaceResources(GameObject.Find("MapAndSystems").transform);
         var so = new SerializedObject(Object.FindAnyObjectByType<GameSpawner>());
         FillEntries(so.FindProperty("unitPrefabs"), Units); FillEntries(so.FindProperty("buildingPrefabs"), Buildings);

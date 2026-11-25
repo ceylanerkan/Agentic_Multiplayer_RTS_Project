@@ -38,12 +38,16 @@ Shader "RTS/FogOfWar"
             {
                 float2 uv = GetNormalizedScreenSpaceUV(position);
                 float depth = SampleSceneDepth(uv);
+                #if UNITY_REVERSED_Z
+                if (depth < 0.000001) return 0; // sky
+                #else
+                if (depth > 0.999999) return 0;
+                #endif
                 #if !UNITY_REVERSED_Z
                 depth = lerp(UNITY_NEAR_CLIP_VALUE, 1, depth);
                 #endif
                 float3 world = ComputeWorldSpacePosition(uv, depth, UNITY_MATRIX_I_VP);
-                float2 map = (world.xz - _FogMap.xy) * _FogMap.zw;
-                if (any(map < 0) || any(map > 1) || world.y < -5) return 0; // beside the map (sky)
+                float2 map = saturate((world.xz - _FogMap.xy) * _FogMap.zw); // land outside the map continues the fog of its edge
                 return half4(_FogColor.rgb, SAMPLE_TEXTURE2D(_FogTex, sampler_FogTex, map).a);
             }
             ENDHLSL

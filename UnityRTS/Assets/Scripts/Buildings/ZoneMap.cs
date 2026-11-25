@@ -26,7 +26,7 @@ public class ZoneMap : MonoBehaviour
             Debug.LogError("ZoneMap: the scene needs one ZoneVolume for each of the 10 zones (" + string.Join(", ", ZoneLookup.AllZones) + ").");
     }
 
-    public string ZoneAt(Vector3 pos) { return lookup.ZoneAt(pos.x, pos.z); }
+    public string ZoneAt(Vector3 pos) { return lookup.ZoneAt(pos.x, TerrainShape.ZoneZ(pos.x, pos.z)); } // the coast winds, see TerrainShape
 
     public bool TryGetCentre(string zone, out Vector3 centre) { return centres.TryGetValue(zone, out centre); }
 }

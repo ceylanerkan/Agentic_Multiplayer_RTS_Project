@@ -124,6 +124,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
     {
         var obj = Runner.Spawn(Find(buildingPrefabs, key), pos, Quaternion.identity, (PlayerRef?)null); // no input authority, see SpawnUnit
         StandOnGround(obj);
+        obj.transform.position += Vector3.down * 0.25f; // a little into the ground: no gap under it on a slope
         var b = obj.GetComponent<NetworkBuilding>();
         b.InitHost(owner, key, completed);
         if (completed && players.TryGetValue(owner, out var st)) st.RecalculateCapacity();

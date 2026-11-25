@@ -37,8 +37,8 @@ public class FogOfWar : MonoBehaviour
         box.name = "FogBox";
         Destroy(box.GetComponent<Collider>()); // must not block raycasts
         box.transform.SetParent(transform, false);
-        box.transform.position = new Vector3(mapCentre.x, 4f, mapCentre.y);
-        box.transform.localScale = new Vector3(mapSize.x, 16f, mapSize.y);
+        box.transform.position = new Vector3(mapCentre.x, 8f, mapCentre.y);
+        box.transform.localScale = new Vector3(mapSize.x + 400f, 60f, mapSize.y + 400f);
         var mat = new Material(shader);
         mat.SetTexture("_FogTex", tex);
         mat.SetVector("_FogMap", new Vector4(mapCentre.x - mapSize.x * 0.5f, mapCentre.y - mapSize.y * 0.5f, 1f / mapSize.x, 1f / mapSize.y));

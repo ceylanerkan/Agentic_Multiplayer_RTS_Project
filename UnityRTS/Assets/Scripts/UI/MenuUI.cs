@@ -89,7 +89,8 @@ public class MenuUI : MonoBehaviour
         var band = Box(canvas, "Band", Dark); Stretch(band, 0, 0, 0, 1, 0, 0, Width + 2 * Left, 0);
         var edge = Box(band, "Edge", Gold); Stretch(edge, 1, 0, 1, 1, -3, 0, 0, 0);
 
-        var title = Text(band, "AGENTIC RTS", 74, Gold, FontStyles.Bold); title.characterSpacing = 4; Put(title.rectTransform, 70, 90);
+        var title = Text(band, "AGENTIC RTS", 74, Gold, FontStyles.Bold); title.characterSpacing = 3; Put(title.rectTransform, 64, 90);
+        title.textWrappingMode = TextWrappingModes.NoWrap; title.enableAutoSizing = true; title.fontSizeMin = 40; title.fontSizeMax = 74; title.alignment = TextAlignmentOptions.MidlineLeft;
         var sub = Text(band, "Two players, one island and an AI commander that asks before it acts.", 23, Dim); Put(sub.rectTransform, 168, 64);
 
         startPage = Page(band, "Start");

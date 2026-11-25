@@ -68,15 +68,13 @@ public class BuildPlacement : MonoBehaviour
         if (kb != null && kb.escapeKey.wasPressedThisFrame) { Cancel(); return; }
         if (mouse.rightButton.wasPressedThisFrame) { UsedClickFrame = Time.frameCount; Cancel(); return; }
 
-        var plane = new Plane(Vector3.up, Vector3.zero);
-        var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
-        if (!plane.Raycast(ray, out float dist)) return;
-        Vector3 point = ray.GetPoint(dist);
+        if (!GroundUnder(cam.ScreenPointToRay(mouse.position.ReadValue()), out Vector3 point)) return;
 
         bool free = BuildPlaces.TryFind(buildingKey, null, point, relay.GetComponent<NetworkPlayerState>().Slot,
                                         buildingKey == "dock" ? ShoreSnapRadius : SnapRadius, BuildSite.Gap, relay.Object.InputAuthority, out target);
         bool ok = free && CanAfford(relay);
-        ghost.transform.position = (free ? target : point) + Vector3.up * (ghost.transform.localScale.y * 0.5f);
+        Vector3 at = free ? target : point;
+        ghost.transform.position = new Vector3(at.x, TerrainShape.Surface(at.x, at.z) + ghost.transform.localScale.y * 0.5f - 0.25f, at.z);
         ghostMaterial.color = ok ? new Color(0.2f, 1f, 0.3f, 0.5f) : new Color(1f, 0.2f, 0.2f, 0.5f);
 
         if (ok && mouse.leftButton.wasPressedThisFrame && !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
@@ -87,6 +85,20 @@ public class BuildPlacement : MonoBehaviour
             UsedClickFrame = Time.frameCount;
             Cancel();
         }
+    }
+
+    /// <summary>Where the ray meets the hills (a few steps: meet the height of the last point again).</summary>
+    static bool GroundUnder(Ray ray, out Vector3 point)
+    {
+        point = Vector3.zero;
+        float y = 0f;
+        for (int i = 0; i < 6; i++)
+        {
+            if (!new Plane(Vector3.up, new Vector3(0, y, 0)).Raycast(ray, out float d)) return false;
+            point = ray.GetPoint(d);
+            y = TerrainShape.Surface(point.x, point.z);
+        }
+        return true;
     }
 
     // URP Unlit is opaque by default, so the 0.5 alpha of the ghost colour was ignored and the ghost hid the ground.

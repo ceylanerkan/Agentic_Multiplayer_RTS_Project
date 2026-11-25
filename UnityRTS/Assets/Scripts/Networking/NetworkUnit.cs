@@ -110,7 +110,7 @@ public class NetworkUnit : NetworkBehaviour
         float step = GameDataProvider.Get().Units[TypeKey.ToString()].Speed * Runner.DeltaTime; // speed from units.json
         if (to.magnitude <= step)
         {
-            transform.position = pos + to;
+            transform.position = OnGround(pos + to);
             if (onPath) pathIndex++; else HasMoveTarget = false;
         }
         else
@@ -118,30 +118,25 @@ public class NetworkUnit : NetworkBehaviour
             Vector3 next = pos + to.normalized * step;
             // Domain rule: land units never enter water zones, ships never enter land zones (the zone map decides); the path keeps
             // to it, this stops the last straight part at the shore.
-            if (!CanStandAt(next) && !SlideAlongShore(pos, to.x, step, out next)) { HasMoveTarget = false; BlockedByShore = true; return; }
-            transform.position = next;
+            if (!onPath && !CanStandAt(next)) { HasMoveTarget = false; BlockedByShore = true; return; }
+            transform.position = OnGround(next);
         }
     }
 
+    // the same cells as the path, so a unit on a free way is never stopped by the winding coast
     bool CanStandAt(Vector3 p)
     {
-        return ZoneMap.Instance == null
-            || DomainRules.CanStandIn(GameDataProvider.Get().Units[TypeKey.ToString()], ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(p)));
+        var grid = BuildPlaces.Grid;
+        return grid == null || grid.OwnDomain(p.x, p.z, IsShip);
     }
 
-    /// <summary>
-    /// The shore cuts the straight way: go on parallel to it (the coast runs along x) until the target is straight ahead.
-    /// Otherwise a Raider Boat could never reach a Dock, which stands on the land side, from the other end of the sea.
-    /// </summary>
-    bool SlideAlongShore(Vector3 pos, float dx, float step, out Vector3 next)
+    float lift = -1f; // pivot above the ground
+
+    /// <summary>On the hills or, for a ship, on the water.</summary>
+    Vector3 OnGround(Vector3 p)
     {
-        next = pos;
-        if (Mathf.Abs(dx) <= step) return false;
-        foreach (float away in new[] { 0f, 0.1f, -0.1f }) // a unit exactly on the shoreline may need a small step away from it
-        {
-            next = pos + new Vector3(Mathf.Sign(dx) * step, 0, away);
-            if (CanStandAt(next)) return true;
-        }
-        return false;
+        if (lift < 0f) { var c = GetComponent<Collider>(); lift = c != null ? c.bounds.extents.y : 1f; }
+        p.y = (IsShip ? TerrainShape.SeaLevel : TerrainShape.Surface(p.x, p.z)) + lift;
+        return p;
     }
 }
