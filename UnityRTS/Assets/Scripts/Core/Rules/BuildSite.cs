@@ -50,20 +50,25 @@ namespace RTS.Core.Rules
             return false;
         }
 
-        /// <summary>The point nearest to (x, z) that passes the test, searched in rings of 1 m up to the radius.</summary>
+        /// <summary>The point nearest to (x, z) that passes the test, searched in rings up to the radius.</summary>
         public static bool FindNear(float x, float z, float radius, Func<float, float, bool> test, out float foundX, out float foundZ)
         {
             foundX = x; foundZ = z;
             if (test(x, z)) return true;
-            for (int r = 1; r <= radius; r++)
+            var ring = new List<double>();
+            for (float r = 0.5f; r <= radius; r += 0.5f)
             {
-                int n = (int)Math.Ceiling(2 * Math.PI * r);
+                ring.Clear();
+                int n = 8 * (int)Math.Ceiling(r);
                 for (int i = 0; i < n; i++)
                 {
                     double a = i * 2 * Math.PI / n;
-                    foundX = x + (float)Math.Cos(a) * r; foundZ = z + (float)Math.Sin(a) * r;
-                    if (test(foundX, foundZ)) return true;
+                    if (test(x + (float)Math.Cos(a) * r, z + (float)Math.Sin(a) * r)) ring.Add(a);
                 }
+                if (ring.Count == 0) continue;
+                double mid = ring[ring.Count / 2]; // the middle of the free part of the ring: straight to the shore, not diagonally
+                foundX = x + (float)Math.Cos(mid) * r; foundZ = z + (float)Math.Sin(mid) * r;
+                return true;
             }
             return false;
         }
