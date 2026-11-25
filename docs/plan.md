@@ -72,14 +72,15 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
       ve kamerayı öğrenci deneyecek**. Refresh gerekmez.
 - [x] Claude (öğrencinin isteği, 25 Kasım): harita artık dağın eteğinde biter (kaya duvarı, denize kadar, iki yarı aynalı; `TerrainShape.Foot`), **duvar ve kapı**
       (fareyle çizilir, kapıdan yalnız sahibi geçer, AI planlayamaz; bilgi dizini yeniden kuruldu), **oyun içi arayüz baştan** (simgeler game-icons.net CC BY,
-      mini harita, komut kartı + ipucu, olaylar, boş köylü düğmesi, ayrılma menüsü, AI paneli katlanır). C# kural testleri Unity'siz 56/56. **Unity'de
-      denenmedi.** Duvar/kapı prefab'ları için bir kez `Tools > RTS > Refresh map resources and menu`.
-- [x] Claude (öğrencinin isteği, 25 Kasım): gece-gündüz (`DayNight`, 7 dk'lık döngü, iki oyuncuda aynı saat, yalnız görünüş; geceleri binaların ışığı). Denenmedi.
+      mini harita, komut kartı + ipucu, olaylar, boş köylü düğmesi, ayrılma menüsü, AI paneli katlanır). C# kural testleri Unity'siz 56/56. Duvar/kapı prefab'ları için bir kez `Tools > RTS > Refresh map resources and menu`.
+- [x] Claude (öğrencinin isteği, 25 Kasım): gece-gündüz (`DayNight`, 7 dk'lık döngü, iki oyuncuda aynı saat, yalnız görünüş; geceleri binaların ışığı). Resimlerle kontrol edildi.
 - [x] Claude (öğrencinin seçimi, 25 Kasım): **modeller**. Binalar MegaKit parçalarından kuruldu (çatı takım renginde), birlikler RPG Characters (giysiler takım renginde,
       animasyonlu), atlı süvari/scout, gemiler, mancınık, karışık ağaç ve taşlar, çit duvar. `GlbModel` (yükleyici), `ModelLook` (animasyon, dönme), `Scenery`
-      (taş ve çalı), `Resources/Models` (16 MB). Çarpışma ve kurallar aynı. Kaynaklar `docs/credits.md`. **Unity'de denenmedi: editör kapanınca Claude deneyecek.**
+      (taş ve çalı), `Resources/Models` (16 MB). Çarpışma ve kurallar aynı. Kaynaklar `docs/credits.md`. Öğrencinin gördüğü üç kusur (zemine gömülme, büyük halka, uyumsuz çit) düzeldi; duvar ve kapı artık binaların taşı ve
+      ahşabından. Ana menü ve bina yerleştirme de modellerle. **25 Kasım 22:40: otomatik maç 88/88, iki oyunculu maç 37/37 (0 fark), logda 0 hata, yeni build 22:42.**
+      Resimler: `RTS_AUTOPLAY_LOOKS=1` ile `UnityRTS/Logs/autoplay_*.png`.
 - [ ] Raporda: C# test sayısı 56 olacak, duvar/kapı ve yeni arayüz, game-icons.net atfı.
-- [ ] En son: görünüş asset ve material'larla değiştirilecek (öğrencinin isteği).
+- [x] Görünüş asset ve material'larla değişti (öğrencinin isteği, 25 Kasım).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
       kalktı; eskiden 7 yer yüzünden nüfus 20'de kalıyordu. C# testleri 54/54, otomatik maç 76/76. Eski build ve yeni editör uyuşmaz: yeniden build.

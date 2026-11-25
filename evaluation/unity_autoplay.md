@@ -1,8 +1,8 @@
-# Automatic play test (Unity 6000.4.9f1, 2026-11-25 15:55)
+# Automatic play test (Unity 6000.4.9f1, 2026-11-25 22:38)
 
 `AutoPlayTest.Run` (editor only): host session, real commands, checked on the host; player 2 is a stand-in. Mouse input and the look of the UI are not tested.
 
-**81 passed, 0 failed.**
+**88 passed, 0 failed.**
 
 | Section | Check | Result | Detail |
 |---|---|---|---|
@@ -49,20 +49,27 @@
 | Combat | a distant enemy is hidden | ok |  |
 | Catapult | Catapult hits a building (x3) | ok | damage 36,0, expected 36,0 |
 | Catapult | refused: building a House on the enemy's order | ok |  |
-| Dock | build dock | ok | 10 s with 6 Villagers at (-49, 43) P1Base |
-| Dock | the Dock stands on the shore | ok | (-49, 43) P1Base |
+| Dock | build dock | ok | 9 s with 6 Villagers at (-47, 41) P1Base |
+| Dock | the Dock stands on the shore | ok | (-47, 41) P1Base |
 | Dock | train raider_boat | ok | 15 s, zone P1Harbor |
 | Dock | train warship | ok | 30 s, zone P1Harbor |
 | Dock | train raider_boat | ok | 15 s, zone P1Harbor |
+| Dock | train fishing_boat | ok | 12 s, zone P1Harbor |
 | Dock | ships appear side by side in the water before the Dock | ok | closest pair 4,0 m |
-| Ships | a ship stops at the shore | ok | P1Harbor z=45 |
-| Ships | a land unit stops at the shore | ok | P1Base z=45 |
+| Ships | a ship stops at the shore | ok | shore -0,1 m behind it |
+| Ships | a land unit stops at the shore | ok | shore -0,3 m before it |
 | Ships | Raider Boat attacks an enemy Dock from the sea | ok | damage 6,0 |
 | Ships | Warship shoots a land unit on the shore | ok |  |
-| Ships | sunk ships free their population | ok | 19 -> 16 |
-| Gathering | gather wood | ok | +10 after 31 s, node 22 m from the Town Center |
-| Gathering | gather gold | ok | +10 after 46 s, node 55 m from the Town Center |
-| Gathering | gather food | ok | +10 after 60 s, node 85 m from the Town Center |
+| Ships | a ship sails up the river | ok | (-3, -15) Center |
+| Ships | a land unit wades through the river | ok | straight 40 m, walked 40 m in 7 s, ends at (20, -25) SouthField |
+| Ships | a fish shoal lies near the own harbor | ok | (-24, 60) OpenSea |
+| Ships | a Villager cannot fish | ok |  |
+| Ships | a Fishing Boat brings fish to the Dock | ok | +10 food after 28 s, 240 left |
+| Ships | refused: a Fishing Boat cannot build | ok |  |
+| Ships | sunk ships free their population | ok | 20 -> 16 |
+| Gathering | gather wood | ok | +10 after 24 s, node 27 m from the Town Center |
+| Gathering | gather gold | ok | +10 after 29 s, node 24 m from the Town Center |
+| Gathering | gather food | ok | +10 after 22 s, node 19 m from the Town Center |
 | AI approval | approve: 2 Spearmen are queued | ok | Approved plan-001: 1 action(s) sent. |
 | AI approval | approve: 20 Archers are refused | ok | Approved plan-002: 0 sent, 1 skipped (not enough population capacity). |
 | AI approval | approve: researched technology is refused | ok | Approved plan-003: 0 sent, 1 skipped (already researched). |
@@ -74,8 +81,8 @@
 | AI approval | approve: Cavalry moves to NorthGate | ok | Approved plan-009: 1 action(s) sent. |
 | Placement | house exactly at (-88, 4) P1Base | ok | (-88, 4) P1Base |
 | Placement | house exactly at (-41, -12) WestMine | ok | (-41, -12) WestMine |
-| Placement | barracks exactly at (3, -2) Center | ok | (3, -2) Center |
-| Placement | dock exactly at (10, 43) NorthGate | ok | (10, 43) NorthGate |
+| Placement | barracks exactly at (-30, 4) Center | ok | (-30, 4) Center |
+| Placement | dock exactly at (26, 43) NorthGate | ok | (26, 43) NorthGate |
 | Placement | a second House on the same ground goes beside it | ok | (-92, 4) P1Base |
 | Placement | refused: House in the sea | ok |  |
 | Placement | refused: House outside the map | ok |  |
@@ -85,7 +92,7 @@
 | Pathfinding | a Scout walks around a wall of five Barracks | ok | straight 20 m, walked 32 m in 5 s, ends at (-10, -5) Center |
 | Pathfinding | a building that appears on the way is avoided | ok | straight 30 m, walked 31 m in 5 s, ends at (20, -5) Center |
 | Pathfinding | a move order into a building ends beside it | ok | (11, -5) Center |
-| Pathfinding | the longest search of the match is short | ok | 1,1 ms |
+| Pathfinding | the longest search of the match is short | ok | 1,0 ms |
 | Victory | destroying the enemy Town Center wins the match | ok | result 1 |
 
 Errors in the Unity log during the run: 0

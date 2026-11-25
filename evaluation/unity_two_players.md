@@ -1,13 +1,15 @@
-# Automatic two-player match (2026-11-25 15:59)
+# Automatic two-player match (2026-11-25 22:41)
 
 Two instances of the Windows test build (Fusion host and client through Photon, no window). The client plays with a virtual mouse through the normal scripts. `Testing/AutoMatch.cs` is not in the game build.
 
-**35 passed, 0 failed.**
+**37 passed, 0 failed.**
 
-Same state on both screens: 101 client samples with 1143 object values (position within 1.5 m, HP, existence): **0 differences**, largest distance 0.38 m; 101 samples with 202 player values (resources, population, age, result): **0 differences**.
+Same state on both screens: 100 client samples with 1131 object values (position within 1.5 m, HP, existence): **0 differences**, largest distance 0.36 m; 100 samples with 200 player values (resources, population, age, result): **0 differences**.
 
 | Side | Section | Check | Result | Detail |
 |---|---|---|---|---|
+| host (P1) | start | the host opens the waiting room | ok | Waiting  |
+| host (P1) | start | the match does not start without a second player | ok | Menu |
 | host (P1) | start | host is player 1 with a Town Center and 3 Villagers | ok |  |
 | host (P1) | start | the second player joined | ok |  |
 | host (P1) | start | player 2 has slot 2 and its own base | ok |  |
@@ -15,11 +17,11 @@ Same state on both screens: 101 client samples with 1143 object values (position
 | host (P1) | play | the House of player 2 is finished on the host too | ok |  |
 | host (P1) | play | the host sees the attack on its Town Center | ok | 1500 -> 1494 |
 | host (P1) | end | the host sees DEFEAT | ok | DEFEAT |
-| host (P1) | end | the other player left: back in the menu | ok | Rakip oyundan ayrildi, mac bitti. |
+| host (P1) | end | the other player left: back in the menu | ok | Your opponent left. The match is over. |
 | client (P2) | start | joined as player 2 with a Town Center and 3 Villagers | ok |  |
 | client (P2) | start | the camera starts at the own base | ok | (65,0, 8,2) |
 | client (P2) | start | the enemy base is hidden by the fog | ok |  |
-| client (P2) | selection | a click selects one Villager | ok | 1 selected, screen 1280x720, mouse virtual (640.00, 411.72) |
+| client (P2) | selection | a click selects one Villager | ok | 1 selected, screen 1280x720, mouse virtual (640.00, 396.00) |
 | client (P2) | selection | the panel shows the building buttons | ok |  |
 | client (P2) | selection | dragging a box selects all three | ok | 3 selected |
 | client (P2) | placement | the button starts the ghost | ok |  |
@@ -32,8 +34,8 @@ Same state on both screens: 101 client samples with 1143 object values (position
 | client (P2) | placement | the Villagers build it, capacity 10 | ok | capacity 10 |
 | client (P2) | placement | a right click cancels the ghost, nobody walks off | ok |  |
 | client (P2) | placement | Dock inland: red | ok |  |
-| client (P2) | placement | Dock near the shore: green, straight to the shore | ok | (52,0, 42,5) |
-| client (P2) | placement | a click places the Dock on the shore | ok | (52,0, 42,5) |
+| client (P2) | placement | Dock near the shore: green, straight to the shore | ok | (53,4, 40,9) |
+| client (P2) | placement | a click places the Dock on the shore | ok | (53,4, 40,9) |
 | client (P2) | commands | a right click moves a Villager | ok | (45,8, 2,5) |
 | client (P2) | commands | a click selects the Town Center | ok | town_center |
 | client (P2) | commands | the button trains a Villager | ok | queue 1 |
