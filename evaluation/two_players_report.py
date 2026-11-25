@@ -49,7 +49,9 @@ def compare(host, client):
                 worst = max(worst, d)
                 if d > POSITION:
                     bad.append(f"tick {t}: {mine[0]} {oid} is {d:.1f} m away from the host's position")
-                if not min(h[3] for h in theirs) - 0.01 <= mine[3] <= max(h[3] for h in theirs) + 0.01:
+                # destroyed on the host in this half second: several hits may lie between its last sample and the end (HP 0)
+                low = min(h[3] for h in theirs) if len(theirs) == len(around) else 0.0
+                if not low - 0.01 <= mine[3] <= max(h[3] for h in theirs) + 0.01:
                     bad.append(f"tick {t}: {mine[0]} {oid} HP {mine[3]} on the client, {theirs[0][3]} on the host")
             elif mine not in theirs:
                 bad.append(f"tick {t}: player {oid} {mine} on the client, {theirs[0]} on the host")

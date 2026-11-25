@@ -61,7 +61,7 @@ public class CommandRelay : NetworkBehaviour
         var g = unit.GetComponent<VillagerGatherer>();
         if (g != null) g.Cancel(); // an explicit move stops gathering
         unit.AttackTarget = default; // and attacking
-        unit.MoveTo(pos);
+        unit.MoveTo(BuildPlaces.BesideBuildings(pos, unit.transform.position));
     }
 
     // Stores the target; UnitCombat walks to it and attacks.

@@ -25,8 +25,8 @@ public class NetworkBuilding : NetworkBehaviour
     readonly ProductionQueue queue = new ProductionQueue();
     ConstructionState construction;
 
-    public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
-    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
+    public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); BuildPlaces.Changed(); }
+    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); BuildPlaces.Changed(); }
 
     /// <summary>Half the width of the building on the ground (from its collider), for placing units next to it.</summary>
     public float FootprintHalf()

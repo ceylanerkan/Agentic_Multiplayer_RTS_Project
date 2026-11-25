@@ -168,6 +168,7 @@ public static class AutoPlayTest
         Add("Gathering", Gathering);
         Add("AI approval", Approval);
         Add("Placement", Placement);
+        Add("Pathfinding", Pathfinding);
         if (WithAi) Add("AI live", AiLive);
         Add("Victory", Victory);
     }
@@ -509,6 +510,54 @@ public static class AutoPlayTest
         yield return Refused("Dock far from the shore", () => Relay.SendBuild("dock", new Vector3(-65, 0, 5), "P1Base", villager));
         yield return Refused("House in the enemy base with a wrong zone name", () => Relay.SendBuild("house", new Vector3(60, 0, 20), "P1Base", villager));
         foreach (var s in sites) if (Alive(s)) s.TakeDamage(s.Hp + 1f);
+    }
+
+    static bool InsideBuilding(Vector3 p)
+    {
+        foreach (var b in NetworkBuilding.All)
+        {
+            Vector3 d = p - b.transform.position, s = GameSpawner.Instance.BuildingSize(b.TypeKey.ToString()) * 0.5f;
+            if (Mathf.Abs(d.x) < s.x && Mathf.Abs(d.z) < s.z) return true;
+        }
+        return false;
+    }
+
+    /// <summary>Walks there and watches every frame that the unit is never inside a building.</summary>
+    static IEnumerator Walk(string what, NetworkUnit u, Vector3 target, Action halfway = null)
+    {
+        Vector3 from = u.transform.position, last = from; bool inside = false, half = false; float walked = 0, t0 = Time.time;
+        Relay.SendMove(u.Object.Id, target);
+        yield return 0.3f;
+        yield return For(() =>
+        {
+            Vector3 p = u.transform.position;
+            inside |= InsideBuilding(p); walked += Flat(p - last); last = p;
+            if (!half && halfway != null && Flat(p - from) > Flat(target - from) * 0.4f) { half = true; halfway(); }
+            return !u.HasMoveTarget;
+        }, 90);
+        Check(what, ok && !inside && Flat(u.transform.position - target) < 1f && (halfway == null || half), "straight " + Flat(target - from).ToString("0") + " m, walked " + walked.ToString("0") + " m in " + (Time.time - t0).ToString("0") + " s" + (inside ? ", went through a building" : "") + ", ends at " + At(u.transform.position));
+    }
+
+    static IEnumerator Pathfinding()
+    {
+        var spawner = GameSpawner.Instance; Vector3 c = Done("town_center").transform.position;
+        var v = spawner.SpawnUnit(MyRef, "villager", c + new Vector3(-9, 0, 1));
+        yield return 0.3f;
+        yield return Walk("a Villager walks around the Town Center", v, c + new Vector3(9, 0, 1));
+        // a wall of buildings across the way, then a building that appears on the way
+        var walls = new List<NetworkBuilding>();
+        for (int i = -2; i <= 2; i++) walls.Add(spawner.SpawnBuilding(MyRef, "barracks", new Vector3(-20, 0, -5 + i * 4.2f), true));
+        var scout = spawner.SpawnUnit(MyRef, "scout", new Vector3(-30, 0, -5));
+        yield return 0.3f;
+        yield return Walk("a Scout walks around a wall of five Barracks", scout, new Vector3(-10, 0, -5));
+        yield return Walk("a building that appears on the way is avoided", scout, new Vector3(20, 0, -5), () => walls.Add(spawner.SpawnBuilding(MyRef, "barracks", new Vector3(8, 0, -5), true)));
+        Relay.SendMove(scout.Object.Id, new Vector3(8, 0, -5));
+        yield return For(() => !scout.HasMoveTarget, 30);
+        Check("a move order into a building ends beside it", ok && !InsideBuilding(scout.transform.position) && Flat(scout.transform.position - new Vector3(8, 0, -5)) < 4f, At(scout.transform.position));
+        Shot("walls", new Vector3(-10, 45, -50), new Vector3(-10, 0, -5));
+        Check("the longest search of the match is short", NetworkUnit.LongestSearchMs < 30f, NetworkUnit.LongestSearchMs.ToString("0.0") + " ms");
+        foreach (var b in walls) Me.Runner.Despawn(b.Object);
+        Me.Runner.Despawn(v.Object); Me.Runner.Despawn(scout.Object);
     }
 
     // ---- the AI panel with the real gateway ----

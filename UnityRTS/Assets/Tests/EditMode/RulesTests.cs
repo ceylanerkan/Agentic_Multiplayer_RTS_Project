@@ -652,6 +652,36 @@ namespace RTS.Tests
         }
 
         [Test]
+        public void PathGrid_GoesAroundBuildingsAndKeepsToLandOrWater()
+        {
+            var z = MapZones();
+            var grid = new PathGrid(-100, -70, 100, 80, (x, zz) => ZoneLookup.IsWater(z.ZoneAt(x, zz)));
+            var wall = new List<Block> { new Block(0, 0, 3, 3), new Block(0, 8, 2, 4), new Block(0, -8, 2, 4) }; // closed from z = -12 to 12
+            grid.SetBlocks(wall);
+            Assert.AreEqual(0, grid.Find(-20, -30, 20, -30, false).Count);          // free straight way
+            var path = grid.Find(-20, 0, 20, 0, false);
+            Assert.Greater(path.Count, 1);
+            float px = -20, pz = 0, length = 0;
+            foreach (var p in path)
+            {
+                Assert.IsTrue(grid.LineFree(px, pz, p[0], p[1], false), "way point " + p[0] + ", " + p[1]);
+                length += (float)System.Math.Sqrt((p[0] - px) * (p[0] - px) + (p[1] - pz) * (p[1] - pz));
+                px = p[0]; pz = p[1];
+            }
+            Assert.AreEqual(20, px, 0.01f); Assert.AreEqual(0, pz, 0.01f);          // ends exactly at the target
+            Assert.Less(length, 52);                                               // the shortest way around is about 47
+            var to = grid.Find(-20, 0, 0, 0, false);                               // into a building: ends beside it, on the near side
+            Assert.Less(to[to.Count - 1][0], -2.9f);
+            var shore = grid.Find(-65, 0, -65, 60, false);                         // a land unit ordered into the sea ends at the shore
+            Assert.AreEqual(44.5f, shore[shore.Count - 1][1], 0.01f);
+            var ship = grid.Find(-65, 60, 60, 30, true);                           // a ship ordered onto land stays in the water
+            Assert.AreEqual(45.5f, ship[ship.Count - 1][1], 0.01f);
+            grid.SetBlocks(new List<Block> { new Block(0, 6, 8, 1), new Block(0, -6, 8, 1), new Block(7, 0, 1, 8), new Block(-7, 0, 1, 8) });
+            var closed = grid.Find(0, 0, 30, 0, false);                            // locked in: as near as possible, no endless search
+            Assert.Less(System.Math.Abs(closed[closed.Count - 1][0]), 7);
+        }
+
+        [Test]
         public void GeneratedMapLayout_PutsShoreAndResourcesInTheRightZones()
         {
             var z = MapZones();

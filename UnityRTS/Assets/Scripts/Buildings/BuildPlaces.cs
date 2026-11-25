@@ -37,6 +37,42 @@ public static class BuildPlaces
         return true;
     }
 
+    // ---- pathfinding (host only) ----
+    static PathGrid grid; static ZoneMap gridMap; static bool dirty;
+
+    /// <summary>Counts the changes of buildings and resources: a unit on its way checks its path again.</summary>
+    public static int Version { get; private set; }
+
+    public static void Changed() { dirty = true; Version++; }
+
+    public static PathGrid Grid
+    {
+        get
+        {
+            if (ZoneMap.Instance == null) return null;
+            if (grid == null || gridMap != ZoneMap.Instance) // a new match
+            {
+                gridMap = ZoneMap.Instance; dirty = true;
+                grid = new PathGrid(-BuildSite.MapHalfX, BuildSite.MapMinZ, BuildSite.MapHalfX, BuildSite.MapMaxZ, (x, z) => ZoneLookup.IsWater(ZoneAt(x, z)));
+            }
+            if (dirty) { grid.SetBlocks(Blocks(null)); dirty = false; }
+            return grid;
+        }
+    }
+
+    /// <summary>A move order into a building or resource ends beside it.</summary>
+    public static Vector3 BesideBuildings(Vector3 p, Vector3 from)
+    {
+        if (Grid == null) return p;
+        foreach (var b in Blocks(null))
+        {
+            if (Mathf.Abs(p.x - b.X) >= b.HalfX || Mathf.Abs(p.z - b.Z) >= b.HalfZ) continue;
+            bool water = ZoneLookup.IsWater(ZoneAt(p.x, p.z));
+            return Grid.NearestFree(p.x, p.z, water, from.x, from.z, out float x, out float z) ? new Vector3(x, p.y, z) : p;
+        }
+        return p;
+    }
+
     static string ZoneAt(float x, float z) { return ZoneMap.Instance.ZoneAt(new Vector3(x, 0, z)); }
 
     static List<Block> Blocks(PlayerRef? viewer)

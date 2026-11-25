@@ -5,7 +5,8 @@ using UnityEngine;
 
 /// <summary>
 /// A unit. The host owns its state and moves it; position is synchronised by the NetworkTransform on the same prefab.
-/// Movement here is a straight line; NavMeshAgent pathing replaces it once the map is baked.
+/// It walks along the way points of PathGrid (around buildings and resources, land or water only); the last part goes straight to
+/// the target, until the reach test of gathering, building or combat stops it.
 /// </summary>
 public class NetworkUnit : NetworkBehaviour
 {
@@ -31,7 +32,50 @@ public class NetworkUnit : NetworkBehaviour
     /// <summary>Host only: the last move was stopped by the land/water rule (UnitCombat then drops an unreachable target).</summary>
     public bool BlockedByShore { get; private set; }
 
-    public void MoveTo(Vector3 target) { MoveTarget = target; HasMoveTarget = true; BlockedByShore = false; }
+    public void MoveTo(Vector3 target)
+    {
+        if (!HasMoveTarget) planned = false; // a chase calls this every tick: the path of a moving unit is kept
+        MoveTarget = target; HasMoveTarget = true; BlockedByShore = false;
+    }
+
+    // ---- path (host only) ----
+    const float ReplanDistance = 1f, ReplanSeconds = 0.5f;
+    readonly List<Vector3> path = new List<Vector3>();
+    int pathIndex, pathVersion;
+    bool planned;
+    float nextPlan;
+    Vector3 pathTarget;
+
+    /// <summary>The longest time one search took in this match (milliseconds), for the test report.</summary>
+    public static float LongestSearchMs;
+
+    void UpdatePath()
+    {
+        Vector3 moved = MoveTarget - pathTarget; moved.y = 0;
+        bool newTarget = moved.magnitude > ReplanDistance && Runner.SimulationTime >= nextPlan; // an enemy that runs away
+        bool newBuilding = pathVersion != BuildPlaces.Version && !PathFree();
+        if (planned && !newTarget && !newBuilding) { pathVersion = BuildPlaces.Version; return; }
+        var grid = BuildPlaces.Grid;
+        planned = true; pathTarget = MoveTarget; pathVersion = BuildPlaces.Version; nextPlan = Runner.SimulationTime + ReplanSeconds;
+        path.Clear(); pathIndex = 0;
+        if (grid == null) return;
+        float start = Time.realtimeSinceStartup;
+        Vector3 pos = transform.position;
+        foreach (var p in grid.Find(pos.x, pos.z, MoveTarget.x, MoveTarget.z, IsShip)) path.Add(new Vector3(p[0], pos.y, p[1]));
+        LongestSearchMs = Mathf.Max(LongestSearchMs, (Time.realtimeSinceStartup - start) * 1000f);
+    }
+
+    // after a change of the map: is the rest of the way still free? (the last straight part may end inside a building)
+    bool PathFree()
+    {
+        var grid = BuildPlaces.Grid;
+        if (grid == null) return true;
+        Vector3 a = transform.position;
+        for (int i = pathIndex; i < path.Count; i++) { if (!grid.LineFree(a.x, a.z, path[i].x, path[i].z, IsShip)) return false; a = path[i]; }
+        return pathIndex < path.Count || grid.LineFree(a.x, a.z, MoveTarget.x, MoveTarget.z, IsShip);
+    }
+
+    bool IsShip { get { return DomainRules.DomainOfUnit(GameDataProvider.Get().Units[TypeKey.ToString()]) == DomainRules.Water; } }
 
     /// <summary>Host only: a new attack order; a shore block from an older move must not cancel it.</summary>
     public void Attack(NetworkId target) { AttackTarget = target; BlockedByShore = false; }
@@ -56,15 +100,21 @@ public class NetworkUnit : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority || !HasMoveTarget) return;
+        UpdatePath();
         Vector3 pos = transform.position;
-        Vector3 to = MoveTarget - pos; to.y = 0;
+        bool onPath = pathIndex < path.Count;
+        Vector3 to = (onPath ? path[pathIndex] : MoveTarget) - pos; to.y = 0;
         float step = GameDataProvider.Get().Units[TypeKey.ToString()].Speed * Runner.DeltaTime; // speed from units.json
-        if (to.magnitude <= step) { transform.position = new Vector3(MoveTarget.x, pos.y, MoveTarget.z); HasMoveTarget = false; }
+        if (to.magnitude <= step)
+        {
+            transform.position = pos + to;
+            if (onPath) pathIndex++; else HasMoveTarget = false;
+        }
         else
         {
             Vector3 next = pos + to.normalized * step;
-            // Domain rule: land units never enter water zones, ships never enter land zones (the zone map decides).
-            // This is the simple version; a baked NavMesh per agent type can replace it later.
+            // Domain rule: land units never enter water zones, ships never enter land zones (the zone map decides); the path keeps
+            // to it, this stops the last straight part at the shore.
             if (!CanStandAt(next) && !SlideAlongShore(pos, to.x, step, out next)) { HasMoveTarget = false; BlockedByShore = true; return; }
             transform.position = next;
         }

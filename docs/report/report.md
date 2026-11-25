@@ -86,8 +86,13 @@ Unity (host or client, Fusion 2)                      Python (ai/)
 
 **Engine-free core.** The game rules that must be correct and explainable (costs, population, prerequisites, damage,
 domains, visibility, production queue, win condition, approval checks) are plain C# classes in the assembly
-`RTS.Core` without any `UnityEngine` reference. They are compiled and covered by 54 NUnit tests outside Unity. The
+`RTS.Core` without any `UnityEngine` reference. They are covered by 55 NUnit tests. The
 MonoBehaviours and NetworkBehaviours are thin adapters that read the networked objects and call the core.
+
+**Pathfinding.** The host searches paths with A* on a 1 m grid (`PathGrid`): land units use land cells, ships water cells, and
+buildings and resources block the cells they cover. The path has no corner cutting and is straightened; a free straight way needs
+no search. A grid was chosen instead of a NavMesh because players may build anywhere, so the free ground changes during the match;
+a moving unit checks its path again whenever a building appears or disappears. Units do not avoid each other.
 
 **Python side.** `ai/gateway` (FastAPI, agent loop, logs), `ai/mcp-server` (seven tools), `ai/rag` (knowledge index
 and retriever) and `evaluation/` (fixtures, prompts, runner). Python tests: 88 pytest cases.
@@ -283,14 +288,14 @@ failures of the real model (for example a missing prerequisite or a wrong zone) 
 
 *Table III. Security tests.* See `evaluation/security-tests.md` (rows S1-S17; most are automated, the live column is open).
 
-**Unity side.** 54 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
+**Unity side.** 55 EditMode tests cover damage, costs, validator, domains, pathfinding, visibility (including unfinished buildings),
 event log, production queue, tech effects, snapshot assembly, approval, the decision log and the contract between the
-C# AI types and `action_plan.schema.json`. They run in the Unity Test Runner (54 of 54 passed).
+C# AI types and `action_plan.schema.json`. They run in the Unity Test Runner (55 of 55 passed).
 
-**Automatic matches.** `AutoPlayTest` hosts a match in the Unity editor without a window and plays it through the normal commands: 76 of 76 checks
-passed (production, all technologies, combat, ships, building placement, approval and refusals; `evaluation/unity_autoplay.md`). Two instances of the
-Windows test build play a match over Photon, the client with a virtual mouse: 35 of 35 checks passed, and 100 samples of the client (1131 object values,
-200 player values) showed no difference from the host (`evaluation/unity_two_players.md`). These matches found three faults that the unit tests had not
+**Automatic matches.** `AutoPlayTest` hosts a match in the Unity editor without a window and plays it through the normal commands: 81 of 81 checks
+passed (production, all technologies, combat, ships, building placement, pathfinding, approval and refusals; `evaluation/unity_autoplay.md`). Two instances of the
+Windows test build play a match over Photon, the client with a virtual mouse: 35 of 35 checks passed, and 101 samples of the client (1143 object values,
+202 player values) showed no difference from the host (`evaluation/unity_two_players.md`). These matches found three faults that the unit tests had not
 shown: other buildings took the places of the Dock, a Raider Boat could not reach an enemy Dock, and trained units appeared inside each other.
 
 ## X. Challenges and Lessons Learned
@@ -325,8 +330,7 @@ We delivered a two-player networked RTS with an authoritative host, a fog-of-war
 read-only MCP tools and a RAG index, structured and approved plans, a decision log and an evaluation harness. Future
 work: per-player interest management for server-side fog of war; embeddings and a reranker for retrieval with a
 larger corpus; AI plans that can chain (build, then train after the building completes); a tool that explains the
-validator's rejection to the model so that it can repair a plan; NavMesh pathfinding and unit separation instead of
-straight-line moves with a zone check; a symmetric map and balance tuning from recorded matches.
+validator's rejection to the model so that it can repair a plan; unit separation (units share paths and may overlap); a symmetric map and balance tuning from recorded matches.
 
 ## XII. Appendix
 
@@ -345,6 +349,6 @@ server, RAG, schemas), `evaluation/`, `docs/`.
 | LLM | Local: Ollama 0.40 with `qwen2.5:7b` (default). A Gemini adapter exists but is not used |
 
 **C. Tests.** Python: `python -m pytest -q ai evaluation` (88 tests, no network, no API key). C#: Unity Test Runner,
-EditMode, assembly `RTS.Tests.EditMode` (54 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
+EditMode, assembly `RTS.Tests.EditMode` (55 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
 
 **D. Demo scenarios.** See `docs/demo-script.md` (to be written on night 15).

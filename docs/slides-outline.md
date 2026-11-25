@@ -14,5 +14,5 @@
     client-side fog limitation.
 11. **Evaluation**: metrics table (mock vs live), one failure case.
 12. **Lessons and future work**: engine-free core, single source of numbers, "a compile check proves types, not lifecycle" (the
-    unregistered spawner); server-side fog, plan chaining, pathfinding.
+    unregistered spawner); server-side fog, plan chaining, unit separation.
 (Backup slide: demo scenario checklist 1-9.)

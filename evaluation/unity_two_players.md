@@ -1,10 +1,10 @@
-# Automatic two-player match (2026-11-25 15:27)
+# Automatic two-player match (2026-11-25 15:59)
 
 Two instances of the Windows test build (Fusion host and client through Photon, no window). The client plays with a virtual mouse through the normal scripts. `Testing/AutoMatch.cs` is not in the game build.
 
 **35 passed, 0 failed.**
 
-Same state on both screens: 100 client samples with 1131 object values (position within 1.5 m, HP, existence): **0 differences**, largest distance 0.40 m; 100 samples with 200 player values (resources, population, age, result): **0 differences**.
+Same state on both screens: 101 client samples with 1143 object values (position within 1.5 m, HP, existence): **0 differences**, largest distance 0.38 m; 101 samples with 202 player values (resources, population, age, result): **0 differences**.
 
 | Side | Section | Check | Result | Detail |
 |---|---|---|---|---|
@@ -34,7 +34,7 @@ Same state on both screens: 100 client samples with 1131 object values (position
 | client (P2) | placement | Dock inland: red | ok |  |
 | client (P2) | placement | Dock near the shore: green, straight to the shore | ok | (52,0, 42,5) |
 | client (P2) | placement | a click places the Dock on the shore | ok | (52,0, 42,5) |
-| client (P2) | commands | a right click moves a Villager | ok | (45,7, 2,7) |
+| client (P2) | commands | a right click moves a Villager | ok | (45,8, 2,5) |
 | client (P2) | commands | a click selects the Town Center | ok | town_center |
 | client (P2) | commands | the button trains a Villager | ok | queue 1 |
 | client (P2) | commands | the Villager appears | ok |  |

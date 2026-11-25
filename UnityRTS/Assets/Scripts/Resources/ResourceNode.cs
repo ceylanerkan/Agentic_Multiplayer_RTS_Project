@@ -19,11 +19,11 @@ public class ResourceNode : NetworkBehaviour
 
     public override void Spawned()
     {
-        All.Add(this); EntityVisuals.Attach(gameObject);
+        All.Add(this); EntityVisuals.Attach(gameObject); BuildPlaces.Changed();
         if (HasStateAuthority) Amount = startAmount;
     }
 
-    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
+    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); BuildPlaces.Changed(); }
 
     /// <summary>Host only. Removes up to amount from the node; despawns it when it reaches zero.</summary>
     /// <returns>true when the node is now empty and was despawned (do not read it afterwards)</returns>

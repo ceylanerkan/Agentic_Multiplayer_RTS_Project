@@ -63,7 +63,7 @@ Warships in OpenSea can reach the NorthGate path, so control of the sea matters 
 
 ## 3. Networking choice: Photon Fusion 2, Host Mode
 - The **host has StateAuthority** over every unit, building, resource stockpile and the match state. It runs
-  NavMesh pathfinding, gathering, combat and fog-of-war visibility.
+  grid pathfinding (A*), gathering, combat and fog-of-war visibility.
 - Clients send **command requests** through a per-player `CommandRelay` (RPC InputAuthority → StateAuthority).
   The host validates ownership, cost, population, prerequisites and visibility before applying them.
 - **AI-approved actions use exactly the same RPCs**, so they cannot bypass gameplay authority.

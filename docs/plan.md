@@ -6,7 +6,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 ## Şu an ne durumda
 | Bölüm (puan) | Durum | Eksik |
 |---|---|---|
-| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler ve serbest bina yerleştirme otomatik maçta (76/76), fare build'de (sanal fare) | - |
+| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler, serbest bina yerleştirme ve yol bulma otomatik maçta (81/81), fare build'de (sanal fare) | - |
 | Multiplayer (15) | 24 Kasım: iki build ile öğrenci denedi; 25 Kasım: yeni kodla otomatik iki oyunculu maç 35/35, iki taraf arasında 0 fark | - |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
 | LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | istem değişti, 21 soru yeniden ölçülecek |
@@ -16,7 +16,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
-Son push: `43d811b`; iki oyunculu otomatik maç ve kaynak id'si henüz push edilmedi.
+Son push: `ae7dc56`; compile-check ve yol bulma henüz push edilmedi.
 Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soruluk
 ölçüm bu değişiklikten önceki istemle yapıldı. **Öğrenci (25 Kasım): önce oyun bitsin, ölçüm sonra.**
 
@@ -51,14 +51,16 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
       Unity derleyicisiyle derlendi, oyunda denenmedi.
 - [x] Claude: otomatik maç `Assets/Scripts/Editor/AutoPlayTest.cs` (build'e girmez; komut `docs/setup.md` bölüm 5): host oturumu, gerçek komutlar, 2. oyuncu
       vekil. Villager, House, Barracks, Age II, Iron Weapons, Fletching, Horse Collar, Stable/Cavalry, Catapult, Dock/gemi, toplama, AI onayı, zafer ve retler:
-      **76/76** (`evaluation/unity_autoplay.md`), Unity logunda hata yok.
+      **81/81** (`evaluation/unity_autoplay.md`), Unity logunda hata yok.
 - [x] Claude: otomatik maçın bulduğu üç hata düzeltildi ve yeniden oynandı: (1) AI ve en yakın yer seçimi kıyı yerini Barracks/Blacksmith'e veriyordu, Dock
       kurulamıyordu; (2) Raider Boat düşman Dock'una ulaşamıyordu (düz yol kıyıda kesiliyordu, artık kıyı boyunca kayıyor); (3) bir bina 4'ten fazla birlik
       üretince birlikler iç içe çıkıyordu.
 - [x] Claude: iki oyunculu otomatik maç (`Testing/AutoMatch.cs` yalnız test build'inde, `tools/run_auto_match.ps1`, 2-3 dk, penceresiz): host + katılan, katılan sanal
-      fareyle oynar (seçim, kutu, düğmeler, hayalet yeşil/kırmızı, sağ tık, sis, saldırı, VICTORY/DEFEAT, menüye dönüş). 35/35; iki tarafın gördüğü 1131 nesne ve
-      200 oyuncu değerinde 0 fark (`evaluation/unity_two_players.md`). Ekran resimlerine bakıldı: düğmeler, HUD ve AI paneli 1280x720'de düzgün.
-- [x] Claude: oyunun Windows build'i alındı (`UnityRTS/Builds/UnityRTS.exe`, 25 Kasım 15:24, son kod). Komut: `AutoBuild.Game`, menü `Tools > RTS > Build Windows game`.
+      fareyle oynar (seçim, kutu, düğmeler, hayalet yeşil/kırmızı, sağ tık, sis, saldırı, VICTORY/DEFEAT, menüye dönüş). 35/35; iki tarafın gördüğü 1143 nesne ve
+      202 oyuncu değerinde 0 fark (`evaluation/unity_two_players.md`). Ekran resimlerine bakıldı: düğmeler, HUD ve AI paneli 1280x720'de düzgün.
+- [x] Claude: oyunun Windows build'i alındı (`UnityRTS/Builds/UnityRTS.exe`, 25 Kasım 15:56, son kod). Komut: `AutoBuild.Game`, menü `Tools > RTS > Build Windows game`.
+- [x] Claude (öğrencinin isteği, 25 Kasım): **yol bulma** (`PathGrid`: 1 m ızgarada A*, yalnız host; bina ve kaynakların etrafından, kara/su ayrı; yolda bina
+      kurulursa yol yenilenir). Önceden birlikler düz gidip binaların içinden geçiyordu. C# testleri 55/55, en uzun arama 1,1 ms. Sınır: birlikler birbirinden kaçınmaz.
 - Kod değişirse yeniden build (`AutoBuild.Game`).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
@@ -119,7 +121,8 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 ### 5. Kapanış (29-30 Kasım)
 - [x] Claude (25 Kasım): tam `pytest -q ai evaluation` (88), gizli anahtar taraması (temiz), temiz klonda dizin + testler + mock değerlendirme çalıştı.
       Paketler Anaconda'dan geldi: `pip install` ve Unity tarafı temiz klonda denenmedi. Kod değişirse 29 Kasım'da bir kez daha.
-- [ ] Claude: `tools/compile-check` artık derlenmeyebilir (bu bilgisayarda `dotnet` PATH'te yok, denenmedi) (stub'da `Runner.SceneManager` yok): düzelt ya da setup.md'den çıkar.
+- [x] Claude: `tools/compile-check/check.ps1`: bütün C# kodunu Unity'nin içindeki derleyiciyle, gerçek Unity/Fusion dosyalarına karşı derler (18 sn, Unity açılmaz,
+      .NET SDK gerekmez). Eski stub dosyaları kalktı.
 - [ ] Öğrenci: son Windows build, demo provası (editör kapalı, gateway önceden açık), `docs/defense-notes.md` ile savunma provası.
 - [ ] Teslim.
 
