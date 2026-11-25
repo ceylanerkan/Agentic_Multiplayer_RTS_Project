@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// The look of a Wall or Gate (local, no network state): a post of sharpened logs in the middle and, towards every neighbouring piece
-/// of the same owner, a piece of fence (model "fence"; without it a row of logs made here). A Gate stands across the line and opens its doors when one of its owner's units is near.
+/// of the same owner, a piece of wall (models "wallpost" and "fence"; without them logs made here). A Gate stands across the line and opens its doors when one of its owner's units is near.
 /// All parts exist from the start (switched on and off), so the fog of war can hide them with the rest of the building.
 /// </summary>
 [RequireComponent(typeof(NetworkBuilding))]
@@ -49,7 +49,7 @@ public class WallLook : MonoBehaviour
             Part(frame, beamMesh, dark, new Vector3(0, 2.72f, 0), new Vector3(2.1f, 0.14f, 0.5f));
             doorA = Door(-0.78f, 1f); doorB = Door(0.78f, -1f);
         }
-        else Part(look, postMesh, wood, Vector3.zero, Vector3.one);
+        else if (GlbModel.Spawn("wallpost", look) == null) Part(look, postMesh, wood, Vector3.zero, Vector3.one);
         Links();
     }
 
@@ -64,17 +64,21 @@ public class WallLook : MonoBehaviour
         }
     }
 
-    Transform fenceDoor;
-
     bool FenceGate()
     {
-        var model = GlbModel.Spawn("fencegate", frame); var door = GlbModel.Spawn("fencedoor", frame);
-        if (model == null || door == null) return false;
-        var f = door.GetComponentInChildren<MeshFilter>();
-        float edge = f != null ? f.sharedMesh.bounds.min.x : -0.28f;
-        fenceDoor = new GameObject("Hinge").transform; fenceDoor.SetParent(frame, false); fenceDoor.localPosition = new Vector3(edge, 0, 0);
-        door.transform.SetParent(fenceDoor, false); door.transform.localPosition = new Vector3(-edge, 0, 0);
-        return true;
+        var model = GlbModel.Spawn("gateframe", frame);
+        if (model == null) return false;
+        doorA = Leaf(-0.72f, 0f); doorB = Leaf(0.72f, 180f);
+        return doorA != null && doorB != null;
+    }
+
+    Transform Leaf(float x, float turn)
+    {
+        var hinge = new GameObject("Hinge").transform; hinge.SetParent(frame, false); hinge.localPosition = new Vector3(x, 0, 0);
+        var door = GlbModel.Spawn("gatedoor", hinge);
+        if (door == null) return null;
+        door.transform.localRotation = Quaternion.Euler(0, turn, 0); door.transform.localScale = new Vector3(-1f, 1f, 1f); // the file is mirrored in x when it is read
+        return hinge;
     }
 
     Transform Door(float x, float side)
@@ -104,7 +108,6 @@ public class WallLook : MonoBehaviour
             }
         }
         open = Mathf.MoveTowards(open, wantedOpen, Time.deltaTime * 2.5f);
-        if (fenceDoor != null) { fenceDoor.localRotation = Quaternion.Euler(0, -98f * open, 0); return; }
         doorA.localRotation = Quaternion.Euler(0, -98f * open, 0); doorB.localRotation = Quaternion.Euler(0, 98f * open, 0);
     }
 
@@ -121,6 +124,7 @@ public class WallLook : MonoBehaviour
             if (Mathf.Abs(o.x) <= 1 && Mathf.Abs(o.y) <= 1) here[o] = key == "gate";
         }
         if (gate) frame.localRotation = Quaternion.Euler(0, GateTurn(here), 0);
+        Colours();
         for (int i = 0; i < 4; i++)
         {
             var d = Directions[i];
@@ -135,6 +139,19 @@ public class WallLook : MonoBehaviour
             if (fences) t.localScale = new Vector3(half ? length - 0.9f : length, 1f, 1f); else links[i].sharedMesh = Row(half ? length - 0.9f : length);
             t.localPosition = gate ? new Vector3(d.x, 0, d.y) * WallLine.Step : Vector3.zero;
             t.localRotation = Quaternion.LookRotation((gate ? -1f : 1f) * new Vector3(d.x, 0, d.y)) * Quaternion.Euler(0, -90f, 0); // the row lies along x
+        }
+    }
+
+    // the roof of a Gate shows the team
+    void Colours()
+    {
+        if (CommandRelay.Local == null || CommandRelay.Local.Object == null) { version = -1; return; }
+        bool enemy = building.Owner != CommandRelay.Local.Object.InputAuthority;
+        foreach (var r in look.GetComponentsInChildren<Renderer>(true))
+        {
+            var mats = r.sharedMaterials;
+            for (int i = 0; i < mats.Length; i++) mats[i] = GlbModel.ForTeam(mats[i], enemy);
+            r.sharedMaterials = mats;
         }
     }
 

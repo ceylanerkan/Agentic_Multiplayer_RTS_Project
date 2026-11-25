@@ -31,6 +31,9 @@ public class ModelLook : MonoBehaviour
 
     /// <summary>Height of the model over the foot, for labels and bars; 0 = no model.</summary>
     public float Height { get; private set; }
+    /// <summary>Wide ones (riders, ships, catapults) get a wider ring.</summary>
+    public bool Wide { get { return def != null && !def.Person; } }
+    public bool Ship { get { return ship; } }
 
     NetworkUnit unit; NetworkBuilding building;
     Transform pivot, model;
@@ -58,7 +61,8 @@ public class ModelLook : MonoBehaviour
         // at the foot of the collider, in metres whatever the scale of the prefab
         var col = go.GetComponent<Collider>();
         Vector3 s = go.transform.localScale;
-        float foot = col != null ? col.bounds.min.y - go.transform.position.y : 0f;
+        float foot = col != null ? -col.bounds.extents.y : 0f; // not bounds.min: physics may still know the old place of a new object
+        if (building != null) foot += 0.2f;                   // GameSpawner sinks buildings a little, the models have a deep foundation instead
         if (node != null) pivot.localPosition = new Vector3(0, Local(foot, s.y), 0); // trees and stones keep the size of their place
         else { pivot.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z); pivot.localPosition = new Vector3(0, Local(foot, s.y), 0); }
 
@@ -87,8 +91,24 @@ public class ModelLook : MonoBehaviour
             fish.transform.localScale = Vector3.one * (0.8f + 0.1f * (old.IndexOf(c) % 4));
             DestroyImmediate(c.gameObject);
         }
+        foreach (Transform c in go.transform)
+        {
+            var r = c.GetComponent<Renderer>();
+            if (r == null) continue;
+            var shader = Shader.Find("Sprites/Default");
+            if (shader == null) break;
+            if (shoal == null) shoal = new Material(shader) { mainTexture = EntityVisuals.GlowTexture(), color = new Color(0.01f, 0.06f, 0.10f, 0.55f), renderQueue = 2950 };
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            DestroyImmediate(quad.GetComponent<Collider>());
+            quad.transform.SetParent(go.transform, false); quad.transform.localPosition = new Vector3(0, -0.02f, 0); quad.transform.localRotation = Quaternion.Euler(90, 0, 0); quad.transform.localScale = Vector3.one * 3.6f;
+            quad.GetComponent<Renderer>().sharedMaterial = shoal;
+            DestroyImmediate(c.gameObject);
+            break;
+        }
         FogOfWar.Forget(go);
     }
+
+    static Material shoal;
 
     static float Local(float metres, float scale) { return metres / Mathf.Max(0.01f, scale); }
 

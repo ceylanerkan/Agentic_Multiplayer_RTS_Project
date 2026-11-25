@@ -61,7 +61,7 @@ public static class GlbModel
             m.SetTexture("_BaseMap", t);
             if (name.Contains("Leaves")) { m.SetFloat("_Cutoff", 0.4f); m.SetFloat("_Cull", 0f); m.SetFloat("_Shine", 0f); m.renderQueue = 2450; }
         }
-        if (name == "C_Sail" || name == "C_Fabric" || name == "C_White" || name == "C_Red") m.SetFloat("_Cull", 0f); // sails are seen from both sides
+        if (name == "C_Sail" || name == "C_TeamSail" || name == "C_Fabric" || name == "C_White" || name == "C_Red") m.SetFloat("_Cull", 0f); // sails are seen from both sides
         if (name == "MI_WindowGlass") m.SetFloat("_Shine", 0.6f);
         materials[key] = m;
         return m;
@@ -71,6 +71,8 @@ public static class GlbModel
     public static Material ForTeam(Material m, bool enemy)
     {
         if (m == null) return m;
+        if (m.name.StartsWith("C_TeamSail") || m.name == "C_Sail" || m.name == "C_Red" || m.name == "C_Fabric")
+            return Material("C_TeamSail", enemy ? new Color(0.80f, 0.22f, 0.17f) : new Color(0.24f, 0.42f, 0.82f));
         string name = m.name.Replace(" (Instance)", "").Replace("_Blue", "").Replace("_Red", ""), team = name + (enemy ? "_Red" : "_Blue");
         return UnityEngine.Resources.Load<Texture2D>("Models/Tex/" + team) != null ? Material(team, Color.white) : m;
     }

@@ -23,13 +23,13 @@ public class Scenery : MonoBehaviour
         {
             float x = -R(1f, 106f), z = R(-78f, 41f);
             float foot = TerrainShape.Foot(x, z), bank = Mathf.Abs(x) < 30f ? TerrainShape.RiverBank(x, z) : 99f;
-            bool atFoot = foot > -3f && foot < 0.4f, atRiver = bank > 1.2f && bank < 4f;
-            if (foot > 0.4f || bank < 1.2f || TerrainShape.CoastZ(x) - z < 5f) continue;
+            bool atFoot = foot > -3f && foot < 0.4f, atRiver = bank > 2.2f && bank < 5f;
+            if (foot > 0.4f || bank < 2.2f || TerrainShape.CoastZ(x) - z < 5f) continue;
             if (!atFoot && !atRiver && random.NextDouble() > 0.10) continue; // the open ground stays mostly free
             float dx = x + 65f, dz = z - 25f;
             if (dx * dx + dz * dz < 15f * 15f || Taken(nodes, x, z)) continue;
             bool bush = !atFoot && random.NextDouble() < 0.45;
-            string key = bush ? "bush" : Stones[random.Next(Stones.Length)];
+            string key = bush ? "bush" : Stones[random.Next(atRiver ? 5 : Stones.Length)]; // the last two are wide groups
             float size = bush ? R(0.8f, 1.5f) : atFoot ? R(1.2f, 2.6f) : R(0.9f, 1.8f), turn = R(0f, 360f);
             Put(key, x, z, turn, size); Put(key, -x, z, -turn, size);
             placed++;
@@ -44,6 +44,7 @@ public class Scenery : MonoBehaviour
 
     void Put(string key, float x, float z, float turn, float size)
     {
+        if (Mathf.Abs(x) < 30f && TerrainShape.RiverBank(x, z) < 2.2f) return; // the river is not the same on both sides
         var go = GlbModel.Spawn(key, transform);
         if (go == null) return;
         go.transform.position = new Vector3(x, TerrainShape.Height(x, z) - 0.05f, z);

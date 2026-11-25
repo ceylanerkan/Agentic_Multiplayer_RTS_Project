@@ -111,14 +111,15 @@ public class SelectionManager : MonoBehaviour
         {
             if (!rings.TryGetValue(go, out var ring))
             {
-                ring = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                Destroy(ring.GetComponent<Collider>()); // a ring must never block raycasts
-                ring.GetComponent<Renderer>().sharedMaterial = ringMaterial;
-                // wider than the team disc of EntityVisuals (1.9 x radius), so a green border shows around it
+                ring = new GameObject("SelectionRing", typeof(MeshFilter), typeof(MeshRenderer));
+                ring.GetComponent<MeshFilter>().sharedMesh = EntityVisuals.Ring();
+                var r = ring.GetComponent<Renderer>(); r.sharedMaterial = ringMaterial; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                // around the team ring of EntityVisuals
                 var col = go.GetComponent<Collider>();
                 float radius = col != null ? Mathf.Max(col.bounds.extents.x, col.bounds.extents.z) : 1f;
-                float size = radius * (go.GetComponent<NetworkBuilding>() != null ? 2.9f : 2.6f);
-                ring.transform.localScale = new Vector3(size, 0.02f, size);
+                var look = go.GetComponent<ModelLook>();
+                float size = radius * (go.GetComponent<NetworkBuilding>() != null ? 2.9f : look == null ? 3.2f : look.Ship ? 5.4f : look.Wide ? 2.5f : 1.95f);
+                ring.transform.localScale = new Vector3(size, 1f, size);
                 rings[go] = ring;
             }
             // at the feet, just below the team disc: the object's pivot is its centre, so a ring there was hidden inside the body

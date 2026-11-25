@@ -46,14 +46,14 @@ public class EntityVisuals : MonoBehaviour
 
         hover = Mathf.Max(1.2f, radius * 1.25f);
         if (node == null) MakeBar(radius);
-        if (node == null && !wall && !(building != null && look != null)) // the roofs of the buildings show the team
+        if (node == null && !wall && !(look != null && (building != null || unit != null && unit.IsShip))) // roofs and sails show the team
         {
-            var d = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            d.name = name + "_TeamDisc";
-            Destroy(d.GetComponent<Collider>());   // must not catch selection or right-click raycasts
+            var d = new GameObject(name + "_TeamRing", typeof(MeshFilter), typeof(MeshRenderer));
+            d.GetComponent<MeshFilter>().sharedMesh = Ring();
             disc = d.transform;
-            disc.localScale = look != null ? new Vector3(radius * 1.9f, 0.015f, radius * 1.9f) : new Vector3(radius * 2.6f, 0.03f, radius * 2.6f);
-            discRenderer = d.GetComponent<Renderer>();
+            float size = look == null ? radius * 2.6f : look.Wide ? radius * 2.1f : radius * 1.5f;
+            disc.localScale = new Vector3(size, 1f, size);
+            discRenderer = d.GetComponent<Renderer>(); discRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             // copy the body's material so the shader (URP Lit) is one that is surely included in builds
             discMat = new Material(look != null ? GlbModel.Material("C_Disc", Color.white) : body != null ? body.sharedMaterial : discRenderer.sharedMaterial);
             discRenderer.sharedMaterial = discMat;
@@ -108,30 +108,55 @@ public class EntityVisuals : MonoBehaviour
         if (Time.time >= nextText) { nextText = Time.time + 0.25f; UpdateText(); }
     }
 
+    // ---- rings ----
+    static Mesh ring;
+
+    /// <summary>A flat ring, one metre across (team colour of units, selection).</summary>
+    public static Mesh Ring()
+    {
+        if (ring != null) return ring;
+        const int n = 48; const float inner = 0.41f, outer = 0.5f;
+        var v = new Vector3[n * 2]; var normals = new Vector3[n * 2]; var t = new int[n * 6];
+        for (int i = 0; i < n; i++)
+        {
+            float a = i * 2f * Mathf.PI / n; var dir = new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a));
+            v[i * 2] = dir * inner; v[i * 2 + 1] = dir * outer; normals[i * 2] = normals[i * 2 + 1] = Vector3.up;
+            int k = i * 2, m = (i + 1) % n * 2;
+            t[i * 6] = k; t[i * 6 + 1] = m; t[i * 6 + 2] = k + 1; t[i * 6 + 3] = k + 1; t[i * 6 + 4] = m; t[i * 6 + 5] = m + 1;
+        }
+        ring = new Mesh { name = "Ring", hideFlags = HideFlags.DontSave, vertices = v, normals = normals, triangles = t };
+        ring.RecalculateBounds();
+        return ring;
+    }
+
     // ---- light at night ----
     static Texture2D glowTexture;
+
+    /// <summary>A soft round spot.</summary>
+    public static Texture2D GlowTexture()
+    {
+        if (glowTexture != null) return glowTexture;
+        const int n = 64;
+        glowTexture = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float d = Mathf.Clamp01(1f - new Vector2(x + 0.5f - n * 0.5f, y + 0.5f - n * 0.5f).magnitude / (n * 0.5f));
+                glowTexture.SetPixel(x, y, new Color(1, 1, 1, d * d));
+            }
+        glowTexture.Apply();
+        return glowTexture;
+    }
 
     void MakeGlow(float radius)
     {
         var shader = Shader.Find("Sprites/Default");
         if (shader == null) return;
-        if (glowTexture == null)
-        {
-            const int n = 64;
-            glowTexture = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            for (int y = 0; y < n; y++)
-                for (int x = 0; x < n; x++)
-                {
-                    float d = Mathf.Clamp01(1f - new Vector2(x + 0.5f - n * 0.5f, y + 0.5f - n * 0.5f).magnitude / (n * 0.5f));
-                    glowTexture.SetPixel(x, y, new Color(1, 1, 1, d * d));
-                }
-            glowTexture.Apply();
-        }
         var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
         Destroy(go.GetComponent<Collider>());
         glow = go.transform; glow.rotation = Quaternion.Euler(90f, 0, 0); glow.localScale = Vector3.one * (radius * 5f + 3f);
         glowRenderer = go.GetComponent<Renderer>(); glowRenderer.enabled = false;
-        glowMat = new Material(shader) { mainTexture = glowTexture, renderQueue = 3050 };
+        glowMat = new Material(shader) { mainTexture = GlowTexture(), renderQueue = 3050 };
         glowRenderer.sharedMaterial = glowMat; glowRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
     }
 

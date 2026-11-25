@@ -19,7 +19,7 @@ using LogType = UnityEngine.LogType;   // Fusion has one too
 /// commands as the buttons, and checks the result on the host. A stand-in for player 2 (state, Town Center, targets) is spawned, so
 /// combat, fog of war and the AI snapshot see an enemy. Mouse input and the look of the UI are not tested.
 /// Run (editor closed):  Unity.exe -batchmode -projectPath UnityRTS -executeMethod AutoPlayTest.Run -logFile autoplay.log
-/// Environment: RTS_AUTOPLAY_AI=1 also asks the AI through AiCommanderPanel (needs the gateway).
+/// Environment: RTS_AUTOPLAY_AI=1 also asks the AI through AiCommanderPanel (needs the gateway); RTS_AUTOPLAY_LOOKS=1 only takes pictures.
 /// Report: evaluation/unity_autoplay.md (with the AI: unity_autoplay_ai.md), pictures: UnityRTS/Logs/autoplay_*.png
 /// </summary>
 public static class AutoPlayTest
@@ -115,6 +115,7 @@ public static class AutoPlayTest
         finished = true;
         EditorApplication.update -= Tick;
         SessionState.SetBool(Key, false);
+        if (Environment.GetEnvironmentVariable("RTS_AUTOPLAY_LOOKS") == "1") { foreach (var e in errors) Debug.Log("AUTOPLAY error " + e); EditorApplication.Exit(0); return; }
         var sb = new StringBuilder();
         sb.AppendLine("# Automatic play test (Unity " + Application.unityVersion + ", " + DateTime.Now.ToString("yyyy-MM-dd HH:mm") + ")");
         sb.AppendLine().AppendLine("`AutoPlayTest.Run` (editor only): host session, real commands, checked on the host; player 2 is a stand-in. Mouse input and the look of the UI are not tested.");
@@ -155,6 +156,7 @@ public static class AutoPlayTest
         sections = new Queue<KeyValuePair<string, Func<IEnumerator>>>();
         void Add(string name, Func<IEnumerator> f) => sections.Enqueue(new KeyValuePair<string, Func<IEnumerator>>(name, f));
         Add("Start", StartMatch);
+        if (Environment.GetEnvironmentVariable("RTS_AUTOPLAY_LOOKS") == "1") { Add("Looks", Looks); return; }
         Add("Town Center", TownCenter);
         Add("Houses", Houses);
         Add("Barracks", Barracks);
@@ -639,6 +641,61 @@ public static class AutoPlayTest
         tc.TakeDamage(5f);
         yield return For(() => Me.Result == 1, 5);
         Check("destroying the enemy Town Center wins the match", ok, "result " + Me.Result);
+    }
+
+    /// <summary>One of everything, for both sides, and pictures of it from near and from the game camera, by day and by night.</summary>
+    static IEnumerator Looks()
+    {
+        var s = GameSpawner.Instance;
+        Vector3 V(float x, float z) => new Vector3(x, 0, z);
+        string[] own = { "house", "barracks", "blacksmith", "stable" };
+        for (int i = 0; i < own.Length; i++) { s.SpawnBuilding(MyRef, own[i], V(-80 + i * 8, 10), true); s.SpawnBuilding(Foe, own[i], V(-80 + i * 8, -4), true); }
+        s.SpawnBuilding(MyRef, "house", V(-48, 10), false).AddBuildWork(7f);
+        s.SpawnBuilding(MyRef, "dock", new Vector3(-74, 0, TerrainShape.CoastZ(-74) - 1.9f), true);
+        string[] people = { "villager", "spearman", "archer", "scout", "cavalry", "catapult" };
+        for (int i = 0; i < people.Length; i++) { s.SpawnUnit(MyRef, people[i], V(-76 + i * 3.2f, 3)); s.SpawnUnit(Foe, people[i], V(-76 + i * 3.2f, 0.2f)); }
+        string[] ships = { "fishing_boat", "raider_boat", "warship" };
+        for (int i = 0; i < ships.Length; i++) s.SpawnUnit(MyRef, ships[i], V(-66 + i * 8, 56));
+        foreach (var w in WallLine.Points(-84, 18, -84, 34)) s.SpawnBuilding(MyRef, "wall", V(w[0], w[1]), true);
+        foreach (var w in WallLine.Points(-84, 18, -72, 16)) if (Mathf.Abs(w[0] + 78f) > 0.1f) s.SpawnBuilding(MyRef, w[0] == -84f ? "wall" : "wall", V(w[0], w[1]), true);
+        s.SpawnBuilding(MyRef, "gate", V(-78, 18), true);
+        yield return 3f;
+        foreach (var u in Units("villager")) { SelectionManager.Instance.Units.Add(u); if (SelectionManager.Instance.Units.Count > 2) break; }
+        yield return 1f;
+        Shot("near", new Vector3(-72, 7, -9), new Vector3(-70, 1, 4));
+        Shot("people", new Vector3(-72, 4.2f, -3.6f), new Vector3(-70, 0.8f, 2.5f));
+        Shot("wall", new Vector3(-74, 6, 8), new Vector3(-80, 1, 20));
+        Shot("dock", new Vector3(-66, 12, 34), new Vector3(-70, 0, 50));
+        Shot("ships", new Vector3(-58, 8, 46), new Vector3(-58, 0, 57));
+        Shot("base", new Vector3(-66, 24, 0), new Vector3(-66, 0, 24));
+        RtsCamera.LookAt(V(-68, 8)); yield return 0.5f; Screen("day", 0.30f); yield return 0.5f;
+        RtsCamera.LookAt(V(-96, -10)); yield return 1f; Screen("mountain", 0.30f); yield return 0.5f;
+        RtsCamera.LookAt(V(-40, -78)); yield return 2f; Screen("south", 0.30f); yield return 0.5f;
+        RtsCamera.LookAt(V(-6, 4)); yield return 2f; Screen("river", 0.30f); yield return 0.5f;
+        RtsCamera.LookAt(V(-68, 8)); yield return 2f;
+        foreach (var t in new[] { 0.02f, 0.64f, 0.84f }) { DayNight.Override = t; yield return 0.6f; Screen("time" + t.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), t); Shot("people" + t.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture), new Vector3(-72, 7, -9), new Vector3(-70, 1, 4)); }
+        DayNight.Override = -1f;
+        var far = Units("spearman")[0]; Relay.SendMove(far.Object.Id, V(-60, -2)); yield return 1.2f; Shot("walk", far.transform.position + new Vector3(-3, 3, 4), far.transform.position + Vector3.up);
+    }
+
+    /// <summary>What the player sees: main camera with fog and UI.</summary>
+    static void Screen(string name, float time)
+    {
+        try
+        {
+            var cam = Camera.main;
+            var canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Where(c => c.isRootCanvas && c.renderMode == RenderMode.ScreenSpaceOverlay).ToList();
+            var rt = new RenderTexture(1280, 720, 24); cam.targetTexture = rt;
+            foreach (var c in canvases) { c.renderMode = RenderMode.ScreenSpaceCamera; c.worldCamera = cam; c.planeDistance = 1f; }
+            Canvas.ForceUpdateCanvases();
+            cam.Render();
+            foreach (var c in canvases) { c.renderMode = RenderMode.ScreenSpaceOverlay; c.worldCamera = null; }
+            cam.targetTexture = null; RenderTexture.active = rt;
+            var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false); tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0); tex.Apply(); RenderTexture.active = null;
+            File.WriteAllBytes(Path.Combine(Application.dataPath, "../Logs/autoplay_screen_" + name + ".png"), tex.EncodeToPNG());
+            UnityEngine.Object.Destroy(rt); UnityEngine.Object.Destroy(tex);
+        }
+        catch (Exception e) { Debug.LogWarning("AUTOPLAY no picture: " + e.Message); }
     }
 
     /// <summary>Picture of the world without UI and fog (a second camera), for a look at positions.</summary>

@@ -11,6 +11,8 @@ public class DayNight : MonoBehaviour
     const float DayPart = 0.68f, Start01 = 0.14f; // the match begins in the morning
 
     static DayNight instance;
+    /// <summary>For test pictures: a fixed time 0..1 instead of the clock; -1 = off.</summary>
+    public static float Override = -1f;
     float time01 = Start01;
     Light sun;
 
@@ -41,7 +43,7 @@ public class DayNight : MonoBehaviour
 
     void Update()
     {
-        time01 = Mathf.Repeat(MatchSeconds() / CycleSeconds + Start01, 1f);
+        time01 = Override >= 0f ? Override : Mathf.Repeat(MatchSeconds() / CycleSeconds + Start01, 1f);
         Apply();
     }
 

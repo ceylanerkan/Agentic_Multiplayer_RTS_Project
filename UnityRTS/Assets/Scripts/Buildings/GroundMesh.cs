@@ -112,6 +112,7 @@ public class GroundMesh : MonoBehaviour
         {
             waterMaterial = new Material(water);
             var s = sea.GetComponent<Renderer>();
+            sea.GetComponent<MeshFilter>().sharedMesh = WaterTop();
             s.material = waterMaterial; sea.localScale = new Vector3(2f * FloorX, sea.localScale.y, sea.localScale.z); // up to the far mountains
             s.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
@@ -126,11 +127,24 @@ public class GroundMesh : MonoBehaviour
         var river = GameObject.CreatePrimitive(PrimitiveType.Cube);
         river.name = "RiverWater";
         Destroy(river.GetComponent<Collider>()); // clicks reach the river bed
+        if (waterMaterial != null) river.GetComponent<MeshFilter>().sharedMesh = WaterTop();
         river.transform.SetParent(transform, false);
         river.transform.position = new Vector3(0, TerrainShape.SeaLevel - 0.5f, -55f); river.transform.localScale = new Vector3(60f, 1f, 150f);
         var r = river.GetComponent<Renderer>();
         r.sharedMaterial = waterMaterial != null ? waterMaterial : sea.GetComponent<Renderer>().sharedMaterial;
         r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+    }
+
+    static Mesh waterTop;
+
+    /// <summary>The upper side of a unit cube.</summary>
+    static Mesh WaterTop()
+    {
+        if (waterTop == null)
+            waterTop = new Mesh { name = "WaterTop", hideFlags = HideFlags.DontSave, vertices = new[] { new Vector3(-0.5f, 0.5f, -0.5f), new Vector3(-0.5f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, 0.5f), new Vector3(0.5f, 0.5f, -0.5f) },
+                                  normals = new[] { Vector3.up, Vector3.up, Vector3.up, Vector3.up }, triangles = new[] { 0, 1, 2, 0, 2, 3 } };
+        waterTop.RecalculateBounds();
+        return waterTop;
     }
 
     void ShowPainted()
@@ -166,6 +180,14 @@ public class GroundMesh : MonoBehaviour
         return t;
     }
 
+    /// <summary>Height from the grid, smooth between its points (the near part only).</summary>
+    float HeightAt(float x, float z)
+    {
+        float u = Mathf.Clamp((x - MinX) / Step, 0f, gridW - 2 * FarColumns - 1.001f), v = Mathf.Clamp((z - MinZ) / Step, 0f, gridH - 1.001f);
+        int i = (int)u, j = (int)v, k = j * gridW + FarColumns + i;
+        return Mathf.Lerp(Mathf.Lerp(heights[k], heights[k + 1], u - i), Mathf.Lerp(heights[k + gridW], heights[k + gridW + 1], u - i), v - j);
+    }
+
     int GridIndex(float x, float z)
     {
         int gx = FarColumns + Mathf.Clamp(Mathf.RoundToInt((x - MinX) / Step), 0, gridW - 2 * FarColumns - 1), gz = Mathf.Clamp(Mathf.RoundToInt((z - MinZ) / Step), 1, gridH - 2);
@@ -181,8 +203,8 @@ public class GroundMesh : MonoBehaviour
         float dx = Mathf.Abs(x) - 65f, dz = z - 25f, d = Mathf.Sqrt(dx * dx + dz * dz) + (mid - 0.5f) * 9f + (fine - 0.5f) * 3f;
         float earth = Mathf.Max(0.85f * Mathf.Clamp01((11f - d) / 5f), Mathf.Clamp01((Mathf.PerlinNoise(x * 0.06f + 200f, z * 0.06f + 130f) + fine * 0.15f - 0.80f) * 6f));
         // stones on steep ground (the mountains outside the map are coloured by the shader)
-        int g = GridIndex(x, z);
-        float slope = new Vector2(heights[g + 1] - heights[g - 1], heights[g + gridW] - heights[g - gridW]).magnitude / (2f * Step);
+        float e = Step * 0.8f;
+        float slope = new Vector2(HeightAt(x + e, z) - HeightAt(x - e, z), HeightAt(x, z + e) - HeightAt(x, z - e)).magnitude / (2f * e);
         float rock = Mathf.Clamp01((slope + (fine - 0.5f) * 0.12f - 0.24f) * 7f);
         // beach, its inner edge is uneven
         float inland = coastZ - z;
