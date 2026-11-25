@@ -16,6 +16,7 @@ public class NetworkPlayerState : NetworkBehaviour
     [Networked] public int PopCapacity { get; set; }
     [Networked] public int Age { get; set; }
     [Networked] public int Result { get; set; }          // 0 = match running, 1 = this player won, 2 = this player lost
+    [Networked] public float StartTime { get; set; }     // session time when this player's match began
     [Networked] public int TechMask { get; set; }        // bit i = i-th technology of GameData.Techs
 
     // Every peer keeps the list of player states, so StateOf(owner) also works on clients (fog of war and the AI snapshot run there).
@@ -26,9 +27,9 @@ public class NetworkPlayerState : NetworkBehaviour
     public PlayerRef Owner => Object.InputAuthority;
 
     /// <summary>Host only: give the starting state from the rules.</summary>
-    public void InitHost(int slot)
+    public void InitHost(int slot, float now = 0f)
     {
-        Slot = slot; Age = 1;
+        Slot = slot; Age = 1; StartTime = now;
         Wood = GameConstants.StartWood; Food = GameConstants.StartFood; Gold = GameConstants.StartGold;
         Result = 0; PopUsed = 0; PopCapacity = GameConstants.TownCenterCapacity; TechMask = 0;
     }

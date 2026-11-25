@@ -21,7 +21,7 @@ public class GroundMesh : MonoBehaviour
     {
         BuildMesh();
         if (!Application.isPlaying || !UseMaterials()) ShowPainted();
-        if (Application.isPlaying) AddRiver();
+        if (Application.isPlaying) { AddRiver(); if (GetComponent<DayNight>() == null) gameObject.AddComponent<DayNight>(); }
     }
 
     void OnDisable()

@@ -12,6 +12,7 @@ using UnityEngine.UI;
 public class HudUI : MonoBehaviour
 {
     TMP_Text wood, food, gold, population, idle, age, clock, player, note, hint;
+    RawImage sky;
     RectTransform hintBox, menu;
     Image playerDot;
     Button idleButton;
@@ -40,6 +41,7 @@ public class HudUI : MonoBehaviour
         var ai = UiKit.Icon(mid, "age_2", UiKit.Gold); UiKit.At(ai.rectTransform, 0, 0.5f, 16, 0, 30, 30);
         age = UiKit.Text(mid, "AGE I", 26, UiKit.Gold, TextAlignmentOptions.MidlineLeft, FontStyles.Bold); age.characterSpacing = 4; UiKit.Stretch(age.rectTransform, 0, 0, 1, 1, 58, 0, -90, 0);
         clock = UiKit.Text(mid, "0:00", 22, UiKit.Dim, TextAlignmentOptions.MidlineRight); UiKit.Stretch(clock.rectTransform, 0, 0, 1, 1, 0, 0, -18, 0);
+        sky = UiKit.Icon(mid, "sun", UiKit.Gold); UiKit.At(sky.rectTransform, 1, 0.5f, -92, 0, 28, 28);
 
         var right = UiKit.Frame(canvas, "Player"); UiKit.At((RectTransform)right.parent, 1, 1, -12, -12, 430, 52);
         var dot = UiKit.Box(right, "Dot", UiKit.Blue, true); UiKit.At(dot, 0, 0.5f, 16, 0, 20, 20); playerDot = dot.GetComponent<Image>();
@@ -113,8 +115,10 @@ public class HudUI : MonoBehaviour
         population.text = state.PopUsed + "/" + state.PopCapacity;
         population.color = state.PopUsed >= state.PopCapacity ? UiKit.Red : UiKit.Paper;
         age.text = "AGE " + (state.Age == 2 ? "II" : "I");
-        int s = (int)Time.timeSinceLevelLoad;
+        int s = (int)DayNight.MatchSeconds();
         clock.text = s / 60 + ":" + (s % 60).ToString("00");
+        bool dark = DayNight.Night01 > 0.5f;
+        UiKit.SetIcon(sky, dark ? "moon" : "sun"); sky.color = dark ? new Color(0.70f, 0.80f, 1f) : UiKit.Gold;
         // which player this window is, so the two screens are easy to tell apart in the demo
         player.text = state.Slot > 0 ? "Player " + state.Slot : "";
         playerDot.color = UiKit.Blue; // own objects are blue on every screen

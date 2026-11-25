@@ -17,6 +17,7 @@ public class EntityVisuals : MonoBehaviour
     Renderer body;            // the object's own renderer; fog of war turns it on and off
     Transform disc; Renderer discRenderer; Material discMat;
     TextMeshPro label;
+    Transform glow; Renderer glowRenderer; Material glowMat;   // light of a building at night
     Transform bar, barFill; Renderer barBack, barFront; Material barMat;
     float labelHeight, nextText, barWidth, hover = 2.5f;
     bool wall;
@@ -55,6 +56,8 @@ public class EntityVisuals : MonoBehaviour
             discRenderer.sharedMaterial = discMat;
         }
 
+        if (building != null && !wall) MakeGlow(radius);
+
         var l = new GameObject(name + "_Label");
         label = l.AddComponent<TextMeshPro>();
         var font = DefaultFont(); if (font != null) label.font = font; // an unset font gives a NullReferenceException
@@ -77,6 +80,13 @@ public class EntityVisuals : MonoBehaviour
             discRenderer.enabled = visible;
         }
         label.transform.position = p + Vector3.up * (labelHeight * 0.5f + 0.4f);
+        if (glow != null)
+        {
+            float n = building.Object != null && building.Object.IsValid && building.Completed ? Mathf.Clamp01(DayNight.Night01 * 2f - 0.7f) : 0f;
+            glowRenderer.enabled = visible && n > 0.02f;
+            glow.position = new Vector3(p.x, RTS.Core.Rules.TerrainShape.Surface(p.x, p.z) + 0.22f, p.z);
+            glowMat.color = new Color(1f, 0.66f, 0.28f, n * (0.34f + 0.03f * Mathf.Sin(Time.time * 7f + p.x)));
+        }
         var cam = Camera.main;
         if (cam != null) label.transform.rotation = cam.transform.rotation;   // billboard: always faces the camera
         bool near = visible && NearMouse(p, node != null ? HoverRadius : hover);
@@ -92,6 +102,33 @@ public class EntityVisuals : MonoBehaviour
             label.color = Color.Lerp(c, Color.white, 0.55f);
         }
         if (Time.time >= nextText) { nextText = Time.time + 0.25f; UpdateText(); }
+    }
+
+    // ---- light at night ----
+    static Texture2D glowTexture;
+
+    void MakeGlow(float radius)
+    {
+        var shader = Shader.Find("Sprites/Default");
+        if (shader == null) return;
+        if (glowTexture == null)
+        {
+            const int n = 64;
+            glowTexture = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = Mathf.Clamp01(1f - new Vector2(x + 0.5f - n * 0.5f, y + 0.5f - n * 0.5f).magnitude / (n * 0.5f));
+                    glowTexture.SetPixel(x, y, new Color(1, 1, 1, d * d));
+                }
+            glowTexture.Apply();
+        }
+        var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        Destroy(go.GetComponent<Collider>());
+        glow = go.transform; glow.rotation = Quaternion.Euler(90f, 0, 0); glow.localScale = Vector3.one * (radius * 5f + 3f);
+        glowRenderer = go.GetComponent<Renderer>(); glowRenderer.enabled = false;
+        glowMat = new Material(shader) { mainTexture = glowTexture, renderQueue = 3050 };
+        glowRenderer.sharedMaterial = glowMat; glowRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
     }
 
     // ---- HP bar ----
@@ -194,6 +231,7 @@ public class EntityVisuals : MonoBehaviour
     {
         if (disc != null) Destroy(disc.gameObject);
         if (bar != null) Destroy(bar.gameObject);
+        if (glow != null) { Destroy(glow.gameObject); Destroy(glowMat); }
         if (barMat != null) Destroy(barMat);
         if (label != null) { Destroy(label.fontMaterial); Destroy(label.gameObject); }   // outlineWidth made a material copy
         if (discMat != null) Destroy(discMat);

@@ -34,6 +34,7 @@ Shader "RTS/Water"
             half4 _Deep;
             half4 _Sky;
             CBUFFER_END
+            float _RtsNight; // set by DayNight, 0 = day
 
             struct Varyings { float4 position : SV_POSITION; float3 world : TEXCOORD0; float fog : TEXCOORD1; };
 
@@ -84,7 +85,7 @@ Shader "RTS/Water"
                 half3 water = lerp(_Shallow.rgb, _Deep.rgb, deep);
                 half3 colour = water * (sun.color * saturate(dot(normal, sun.direction)) * shade * 0.75 + SampleSH(normal) * 0.6);
                 half fresnel = pow(1 - saturate(dot(normal, view)), 4);
-                colour = lerp(colour, _Sky.rgb, saturate(0.06 + fresnel * 0.6));
+                colour = lerp(colour, _Sky.rgb * lerp(half3(1, 1, 1), half3(0.16, 0.20, 0.32), _RtsNight), saturate(0.06 + fresnel * 0.6));
                 half glint = pow(saturate(dot(normal, normalize(sun.direction + view))), 260);
                 colour += sun.color * glint * 1.2 * shade;
 
@@ -93,7 +94,7 @@ Shader "RTS/Water"
                 float edge = 1 - saturate(depth / 0.22);
                 float rings = saturate(sin(depth * 11 + _Time.y * 1.3 + n * 3) - 0.55) * (1 - saturate(depth / 0.75)) * 0.9;
                 half foam = saturate(smoothstep(0.35, 0.75, edge + n * 0.45 - 0.12) + rings * smoothstep(0.35, 0.65, n));
-                colour = lerp(colour, half3(0.95, 0.97, 0.98) * (0.45 + 0.6 * shade), foam * 0.85);
+                colour = lerp(colour, half3(0.95, 0.97, 0.98) * (0.45 + 0.6 * shade) * lerp(half3(1, 1, 1), half3(0.30, 0.36, 0.50), _RtsNight), foam * 0.85);
 
                 half alpha = saturate(lerp(0.30, 0.97, smoothstep(0.0, 1.7, depth)) + fresnel * 0.3 + foam * 0.6);
                 return half4(MixFog(colour, i.fog), alpha);

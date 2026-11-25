@@ -36,7 +36,7 @@ public class GameOverUI : MonoBehaviour
         panel.gameObject.SetActive(true); panel.SetAsLastSibling();
         bool won = state.Result == 1;
         resultText.text = won ? "VICTORY" : "DEFEAT"; resultText.color = won ? UiKit.Gold : UiKit.Red;
-        int s = (int)Time.timeSinceLevelLoad;
+        int s = (int)DayNight.MatchSeconds();
         detail.text = (won ? "The enemy Town Center has fallen" : "Your Town Center has fallen") + " after " + s / 60 + ":" + (s % 60).ToString("00") + " minutes.";
     }
 

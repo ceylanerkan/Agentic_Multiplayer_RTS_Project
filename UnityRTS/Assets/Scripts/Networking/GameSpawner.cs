@@ -97,7 +97,7 @@ public class GameSpawner : SimulationBehaviour, IPlayerJoined
 
         var po = Runner.Spawn(playerPrefab, Vector3.zero, Quaternion.identity, player);
         var state = po.GetComponent<NetworkPlayerState>();
-        state.InitHost(slot);
+        state.InitHost(slot, Runner.SimulationTime);
         players[player] = state;
 
         var tc = SpawnBuilding(player, "town_center", baseCentre.position, true);

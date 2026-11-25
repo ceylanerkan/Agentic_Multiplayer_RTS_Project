@@ -31,6 +31,7 @@ Shader "RTS/Ground"
         float _Bump;
         float _SnowLine;
         CBUFFER_END
+        float _RtsNight; // set by DayNight, 0 = day
         ENDHLSL
 
         Pass
@@ -159,7 +160,7 @@ Shader "RTS/Ground"
                 half shine = pow(saturate(dot(normal, normalize(sun.direction + view))), 48) * light;
                 lit += sun.color * shine * (0.03 + 0.35 * wet + 0.12 * snow);
                 // far mountains get paler
-                lit = lerp(lit, half3(0.45, 0.58, 0.75), saturate((distance(_WorldSpaceCameraPos, i.world) - 70) / 260) * 0.45 * outside);
+                lit = lerp(lit, half3(0.45, 0.58, 0.75) * lerp(1, 0.18, _RtsNight), saturate((distance(_WorldSpaceCameraPos, i.world) - 70) / 260) * 0.45 * outside);
                 return half4(MixFog(lit, i.fog), 1);
             }
             ENDHLSL
