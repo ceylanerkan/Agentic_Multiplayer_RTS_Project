@@ -6,19 +6,19 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 ## Şu an ne durumda
 | Bölüm (puan) | Durum | Eksik |
 |---|---|---|
-| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler ve serbest bina yerleştirme otomatik maçta (76/76) | fare ile ve gözle deneme |
-| Multiplayer (15) | 24 Kasım: iki build ile kontrol listesinin hepsi oldu (öğrenci denedi) | M3 için ekran kaydı |
+| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler ve serbest bina yerleştirme otomatik maçta (76/76), fare build'de (sanal fare) | - |
+| Multiplayer (15) | 24 Kasım: iki build ile öğrenci denedi; 25 Kasım: yeni kodla otomatik iki oyunculu maç 35/35, iki taraf arasında 0 fark | M3 için ekran kaydı |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
-| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | kanıtta kaynak id'si yok |
+| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | istem değişti, 21 soru yeniden ölçülecek |
 | Onay + güvenlik (10) | Approve, Reject, validator reddi, gizli bilgi sorusu ve Ask why oyunda çalıştı | - |
 | Değerlendirme (10) | 25 Kasım: araç %100, geçerli plan %100, güvenlik 2/2, reddedilen eylem 2/7 | yalnız rapora tabloların girmesi |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
-Son push: `96a7792`; ayar dosyaları ve serbest yerleştirme henüz push edilmedi.
+Son push: `43d811b`; iki oyunculu otomatik maç ve kaynak id'si henüz push edilmedi.
 Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soruluk
-ölçüm bu değişiklikten önceki istemle yapıldı (yeniden ölçmek öğrenciye soruldu).
+ölçüm bu değişiklikten önceki istemle yapıldı. **Öğrenci (25 Kasım): önce oyun bitsin, ölçüm sonra.**
 
 ## Kararlar
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
@@ -55,7 +55,11 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 - [x] Claude: otomatik maçın bulduğu üç hata düzeltildi ve yeniden oynandı: (1) AI ve en yakın yer seçimi kıyı yerini Barracks/Blacksmith'e veriyordu, Dock
       kurulamıyordu; (2) Raider Boat düşman Dock'una ulaşamıyordu (düz yol kıyıda kesiliyordu, artık kıyı boyunca kayıyor); (3) bir bina 4'ten fazla birlik
       üretince birlikler iç içe çıkıyordu.
-- [ ] Öğrenci: son build'den sonra kısa bakış (fare ile bina yerleştirme, düğmeler, gemiyle saldırı). Otomatik maç fareyi ve görünüşü denemez.
+- [x] Claude: iki oyunculu otomatik maç (`Testing/AutoMatch.cs` yalnız test build'inde, `tools/run_auto_match.ps1`, 2-3 dk, penceresiz): host + katılan, katılan sanal
+      fareyle oynar (seçim, kutu, düğmeler, hayalet yeşil/kırmızı, sağ tık, sis, saldırı, VICTORY/DEFEAT, menüye dönüş). 35/35; iki tarafın gördüğü 1131 nesne ve
+      200 oyuncu değerinde 0 fark (`evaluation/unity_two_players.md`). Ekran resimlerine bakıldı: düğmeler, HUD ve AI paneli 1280x720'de düzgün.
+- [x] Claude: oyunun Windows build'i alındı (`UnityRTS/Builds/UnityRTS.exe`, 25 Kasım 15:24, son kod). Komut: `AutoBuild.Game`, menü `Tools > RTS > Build Windows game`.
+- [ ] Öğrenci: gerçek pencerede kısa bakış (his, hız) ve kayıt; kod değişirse yeniden build.
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
       kalktı; eskiden 7 yer yüzünden nüfus 20'de kalıyordu. C# testleri 54/54, otomatik maç 76/76. Eski build ve yeni editör uyuşmaz: yeniden build.
@@ -99,7 +103,7 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 
 **3c. Kalan**
 - [ ] Claude: `evaluation/security-tests.md` canlı sütunu (`evaluation/live_security.json`).
-- [ ] Claude: bilgi sorusunda kanıta kaynak id'si (`tech_iron_weapons_v1`) yazılmıyor, yalnız araç adı var; gateway eklesin (oyundaki kontrolden önce).
+- [x] Claude: bilgi sorusunda kanıta kaynak id'si (`tech_iron_weapons_v1`) eklendi (`agent.evidence`); getirilmemiş kaynak kanıttan siliniyor. Canlı modelle denenmedi.
 - [x] Claude: oyunda (otomatik maç) "What does Iron Weapons do?", gizli bilgi sorusu, "Train 20 archers right now." ve Ask why çalıştı. 20 okçuda model artık
       eylem önermiyor, yani validator reddi bu soruyla gösterilemez: demoya başka örnek gerek. "Enemy cavalry..." sorusunda da eylem önermedi (boş yer 2).
 - [ ] Öğrenci: MCP Inspector ekran görüntüleri (`python ai/mcp-server/make_session.py late_game` komutu yazdırır).

@@ -81,10 +81,13 @@ Set `MCP_TRANSPORT=stdio` (in `.env`) to run the MCP server as a subprocess with
 C# rule tests: Unity > Window > General > Test Runner > EditMode (`RulesTests`).
 Automatic match (about 9 minutes, no window; close the editor first, needs the Photon App ID and internet): plays a hosted match through the
 real commands and writes `evaluation/unity_autoplay.md`. With `set RTS_AUTOPLAY_AI=1` and a running gateway it also asks the AI panel
-(`unity_autoplay_ai.md`). Mouse input and the look of the UI are not tested.
+(`unity_autoplay_ai.md`).
 ```bat
 "C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe" -batchmode -projectPath UnityRTS -executeMethod AutoPlayTest.Run -logFile autoplay.log
 ```
+Automatic two-player match (about 3 minutes, no window): build the test version with `-batchmode -quit ... -executeMethod AutoBuild.TestBuild`, then
+`powershell -ExecutionPolicy Bypass -File tools/run_auto_match.ps1`. The client plays with a virtual mouse; the script compares what both sides saw and
+writes `evaluation/unity_two_players.md`. The game itself: `AutoBuild.Game` (or `Tools > RTS > Build Windows game`), result `UnityRTS/Builds/UnityRTS.exe`.
 
 ## 6. Unity scenes and prefabs
 The scripts need scenes, prefabs and components that only the editor can create. The exact steps (scene objects, prefab
