@@ -55,7 +55,7 @@ class GeminiLLM(LLM):
         resp = self.client.models.generate_content(
             model=self.model, contents=contents,
             config=types.GenerateContentConfig(system_instruction=system,
-                                               tools=[types.Tool(function_declarations=decls)]))
+                                               tools=[types.Tool(function_declarations=decls)] if decls else None))
         calls = [{"name": c.name, "args": dict(c.args or {})} for c in (resp.function_calls or [])]
         return LLMReply(text=None if calls else resp.text, tool_calls=calls)
 
@@ -64,6 +64,18 @@ class GeminiLLM(LLM):
 # num_predict: a small model sometimes never stops writing (one question ran into the 120 s timeout); a plan needs about 100 tokens
 OPTIONS = {"temperature": 0, "num_ctx": 4096, "num_predict": 500}
 KEEP_ALIVE = "30m"   # the default (5 min) unloads the model between two questions of a match
+
+
+def options():
+    """OLLAMA_NUM_GPU (e.g. 99) puts every layer on the GPU: 40 instead of 25 tokens/s on 6 GB, when it fits beside the game."""
+    n = os.environ.get("OLLAMA_NUM_GPU")
+    return {**OPTIONS, "num_gpu": int(n)} if n else dict(OPTIONS)
+
+
+def is_prose(text):
+    """A page of text that does not start like JSON is not a plan. Not shorter: a tool call may follow a few sentences."""
+    t = text.lstrip()
+    return len(t) > 400 and t[0] not in "{`"
 
 
 def plan_grammar(schema):
@@ -93,7 +105,7 @@ class OllamaLLM(LLM):
 
     def warm_up(self):
         """Loads the model into memory (about 10 s), so the first question of a match does not wait for it."""
-        body = {"model": self.model, "messages": [], "keep_alive": KEEP_ALIVE, "options": OPTIONS}
+        body = {"model": self.model, "messages": [], "keep_alive": KEEP_ALIVE, "options": options()}
         req = urllib.request.Request(self.url, json.dumps(body).encode(), {"Content-Type": "application/json"})
         urllib.request.urlopen(req, timeout=self.timeout_s).close()
 
@@ -107,21 +119,31 @@ class OllamaLLM(LLM):
                     {"function": {"name": c["name"], "arguments": c["args"]}} for c in h["calls"]]})
             else:
                 messages.append({"role": "tool", "tool_name": h["name"], "content": json.dumps(h["result"])})
-        body = {"model": self.model, "messages": messages, "stream": False,
-                "keep_alive": KEEP_ALIVE, "options": OPTIONS}
-        if len(history) > 1 and history[-1]["role"] == "user":  # the agent's repair retry: force the plan schema
+        body = {"model": self.model, "messages": messages, "stream": True,
+                "keep_alive": KEEP_ALIVE, "options": options()}
+        if not tools:  # the agent wants the final plan now: force the plan schema
             from gateway.agent import PLAN_SCHEMA
             body["format"] = plan_grammar(PLAN_SCHEMA)
         else:
-            body["options"] = {**OPTIONS, "num_predict": 250}  # cut off a runaway answer early; the repair step then writes the plan
+            body["options"]["num_predict"] = 250  # cut off a runaway answer early; the repair step then writes the plan
             body["tools"] = [{"type": "function", "function": {
                 "name": t["name"], "description": t["description"], "parameters": t["schema"]}} for t in tools]
         req = urllib.request.Request(self.url, json.dumps(body).encode(), {"Content-Type": "application/json"})
+        # After the tool calls the 7B model often writes a page of prose instead of the plan (10 s, a third of all model time).
+        # The answer is streamed, so such a reply is dropped after a paragraph and the agent's reminder (tools or JSON, no prose) follows at once.
+        may_stop = "format" not in body and any(h["role"] == "tool" for h in history)
+        text, raw_calls = "", []
         with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
-            msg = json.load(resp)["message"]
-        calls = [{"name": c["function"]["name"], "args": dict(c["function"].get("arguments") or {})}
-                 for c in msg.get("tool_calls") or []]
-        return LLMReply(text=None if calls else msg.get("content"), tool_calls=calls)
+            for line in resp:
+                part = json.loads(line)
+                if "error" in part:
+                    raise RuntimeError(part["error"])
+                text += part["message"].get("content") or ""
+                raw_calls += part["message"].get("tool_calls") or []
+                if may_stop and not raw_calls and is_prose(text):
+                    break   # closing the connection stops the generation
+        calls = [{"name": c["function"]["name"], "args": dict(c["function"].get("arguments") or {})} for c in raw_calls]
+        return LLMReply(text=None if calls else text, tool_calls=calls)
 
 
 def provider_name(provider=None):

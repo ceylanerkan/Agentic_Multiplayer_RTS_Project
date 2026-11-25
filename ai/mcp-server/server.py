@@ -4,6 +4,7 @@ The session id comes from the environment (set by the gateway), never from tool 
 """
 import os
 import sys
+import threading
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -71,4 +72,7 @@ if __name__ == "__main__":
     sid = os.environ.get("RTS_SESSION_ID")
     if not sid:
         sys.exit("RTS_SESSION_ID is not set")
-    build_server(SessionStore(os.environ.get("SESSION_DB_PATH", "ai/data/sessions.sqlite3")), sid).run()
+    knowledge = Retriever()
+    # loading the embedding model takes about 25 s; do it now, so the first search does not run into the client's timeout
+    threading.Thread(target=knowledge.search, args=("warm up",), daemon=True).start()
+    build_server(SessionStore(os.environ.get("SESSION_DB_PATH", "ai/data/sessions.sqlite3")), sid, knowledge).run()

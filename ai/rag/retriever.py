@@ -4,6 +4,7 @@ One chunk per JSON record and per `## [source_id]` section of rules.md.
 """
 import json
 import re
+import threading
 from pathlib import Path
 
 from rank_bm25 import BM25Okapi
@@ -37,6 +38,7 @@ class Retriever:
         self.bm25 = BM25Okapi([tokenize(c.get("title", "") + " " + c.get("title", "") + " " + c["text"]) for c in self.chunks])  # title counted extra: exact names should win
         self.embeddings = None
         self._embedder = None
+        self._load_lock = threading.Lock()  # the warm-up thread and a first question must not load the model twice
         emb_file = Path(index_dir) / "embeddings.json"
         if emb_file.exists():  # written by build_index.py when sentence-transformers is installed
             data = json.loads(emb_file.read_text())
@@ -45,12 +47,13 @@ class Retriever:
                 self._model_name = data["model"]
 
     def _embed_query(self, query):
-        if self._embedder is None:
-            from sentence_transformers import SentenceTransformer
-            try:
-                self._embedder = SentenceTransformer(self._model_name, local_files_only=True)  # no network: local and fast
-            except Exception:  # not downloaded yet
-                self._embedder = SentenceTransformer(self._model_name)
+        with self._load_lock:
+            if self._embedder is None:
+                from sentence_transformers import SentenceTransformer
+                try:
+                    self._embedder = SentenceTransformer(self._model_name, local_files_only=True)  # no network: local and fast
+                except Exception:  # not downloaded yet
+                    self._embedder = SentenceTransformer(self._model_name)
         return self._embedder.encode([query], normalize_embeddings=True)[0].tolist()
 
     def search(self, query, top_k=3):

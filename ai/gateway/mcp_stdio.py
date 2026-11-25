@@ -3,6 +3,7 @@
 StdioMcp has the same two methods the Agent uses on the in-process server (list_tools, call_tool), so the Agent code is
 unchanged. The MCP client session lives in its own event-loop thread, because the Agent calls asyncio.run() for every call.
 Use as a context manager:  with StdioMcp(session_id, db_path) as mcp: Agent(llm, mcp, ...).run(...)
+The gateway keeps one open per game session (open/close): starting one per question cost 26 s at the first knowledge search.
 """
 import asyncio
 import os
@@ -17,7 +18,7 @@ SERVER = Path(__file__).resolve().parents[1] / "mcp-server" / "server.py"
 
 
 class StdioMcp:
-    def __init__(self, session_id, db_path, timeout_s=20):
+    def __init__(self, session_id, db_path, timeout_s=60):
         self.session_id, self.db_path, self.timeout_s = session_id, str(db_path), timeout_s
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._loop.run_forever, daemon=True)
@@ -36,6 +37,12 @@ class StdioMcp:
             self._loop.call_soon_threadsafe(self._stop.set)
         self._thread.join(timeout=5)
         return False
+
+    def open(self):
+        return self.__enter__()
+
+    def close(self):
+        self.__exit__()
 
     async def _start(self):
         self._stop = asyncio.Event()
