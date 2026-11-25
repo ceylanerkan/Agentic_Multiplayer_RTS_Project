@@ -16,18 +16,20 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
-Son push: `ae7dc56`; compile-check ve yol bulma henüz push edilmedi.
+Son push: `c712f50`.
 Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soruluk
 ölçüm bu değişiklikten önceki istemle yapıldı. **Öğrenci (25 Kasım): önce oyun bitsin, ölçüm sonra.**
 
 ## Kararlar
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
 - **Laya + qwen (öğrenci 25 Kasım'da "Laya'yı kullanmak istiyorum" dedi):** Laya metin yazmaz, yalnız araç seçer; planı qwen yazar ve isterse
-  ek araç çağırır. Ayardan kapatılabilir, hata olursa bugünkü yol çalışır. Hocaya "şart mı, öneri mi?" sorulacak.
+  ek araç çağırır. Ayardan kapatılabilir, hata olursa bugünkü yol çalışır.
 - **Harita:** her üsse 4 ağaç. **Build:** Mono (IL2CPP kurulu değil, ödev istemiyor).
 - **Unity editörünü öğrenci kullanır**, sonuçları sohbete yazar; kodu, Python'u ve belgeleri Claude yapar. Öğrencinin isteğiyle (25 Kasım) Claude editör
   kapalıyken penceresiz otomatik maç (`AutoPlayTest`) çalıştırabilir: yaklaşık 9 dk, AI'sız hafif, AI ile boş RAM 0,3 GB'a iner.
 - **Test az:** her değişiklikte tam test yok, planda olmayan yeni test yok. Push'tan önce sorulur, commit küçük tutulur.
+- **Hocaya mesaj işi yok** (öğrenci, 25 Kasım: "tamamen unut, önemsiz"): tekrar önerilmeyecek.
+- Öğrenci oyunu deneyip eklenecekleri söyleyecek (25 Kasım); AI testleri ondan sonra.
 - 29 Kasım'dan sonra yeni özellik yok.
 
 ## Yapılacaklar
@@ -109,14 +111,12 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [x] Claude: oyunda (otomatik maç) "What does Iron Weapons do?", gizli bilgi sorusu, "Train 20 archers right now." ve Ask why çalıştı. 20 okçuda model artık
       eylem önermiyor, yani validator reddi bu soruyla gösterilemez: demoya başka örnek gerek. "Enemy cavalry..." sorusunda da eylem önermedi (boş yer 2).
 - MCP Inspector görüntüsü isteğe bağlı: ödev 6.1 "MCP Inspector or your own test client ... screenshots/logs" diyor, `evaluation/mcp_calls_table.md` var.
-- [ ] Öğrenci: hocaya sor: "Laya'yı mı kastettiniz, kullanmak şart mı?"
 
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
 - [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda).
 - [ ] Claude: raporu IEEE A4 Word/PDF yap, `docs/slides-outline.md`'den sunum (.pptx). `docs/demo-script.md`'yi son hâle göre düzelt.
-- [ ] Öğrenci: rapora ad, numara ve hoca onayı; yedek demo videosu (9 senaryo, `docs/demo-script.md`).
-- [ ] Öğrenci: hocaya tek kişilik takım için yazılı onay sor (PDF 2 kişi diyor). Claude mesaj taslağını yazar.
+- [ ] Öğrenci: rapora ad ve numara; yedek demo videosu (9 senaryo, `docs/demo-script.md`).
 
 ### 5. Kapanış (29-30 Kasım)
 - [x] Claude (25 Kasım): tam `pytest -q ai evaluation` (88), gizli anahtar taraması (temiz), temiz klonda dizin + testler + mock değerlendirme çalıştı.
