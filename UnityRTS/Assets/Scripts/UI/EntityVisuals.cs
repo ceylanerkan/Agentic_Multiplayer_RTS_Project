@@ -21,6 +21,7 @@ public class EntityVisuals : MonoBehaviour
     Transform bar, barFill; Renderer barBack, barFront; Material barMat;
     float labelHeight, nextText, barWidth, hover = 2.5f;
     bool wall;
+    ModelLook look; float labelUp;
     int lastTeam = -1;        // 0 neutral, 1 mine, 2 enemy
 
     /// <summary>TMP's default font, or null. TMP_Settings itself throws when TMP Essential Resources were never imported.</summary>
@@ -34,25 +35,27 @@ public class EntityVisuals : MonoBehaviour
     void Start()
     {
         unit = GetComponent<NetworkUnit>(); building = GetComponent<NetworkBuilding>(); node = GetComponent<ResourceNode>();
-        body = GetComponentInChildren<Renderer>(); // a Wall or tree has it on a child
+        look = ModelLook.Attach(gameObject, unit, building, node);
+        body = GetComponentInChildren<Renderer>(); // a model, Wall or tree has it on a child
         wall = building != null && building.Object != null && building.Object.IsValid && RTS.Core.Rules.BuildSite.IsWall(building.TypeKey.ToString());
         var col = GetComponent<Collider>();
         float halfHeight = col != null ? col.bounds.extents.y : 1f;
         float radius = col != null ? Mathf.Max(col.bounds.extents.x, col.bounds.extents.z) : 1f;
         labelHeight = halfHeight * 2f + 1.2f;
+        labelUp = look != null && look.Height > 0f ? look.Height - halfHeight + 0.7f : labelHeight * 0.5f + 0.4f;
 
         hover = Mathf.Max(1.2f, radius * 1.25f);
         if (node == null) MakeBar(radius);
-        if (node == null && !wall)
+        if (node == null && !wall && !(building != null && look != null)) // the roofs of the buildings show the team
         {
             var d = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             d.name = name + "_TeamDisc";
             Destroy(d.GetComponent<Collider>());   // must not catch selection or right-click raycasts
             disc = d.transform;
-            disc.localScale = new Vector3(radius * 2.6f, 0.03f, radius * 2.6f);
+            disc.localScale = look != null ? new Vector3(radius * 1.9f, 0.015f, radius * 1.9f) : new Vector3(radius * 2.6f, 0.03f, radius * 2.6f);
             discRenderer = d.GetComponent<Renderer>();
             // copy the body's material so the shader (URP Lit) is one that is surely included in builds
-            discMat = new Material(body != null ? body.sharedMaterial : discRenderer.sharedMaterial);
+            discMat = new Material(look != null ? GlbModel.Material("C_Disc", Color.white) : body != null ? body.sharedMaterial : discRenderer.sharedMaterial);
             discRenderer.sharedMaterial = discMat;
         }
 
@@ -79,7 +82,7 @@ public class EntityVisuals : MonoBehaviour
             disc.position = new Vector3(p.x, RTS.Core.Rules.TerrainShape.Surface(p.x, p.z) + 0.14f, p.z);   // on the ground; the selection ring lies just below
             discRenderer.enabled = visible;
         }
-        label.transform.position = p + Vector3.up * (labelHeight * 0.5f + 0.4f);
+        label.transform.position = p + Vector3.up * labelUp;
         if (glow != null)
         {
             float n = building.Object != null && building.Object.IsValid && building.Completed ? Mathf.Clamp01(DayNight.Night01 * 2f - 0.7f) : 0f;
@@ -99,6 +102,7 @@ public class EntityVisuals : MonoBehaviour
             lastTeam = team;
             Color c = team == 1 ? Mine : team == 2 ? Enemy : Neutral;
             if (discMat != null) discMat.color = c;
+            if (look != null && node == null) look.SetTeam(team == 2);
             label.color = Color.Lerp(c, Color.white, 0.55f);
         }
         if (Time.time >= nextText) { nextText = Time.time + 0.25f; UpdateText(); }
@@ -170,7 +174,7 @@ public class EntityVisuals : MonoBehaviour
         bool show = visible && (near || selected || part < 0.995f);
         barBack.enabled = barFront.enabled = show;
         if (!show) return;
-        bar.position = p + Vector3.up * (labelHeight * 0.5f - 0.1f);
+        bar.position = p + Vector3.up * (labelUp - 0.5f);
         if (cam != null) bar.rotation = cam.transform.rotation;
         part = Mathf.Clamp(part, 0.02f, 1f);
         barFill.localScale = new Vector3(barWidth * part, BarHeight, 1);

@@ -21,7 +21,12 @@ public class NetworkUnit : NetworkBehaviour
 
 
     public override void Spawned() { All.Add(this); EntityVisuals.Attach(gameObject); }
-    public override void Despawned(NetworkRunner runner, bool hasState) { All.Remove(this); }
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        All.Remove(this);
+        var look = GetComponent<ModelLook>();
+        if (look != null && runner != null && runner.IsRunning && !runner.IsShutdown) look.Fall(); // a unit only disappears when it dies
+    }
 
     public void InitHost(PlayerRef owner, string typeKey)
     {

@@ -95,6 +95,9 @@ public class FogOfWar : MonoBehaviour
         foreach (var r in rs) if (r != null) r.enabled = visible;
     }
 
+    /// <summary>The object got other renderers (a model): look them up again.</summary>
+    public static void Forget(GameObject go) { if (instance != null) instance.renderers.Remove(go); }
+
     void PruneDestroyed()
     {
         var dead = new List<GameObject>();

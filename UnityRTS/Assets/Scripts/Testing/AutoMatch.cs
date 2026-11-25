@@ -107,7 +107,7 @@ public class AutoMatch : MonoBehaviour
     static List<NetworkBuilding> Buildings(string type, bool mine = true) => NetworkBuilding.All.Where(b => Alive(b) && (b.Owner == MyRef) == mine && b.TypeKey.ToString() == type).ToList();
     static float Flat(Vector3 v) { v.y = 0; return v.magnitude; }
     static string At(Vector3 p) => "(" + p.x.ToString("0.0") + ", " + p.z.ToString("0.0") + ")";
-    static bool Seen(Component c) => c.GetComponent<Renderer>().enabled;
+    static bool Seen(Component c) => c.GetComponentInChildren<Renderer>().enabled;
 
     IEnumerator For(Func<bool> cond, float seconds)
     {
