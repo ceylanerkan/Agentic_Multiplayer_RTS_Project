@@ -401,6 +401,15 @@ public static class AutoPlayTest
         Check("Warship shoots a land unit on the shore", ok);
         if (Alive(spear)) Me.Runner.Despawn(spear.Object);
         if (Alive(dock)) Me.Runner.Despawn(dock.Object);
+        // the river: ships sail up, land units wade through
+        Relay.SendMove(boat.Object.Id, new Vector3(TerrainShape.RiverX(-15), 0, -15));
+        yield return 0.5f;
+        yield return For(() => !boat.HasMoveTarget, 120);
+        Check("a ship sails up the river", ok && TerrainShape.InRiver(boat.transform.position.x, boat.transform.position.z) && Mathf.Abs(boat.transform.position.z + 15) < 2f, At(boat.transform.position));
+        var wader = GameSpawner.Instance.SpawnUnit(MyRef, "scout", new Vector3(-20, 0, -25));
+        yield return 0.3f;
+        yield return Walk("a land unit wades through the river", wader, new Vector3(20, 0, -25));
+        Me.Runner.Despawn(wader.Object);
         // fish: only a Fishing Boat gathers it, and it brings it to the Dock
         var fisher = Units("fishing_boat")[0]; var villager = Units("villager")[0];
         var shoal = ResourceNode.Nearest(fisher.transform.position, "food", 60f, true);
@@ -507,7 +516,7 @@ public static class AutoPlayTest
         yield return For(() => Done("barracks").QueueCount == 0, 40);
         var sites = new List<NetworkBuilding>();
         var wanted = new[] { new KeyValuePair<string, Vector3>("house", new Vector3(-88, 0, 4)), new KeyValuePair<string, Vector3>("house", new Vector3(-40.5f, 0, -12)),
-                             new KeyValuePair<string, Vector3>("barracks", new Vector3(3, 0, -2)), new KeyValuePair<string, Vector3>("dock", new Vector3(10, 0, TerrainShape.CoastZ(10) - 1.8f)) };
+                             new KeyValuePair<string, Vector3>("barracks", new Vector3(-30, 0, 4)), new KeyValuePair<string, Vector3>("dock", new Vector3(26, 0, TerrainShape.CoastZ(26) - 1.8f)) };
         foreach (var w in wanted)
         {
             yield return Place(w.Key, w.Value);

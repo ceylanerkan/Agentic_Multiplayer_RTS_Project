@@ -32,11 +32,11 @@ namespace RTS.Core.Rules
             // outer field: gold and a forest
             new Group("gold", -68, -36, 9, 6, 4, 5f), new Group("tree", -86, -32, 9, 11, 9, 2.7f), new Group("berry", -50, -24, 4, 3, 2, 2.4f),
             // between the players: worth fighting for
-            new Group("gold", -14, 13, 2, 2, 1, 5f), new Group("tree", -21, 34, 5, 4, 3, 2.7f),
-            new Group("berry", -11, -38, 7, 5, 4, 2.4f), new Group("tree", -30, -54, 10, 8, 6, 2.7f),
+            new Group("gold", -16, 12, 2, 2, 1, 5f), new Group("tree", -21, 34, 5, 4, 3, 2.7f),
+            new Group("berry", -18, -38, 5, 5, 4, 2.4f), new Group("tree", -30, -54, 10, 8, 6, 2.7f),
             // single trees
             new Group("tree", -34, -36, 2, 2, 1, 3), new Group("tree", -96, -52, 2, 2, 1, 3), new Group("tree", -50, -60, 2, 2, 1, 3),
-            new Group("tree", -27, 17, 2, 2, 1, 3), new Group("tree", -12, -63, 2, 2, 1, 3), new Group("tree", -97, -4, 1, 2, 1, 3),
+            new Group("tree", -27, 17, 2, 2, 1, 3), new Group("tree", -19, -63, 2, 2, 1, 3), new Group("tree", -97, -4, 1, 2, 1, 3),
             // fish: before the own harbor, and two shoals in the open sea
             new Group("fish", -70, 61, 14, 7, 3, 7f), new Group("fish", -18, 63, 10, 8, 2, 8f),
         };

@@ -31,6 +31,7 @@ public static class BuildPlaces
     public static bool CanStand(DefRecord unit, Vector3 p)
     {
         if (Mathf.Abs(p.x) > BuildSite.MapHalfX || p.z < BuildSite.MapMinZ || p.z > BuildSite.MapMaxZ) return false;
+        if (TerrainShape.InRiver(p.x, p.z)) return false; // nobody appears in the river
         if (ZoneMap.Instance != null && !DomainRules.CanStandIn(unit, ZoneLookup.IsWater(ZoneAt(p.x, p.z)))) return false;
         foreach (var b in Blocks(null))
             if (Mathf.Abs(p.x - b.X) < b.HalfX + 0.5f && Mathf.Abs(p.z - b.Z) < b.HalfZ + 0.5f) return false;
@@ -53,7 +54,7 @@ public static class BuildPlaces
             if (grid == null || gridMap != ZoneMap.Instance) // a new match
             {
                 gridMap = ZoneMap.Instance; dirty = true;
-                grid = new PathGrid(-BuildSite.MapHalfX, BuildSite.MapMinZ, BuildSite.MapHalfX, BuildSite.MapMaxZ, (x, z) => ZoneLookup.IsWater(ZoneAt(x, z)));
+                grid = new PathGrid(-BuildSite.MapHalfX, BuildSite.MapMinZ, BuildSite.MapHalfX, BuildSite.MapMaxZ, (x, z) => ZoneLookup.IsWater(ZoneAt(x, z)), TerrainShape.InRiver);
             }
             if (dirty) { grid.SetBlocks(Blocks(null)); dirty = false; }
             return grid;

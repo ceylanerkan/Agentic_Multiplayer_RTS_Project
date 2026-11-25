@@ -37,6 +37,7 @@ namespace RTS.Core.Rules
     {
         static readonly HashSet<string> LandZones = new HashSet<string> { "P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center" };
         static readonly HashSet<string> WaterZones = new HashSet<string> { "P1Harbor", "P2Harbor", "OpenSea" };
+        static readonly HashSet<string> RiverZones = new HashSet<string> { "NorthGate", "Center", "SouthField" }; // the river flows through them
         static readonly HashSet<string> ShoreZones = new HashSet<string> { "P1Base", "P2Base", "NorthGate" }; // land zones at the sea
         // the unit_group values of action_plan.schema.json; a unit type is also a group (all units of that type)
         static readonly HashSet<string> Groups = new HashSet<string> { "all_military", "all_ships", "idle_villagers" };
@@ -98,7 +99,7 @@ namespace RTS.Core.Rules
             if (a.UnitGroup == null || (!Groups.Contains(a.UnitGroup) && (!data.Units.ContainsKey(a.UnitGroup) || a.UnitGroup == "villager" || a.UnitGroup == "fishing_boat")))
                 return ValidationResult.Fail("unknown unit_group");
             bool ships = a.UnitGroup == "all_ships" || a.UnitGroup == "raider_boat" || a.UnitGroup == "warship";
-            if (ships && !WaterZones.Contains(a.TargetZone)) return ValidationResult.Fail("ships can only move to water zones");
+            if (ships && !WaterZones.Contains(a.TargetZone) && !RiverZones.Contains(a.TargetZone)) return ValidationResult.Fail("ships can only move to water zones");
             if (!ships && WaterZones.Contains(a.TargetZone)) return ValidationResult.Fail("land units cannot enter water zones");
             return ValidationResult.Pass();
         }

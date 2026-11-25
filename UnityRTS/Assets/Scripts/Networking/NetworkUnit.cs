@@ -136,7 +136,8 @@ public class NetworkUnit : NetworkBehaviour
     Vector3 OnGround(Vector3 p)
     {
         if (lift < 0f) { var c = GetComponent<Collider>(); lift = c != null ? c.bounds.extents.y : 1f; }
-        p.y = (IsShip ? TerrainShape.SeaLevel : TerrainShape.Surface(p.x, p.z)) + lift;
+        // land units wade through the river, a little deeper than the bank
+        p.y = (IsShip ? TerrainShape.SeaLevel : TerrainShape.InRiver(p.x, p.z) ? TerrainShape.Height(p.x, p.z) : TerrainShape.Surface(p.x, p.z)) + lift;
         return p;
     }
 }

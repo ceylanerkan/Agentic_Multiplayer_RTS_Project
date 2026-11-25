@@ -14,17 +14,18 @@ public class GroundMesh : MonoBehaviour
     const int Pixels = 960;
 
     float[] heights; int gridW, gridH; // of the mesh, also for the slopes
-    Mesh mesh; Texture2D texture; Material groundMaterial, waterMaterial;
+    Mesh mesh, solid; Texture2D texture; Material groundMaterial, waterMaterial;
 
     void OnEnable()
     {
         BuildMesh();
         if (!Application.isPlaying || !UseMaterials()) ShowPainted();
+        if (Application.isPlaying) AddRiver();
     }
 
     void OnDisable()
     {
-        foreach (var o in new Object[] { mesh, texture, groundMaterial, waterMaterial }) if (o != null) DestroyImmediate(o);
+        foreach (var o in new Object[] { mesh, solid, texture, groundMaterial, waterMaterial }) if (o != null) DestroyImmediate(o);
     }
 
     void BuildMesh()
@@ -52,7 +53,10 @@ public class GroundMesh : MonoBehaviour
         mesh = new Mesh { name = "Ground", hideFlags = HideFlags.DontSave, vertices = v, uv = uv, triangles = tri };
         mesh.RecalculateNormals(); mesh.RecalculateBounds();
         GetComponent<MeshFilter>().sharedMesh = mesh;
-        GetComponent<MeshCollider>().sharedMesh = mesh;
+        // without the far sea floor: its huge triangles are bad for physics
+        var solidTriangles = new int[tri.Length - 6]; System.Array.Copy(tri, solidTriangles, solidTriangles.Length);
+        solid = new Mesh { name = "GroundCollider", hideFlags = HideFlags.DontSave, vertices = v, triangles = solidTriangles };
+        GetComponent<MeshCollider>().sharedMesh = solid;
     }
 
     /// <summary>The real materials; false when a shader or texture is missing.</summary>
@@ -86,6 +90,21 @@ public class GroundMesh : MonoBehaviour
             s.material = waterMaterial; s.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
         return true;
+    }
+
+    /// <summary>The surface of the river (the sea object ends at z = 20; the land around lies higher than the water).</summary>
+    void AddRiver()
+    {
+        var sea = transform.parent != null ? transform.parent.Find("Sea") : null;
+        if (sea == null) return;
+        var river = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        river.name = "RiverWater";
+        Destroy(river.GetComponent<Collider>()); // clicks reach the river bed
+        river.transform.SetParent(transform, false);
+        river.transform.position = new Vector3(0, TerrainShape.SeaLevel - 0.5f, -55f); river.transform.localScale = new Vector3(60f, 1f, 150f);
+        var r = river.GetComponent<Renderer>();
+        r.sharedMaterial = waterMaterial != null ? waterMaterial : sea.GetComponent<Renderer>().sharedMaterial;
+        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
     }
 
     void ShowPainted()
@@ -136,6 +155,12 @@ public class GroundMesh : MonoBehaviour
         // beach, its inner edge is uneven
         float inland = coastZ - z;
         float sand = Mathf.Clamp01((6.2f + (mid - 0.5f) * 7f + (fine - 0.5f) * 2.5f - inland) / 2.2f);
+        if (Mathf.Abs(x) < 30f && inland > 0f) // sandy river banks, stones in the bed
+        {
+            float bank = TerrainShape.RiverBank(x, z) + (fine - 0.5f) * 1.6f;
+            sand = Mathf.Max(sand, Mathf.Clamp01((3.4f + (mid - 0.5f) * 3f - bank) / 1.6f));
+            if (bank < 0f) { float bed = Mathf.Clamp01(-bank / 2.5f); sand *= 1f - 0.7f * bed; return new Color(0f, sand, 0f, (1f - sand) * 0.9f); }
+        }
         rock *= 1f - sand; earth *= (1f - sand) * (1f - rock); dry *= (1f - sand) * (1f - rock) * (1f - earth);
         return new Color(dry, sand, earth, rock);
     }

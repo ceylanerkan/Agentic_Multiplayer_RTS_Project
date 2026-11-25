@@ -76,14 +76,15 @@ namespace RTS.Tests
             var taken = new List<Block> { new Block(-65, 25, 3, 3) }; // the Town Center
             System.Func<string, float, float, string> why = (key, x, zz) => BuildSite.WhyNot(key, x, zz, 1.5f, 1.5f, 1, z.ZoneAt, taken);
             Assert.IsNull(why("house", -90, 5));                                    // anywhere in the own base
-            Assert.IsNull(why("house", 0, -10));                                    // and in a neutral zone
+            Assert.IsNull(why("house", 30, -10));                                   // and in a neutral zone
+            Assert.AreEqual("too close to the river", why("house", TerrainShape.RiverX(-10), -10));
             Assert.AreEqual("the place is taken", why("house", -62, 25));
             Assert.AreEqual("cannot build in the enemy base", why("house", 65, 20));
             Assert.AreEqual("buildings stand on land", why("house", -65, 60));
             Assert.AreEqual("too close to the water", why("house", -65, 44));
             Assert.AreEqual("outside the map", why("house", -99.5f, 5));
             Assert.IsNull(why("dock", -80, 43));
-            Assert.IsNull(why("dock", 10, 43));                                     // NorthGate lies at the sea too
+            Assert.IsNull(why("dock", 22, 43));                                     // NorthGate lies at the sea too
             Assert.AreEqual("a Dock must stand on the shore", why("dock", -80, 40));
             float fx, fz;
             Assert.IsTrue(BuildSite.FindNear(-65, 25, 20, (x, zz) => why("house", x, zz) == null, out fx, out fz)); // next to the Town Center
@@ -92,7 +93,8 @@ namespace RTS.Tests
         }
         [Test] public void Move_DomainRules()
         {
-            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_ships", TargetZone = "Center" }, Fresh()).Ok);
+            Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_ships", TargetZone = "WestMine" }, Fresh()).Ok);
+            Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_ships", TargetZone = "Center" }, Fresh()).Ok); // up the river
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "OpenSea" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "idle_villagers", TargetZone = "EastForest" }, Fresh()).Ok);
@@ -705,6 +707,17 @@ namespace RTS.Tests
                 Assert.Greater(TerrainShape.Height(x, coast - 1), TerrainShape.SeaLevel); Assert.Less(TerrainShape.Height(x, coast + 1), TerrainShape.SeaLevel);
             }
             Assert.Less(System.Math.Abs(TerrainShape.Height(-61, 21) - TerrainShape.Height(-69, 29)), 0.35f);
+            // the river: ships sail from the sea to the south edge, land units wade through, banks are dry
+            var rivers = new PathGrid(-100, -70, 100, 80, (x, zz) => ZoneLookup.IsWater(z.ZoneAt(x, TerrainShape.ZoneZ(x, zz))), TerrainShape.InRiver);
+            rivers.SetBlocks(new List<Block>());
+            var up = rivers.Find(-40, 60, TerrainShape.RiverX(-60), -60, true);
+            Assert.AreEqual(-60, up[up.Count - 1][1], 1.5f, "a ship reaches the south of the river");
+            Assert.AreEqual(0, rivers.Find(-30, -20, 30, -20, false).Count, "a land unit walks straight through the river");
+            for (float zz = -65; zz < 38; zz += 4)
+            {
+                Assert.Less(TerrainShape.Height(TerrainShape.RiverX(zz), zz), TerrainShape.SeaLevel);
+                Assert.Greater(TerrainShape.Height(TerrainShape.RiverX(zz) + 14, zz), TerrainShape.SeaLevel);
+            }
             // resources (MapLayout): the same for both halves, land resources on land, fish in the water, free ground around the Town Centers
             var nodes = MapLayout.Build();
             var left = nodes.FindAll(n => n.X < 0); var right = nodes.FindAll(n => n.X > 0);
@@ -720,6 +733,7 @@ namespace RTS.Tests
             {
                 Assert.AreEqual(n.Kind == "fish", ZoneLookup.IsWater(z.ZoneAt(n.X, TerrainShape.ZoneZ(n.X, n.Z))), n.Kind + " at " + n.X + ", " + n.Z);
                 Assert.AreEqual(n.Kind == "fish", TerrainShape.Height(n.X, n.Z) < TerrainShape.SeaLevel, "height of " + n.Kind);
+                if (n.Kind != "fish") Assert.Greater(TerrainShape.RiverBank(n.X, n.Z), 2f, n.Kind + " in the river");
                 Assert.Less(System.Math.Abs(n.X), 99f); Assert.Greater(n.Z, -69f); Assert.Less(n.Z, n.Kind == "fish" ? 78f : 43f);
                 Assert.Greater((System.Math.Abs(n.X) - 65) * (System.Math.Abs(n.X) - 65) + (n.Z - 25) * (n.Z - 25), 9 * 9, "too close to a Town Center");
             }

@@ -46,7 +46,8 @@ def test_domain_rules_mirror_csharp_tests():
     assert pc.validate_action(dict(dock, target_zone="NorthGate"), s) is None
     assert pc.validate_action(dict(dock, target_zone="P1Base"), s) is None
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "archer", "target_zone": "OpenSea"}, s)
-    assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "Center"}, s)
+    assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "WestMine"}, s)
+    assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "Center"}, s) is None  # up the river
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "OpenSea"}, s) is None
 
 

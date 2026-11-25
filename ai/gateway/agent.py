@@ -41,7 +41,7 @@ def _plan_format():
         f"- BUILD needs building_type and target_zone (a land zone, normally the player's own base, never the enemy base; dock: only the own base or NorthGate); building_type: {enum('building_type')}\n"
         f"- RESEARCH needs tech_type: {enum('tech_type')}\n"
         f"- MOVE_GROUP needs unit_group and target_zone; unit_group: {enum('unit_group')}\n"
-        f"- zones: {enum('zone')}. Land units go only to land zones, ships only to water zones (P1Harbor, P2Harbor, OpenSea).\n"
+        f"- zones: {enum('zone')}. Land units go only to land zones, ships only to water zones (P1Harbor, P2Harbor, OpenSea) and up the river (NorthGate, Center, SouthField).\n"
         # only placeholders in the example: the 7B model copied a realistic one (units and even numbers) into its answers
         'Form of an answer without actions: {"summary": "<your answer>", "confidence": <0-1>, "evidence": ["<tool or source_id>"], "actions": []}\n'
         "Propose actions only when the player asks for advice, a plan or an action; a question about the state or the rules gets "

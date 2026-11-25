@@ -33,6 +33,9 @@ namespace RTS.Core.Rules
                 foreach (float sx in Signs)
                     foreach (float sz in Signs)
                         if (ZoneLookup.IsWater(zoneAt(x + sx * halfX, z + sz * halfZ))) return "too close to the water";
+            foreach (float sx in Signs)
+                foreach (float sz in Signs)
+                    if (TerrainShape.InRiver(x + sx * halfX, z + sz * halfZ) || TerrainShape.InRiver(x, z)) return "too close to the river";
             foreach (var b in blocks)
                 if (Math.Abs(x - b.X) < halfX + b.HalfX + gap && Math.Abs(z - b.Z) < halfZ + b.HalfZ + gap) return "the place is taken";
             return null;

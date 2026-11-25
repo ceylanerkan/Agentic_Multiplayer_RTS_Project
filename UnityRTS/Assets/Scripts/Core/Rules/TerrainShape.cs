@@ -27,16 +27,38 @@ namespace RTS.Core.Rules
             return near <= 0f ? z : z - CoastOffset(x) * near;
         }
 
-        /// <summary>Height of the land (below SeaLevel: sea floor).</summary>
+        // ---- the river: from the sea through the middle of the map to the south; ships sail on it, land units wade through it ----
+        /// <summary>Middle of the river at this z.</summary>
+        public static float RiverX(float z) { return 4.5f * Sin(z * 0.062f + 0.6f) + 1.4f * Sin(z * 0.15f + 1f); }
+
+        /// <summary>Metres from the river bank, negative in the river (only meaningful south of the coast).</summary>
+        public static float RiverBank(float x, float z)
+        {
+            float half = 4.4f + 0.6f * Sin(z * 0.11f) + 4.5f * Smooth(28f, 46f, z); // wider at the mouth
+            return Math.Abs(x - RiverX(z)) - half;
+        }
+
+        /// <summary>In the river: land units and ships can both be here, nothing can be built.</summary>
+        public static bool InRiver(float x, float z) { return Math.Abs(x) < 30f && RiverBank(x, z) < 0.3f && z < CoastZ(x); }
+
+        /// <summary>Height of the land (below SeaLevel: sea floor or river bed).</summary>
         public static float Height(float x, float z)
+        {
+            float h = Land(x, z);
+            if (Math.Abs(x) > 30f) return h;
+            float t = Smooth(-1.5f, 5.5f, RiverBank(x, z)), bed = Math.Min(SeaLevel - 0.6f, h); // also before the coast: no sand bar at the mouth
+            return t >= 1f ? h : bed * (1f - t) + h * t;
+        }
+
+        static float Land(float x, float z)
         {
             float a = (float)Math.Sqrt(x * x + 16f);
             float inland = CoastZ(x) - z; // metres from the shore, positive on land
             if (inland <= 0f) return SeaLevel - Math.Min(-inland, 16f) * 0.16f;
 
             float h = 1.0f + 0.50f * Sin(a * 0.062f + 1.3f) * Cos(z * 0.071f + 0.7f) + 0.34f * Sin(a * 0.115f + z * 0.094f + 2f) + 0.18f * Sin(a * 0.23f - z * 0.19f + 0.5f);
-            h += Hill(a, z, 37, -13, 13, 3.2f) + Hill(a, z, 25, -31, 11, 2.8f) + Hill(a, z, 4, 9, 10, 2.0f) + Hill(a, z, 91, -15, 11, 3.0f)
-               + Hill(a, z, 52, -53, 13, 3.0f) + Hill(a, z, 17, -60, 11, 2.4f) + Hill(a, z, 39, 19, 9, 1.6f);
+            h += Hill(a, z, 37, -13, 13, 3.2f) + Hill(a, z, 25, -31, 11, 2.8f) + Hill(a, z, 91, -15, 11, 3.0f)
+               + Hill(a, z, 52, -53, 13, 3.0f) + Hill(a, z, 24, -60, 11, 2.4f) + Hill(a, z, 39, 19, 9, 1.6f);
             // flat ground for building around the Town Center
             float dx = a - 65f, dz = z - 25f;
             h *= 0.2f + 0.8f * Smooth(13f, 30f, (float)Math.Sqrt(dx * dx + dz * dz));

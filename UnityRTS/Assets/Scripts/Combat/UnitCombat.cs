@@ -91,8 +91,15 @@ public class UnitCombat : NetworkBehaviour
     static bool CanHit(DefRecord me, NetworkUnit tu, NetworkBuilding tb)
     {
         var data = GameDataProvider.Get();
-        string domain = tu != null ? DomainRules.DomainOfUnit(data.Units[tu.TypeKey.ToString()]) : DomainRules.DomainOfBuilding(tb.TypeKey.ToString());
+        string domain = tu != null ? DomainOf(tu) : DomainRules.DomainOfBuilding(tb.TypeKey.ToString());
         return DomainRules.CanAttack(me, domain);
+    }
+
+    // in the river land units and ships meet, so everybody can fight there
+    static string DomainOf(NetworkUnit u)
+    {
+        Vector3 p = u.transform.position;
+        return TerrainShape.InRiver(p.x, p.z) ? DomainRules.Both : DomainRules.DomainOfUnit(GameDataProvider.Get().Units[u.TypeKey.ToString()]);
     }
 
     void FindAuto(float range, DefRecord me, out NetworkUnit bestU, out NetworkBuilding bestB)
@@ -103,7 +110,7 @@ public class UnitCombat : NetworkBehaviour
         foreach (var u in NetworkUnit.All)
         {
             if (u.Owner == unit.Owner || u.Hp <= 0) continue;
-            if (!DomainRules.CanAttack(me, DomainRules.DomainOfUnit(data.Units[u.TypeKey.ToString()]))) continue;
+            if (!DomainRules.CanAttack(me, DomainOf(u))) continue;
             float dist = Flat(u.transform.position - pos);
             if (dist <= range + GameConstants.UnitReach && dist < bestD) { bestD = dist; bestU = u; bestB = null; }
         }

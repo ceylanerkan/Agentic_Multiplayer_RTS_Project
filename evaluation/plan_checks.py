@@ -20,6 +20,7 @@ def load_data():
 
 DATA = load_data()
 SHORE = {"P1Base", "P2Base", "NorthGate"}  # land zones at the sea
+RIVER = {"NorthGate", "Center", "SouthField"}  # the river flows through them, ships can go there
 
 
 def _requirement(requires, age, techs, buildings):
@@ -85,7 +86,7 @@ def validate_action(a, state, reserved=None, slot=1):
         if group not in GROUPS and (group not in DATA["units"] or group in ("villager", "fishing_boat")):
             return "unknown unit_group"
         ships = a.get("unit_group") in ("all_ships", "raider_boat", "warship")
-        if ships and zone not in WATER:
+        if ships and zone not in WATER and zone not in RIVER:
             return "ships can only move to water zones"
         if not ships and zone in WATER:
             return "land units cannot enter water zones"
