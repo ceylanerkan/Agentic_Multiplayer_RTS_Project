@@ -214,7 +214,7 @@ and "validation failure" visible and reproducible.
 
 **Validator rules (examples).** Cost and reserved resources; population capacity; prerequisites (Barracks for Age II,
 Age II for Stable and Cavalry); no technology twice; buildings only in land zones and never in the enemy base; a Dock
-only on a free coastal slot of the own base; land groups cannot be sent to water zones and ships cannot be sent to
+only on the shore of the own base or of NorthGate; land groups cannot be sent to water zones and ships cannot be sent to
 land zones; every name (unit, building, technology, group, zone) must be one the game knows, independently of the schema.
 
 ## VIII. Security
@@ -233,7 +233,8 @@ integrity of the game state and (3) the player's consent.
 3. *Read-only tools.* No tool changes state; there are no filesystem, shell or HTTP tools.
 4. *Triple validation of plans.* JSON Schema in the gateway, `GameActionValidator` at approval time, host authority in
    the RPC handler. The host also checks what a client cannot see: a technology already queued in another building is
-   refused (it would be paid twice), and a building can only go on a free build slot in the validated zone.
+   refused (it would be paid twice), and a building can only stand on free
+   ground in the validated zone (`BuildSite`).
 5. *Bounded behaviour.* Maximum 6 agent steps, 120 s, clamped `top_k`, limited query and question length, 20 events.
 6. *Prompt injection.* Tool results and retrieved text are marked as data and the system prompt says so; suspicious
    questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,

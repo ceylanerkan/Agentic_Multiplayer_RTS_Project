@@ -40,7 +40,7 @@ their own domain; ranged units (Archer, Catapult, Warship) shoot across the shor
 | Barracks | 150W | 800 | Spearman, Archer, Scout | – |
 | Stable | 150W | 800 | Cavalry | Age II |
 | Blacksmith | 120W | 700 | Iron Weapons, Fletching, Catapult (Age II) | – |
-| Dock | 120W | 900 | Raider Boat, Warship (Age II); built on a coastal slot of your own base | – |
+| Dock | 120W | 900 | Raider Boat, Warship (Age II); built on the shore of your own base or of NorthGate | – |
 
 | Technology | Cost | Where | Requires | Effect |
 |---|---|---|---|---|

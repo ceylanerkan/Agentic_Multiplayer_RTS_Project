@@ -167,6 +167,7 @@ public static class AutoPlayTest
         Add("Ships", Ships);
         Add("Gathering", Gathering);
         Add("AI approval", Approval);
+        Add("Placement", Placement);
         if (WithAi) Add("AI live", AiLive);
         Add("Victory", Victory);
     }
@@ -208,16 +209,16 @@ public static class AutoPlayTest
     static IEnumerator Build(string type)
     {
         var villagers = Units("villager"); int before = Buildings(type).Count; var purse = Purse(); float t0 = Time.time;
-        var slot = BuildSlot.FindNear("P1Base", type == "dock", villagers[0].transform.position);
-        if (slot == null) { Check("build " + type, false, "no free slot"); yield break; }
-        Relay.SendBuild(type, slot.transform.position, "P1Base", villagers[0].Object.Id);
+        if (!BuildPlaces.TryFind(type, "P1Base", villagers[0].transform.position, 1, 45f, 3f, null, out var place)) { Check("build " + type, false, "no free place"); yield break; }
+        Relay.SendBuild(type, place, "P1Base", villagers[0].Object.Id);
         yield return For(() => Buildings(type).Count == before + 1, 4);
         if (!ok) { Check("build " + type, false, "site did not appear; " + Stock()); yield break; }
         bool paid = Paid(purse, Data.Buildings[type].Cost);
         var site = Buildings(type).First(b => !b.Completed);
         foreach (var v in villagers.Skip(1)) Relay.SendHelpBuild(v.Object.Id, site.Object.Id);
         yield return For(() => Alive(site) && site.Completed, 100);
-        Check("build " + type, ok && paid, ok ? (Time.time - t0).ToString("0") + " s with " + villagers.Count + " Villagers at z=" + site.transform.position.z.ToString("0") + (paid ? "" : ", wrong price") : "not finished");
+        bool exact = Alive(site) && Flat(site.transform.position - place) < 0.1f;
+        Check("build " + type, ok && paid && exact, ok ? (Time.time - t0).ToString("0") + " s with " + villagers.Count + " Villagers at " + At(site.transform.position) + (paid ? "" : ", wrong price") + (exact ? "" : ", not at the requested place") : "not finished");
     }
 
     static IEnumerator Research(string tech, string building)
@@ -246,7 +247,7 @@ public static class AutoPlayTest
     {
         var tc = Done("town_center");
         yield return Refused("Age II without a Barracks", () => Relay.SendResearch("age_2", tc.Object.Id));
-        yield return Refused("Stable before Age II", () => Relay.SendBuild("stable", BuildSlot.FindNear("P1Base", false, tc.transform.position).transform.position, "P1Base", Units("villager")[0].Object.Id));
+        yield return Refused("Stable before Age II", () => Relay.SendBuild("stable", new Vector3(-85, 0, 5), "P1Base", Units("villager")[0].Object.Id));
         yield return Refused("Spearman at the Town Center", () => Relay.SendTrain("spearman", tc.Object.Id));
         yield return Refused("building in the enemy base", () => Relay.SendBuild("house", new Vector3(65, 0, 13), "P2Base", Units("villager")[0].Object.Id));
         yield return Refused("moving a unit of player 2", () => Relay.SendHelpBuild(NetworkBuilding.All.First(b => b.Owner == Foe).Object.Id, tc.Object.Id));
@@ -355,16 +356,15 @@ public static class AutoPlayTest
 
     static IEnumerator Dock()
     {
-        int coast = BuildSlot.All.Count(s => s.coastal && !s.occupied && s.Zone == "P1Base");
-        Check("a coastal slot is still free for the Dock", coast > 0, coast + " free");
         yield return Build("dock");
+        Check("the Dock stands on the shore", Done("dock") != null && Done("dock").transform.position.z >= 42f, Done("dock") != null ? At(Done("dock").transform.position) : "");
         yield return Train("raider_boat", "dock");
         yield return Train("warship", "dock");
         yield return Train("raider_boat", "dock");
         var ships = Units("raider_boat").Concat(Units("warship")).ToList();
         float closest = float.MaxValue;
         for (int i = 0; i < ships.Count; i++) for (int j = i + 1; j < ships.Count; j++) closest = Mathf.Min(closest, Vector3.Distance(ships[i].transform.position, ships[j].transform.position));
-        Check("ships appear side by side in the own harbor", ships.Count == 3 && closest > 2f && ships.All(s => Zone(s.transform.position) == "P1Harbor"), "closest pair " + closest.ToString("0.0") + " m");
+        Check("ships appear side by side in the water before the Dock", ships.Count == 3 && closest > 2f && ships.All(s => Zone(s.transform.position) == "P1Harbor"), "closest pair " + closest.ToString("0.0") + " m");
         var d = Done("dock");
         if (d != null) Shot("dock", d.transform.position + new Vector3(0, 30, -30), d.transform.position + new Vector3(0, 0, 12));
     }
@@ -383,9 +383,8 @@ public static class AutoPlayTest
             yield return For(() => !archer.HasMoveTarget, 60);
             Check("a land unit stops at the shore", ok && !ZoneLookup.IsWater(Zone(archer.transform.position)), Zone(archer.transform.position) + " z=" + archer.transform.position.z.ToString("0"));
         }
-        // the Dock correction: a Raider Boat must reach a Dock on a coastal slot (it is the rule "a Dock can be attacked from the sea")
-        var coast = BuildSlot.All.First(s => s.coastal && s.Zone == "P2Base");
-        var dock = GameSpawner.Instance.SpawnBuilding(Foe, "dock", coast.transform.position, true);
+        // a Raider Boat must reach every Dock: 42.6 is the farthest from the water (coast z = 45) where one can stand
+        var dock = GameSpawner.Instance.SpawnBuilding(Foe, "dock", new Vector3(57, 0, 42.6f), true);
         yield return 0.5f;
         float hp = dock.Hp;
         Relay.SendAttack(boat.Object.Id, dock.Object.Id);
@@ -445,8 +444,13 @@ public static class AutoPlayTest
         Check("approve: Archers to the OpenSea are refused", r.Contains("1 skipped") && r.Contains("water"), r);
         r = AiApprovalFlow.Approve(Answer(Act("BUILD", building: "house", zone: "P2Base")));
         Check("approve: building in the enemy base is refused", r.Contains("1 skipped"), r);
-        r = AiApprovalFlow.Approve(Answer(Act("BUILD", building: "house", zone: "P1Base")));
-        Check("approve: no free slot is said, not 'sent'", r.Contains("no free build slot"), r);
+        r = AiApprovalFlow.Approve(Answer(Act("BUILD", building: "dock", zone: "WestMine")));
+        Check("approve: a Dock without a shore is refused", r.Contains("1 skipped") && r.Contains("shore"), r);
+        int before = Buildings("house").Count;
+        r = AiApprovalFlow.Approve(Answer(Act("BUILD", building: "house", zone: "P1Base"), Act("BUILD", building: "house", zone: "P1Base")));
+        yield return 1.5f;
+        Check("approve: two Houses in one plan do not overlap", Buildings("house").Count == before + 2 && NoOverlap(), r);
+        foreach (var h in Buildings("house").Where(b => !b.Completed)) h.TakeDamage(h.Hp + 1f);
         var purse = Purse(); int queue = NetworkBuilding.All.Sum(b => b.QueueCount);
         r = AiApprovalFlow.Reject(Answer(Act("TRAIN_UNIT", "spearman", 1)));
         yield return 1f;
@@ -455,6 +459,56 @@ public static class AutoPlayTest
         r = AiApprovalFlow.Approve(Answer(Act("MOVE_GROUP", group: "cavalry", zone: "NorthGate")));
         yield return For(() => cav.Count > 0 && Zone(cav[0].transform.position) == "NorthGate", 60);
         Check("approve: Cavalry moves to NorthGate", ok, r);
+    }
+
+    static float Flat(Vector3 v) { v.y = 0; return v.magnitude; }
+    static string At(Vector3 p) => "(" + p.x.ToString("0") + ", " + p.z.ToString("0") + ") " + Zone(p);
+
+    static bool NoOverlap()
+    {
+        var b = NetworkBuilding.All;
+        for (int i = 0; i < b.Count; i++)
+            for (int j = i + 1; j < b.Count; j++)
+            {
+                Vector3 d = b[i].transform.position - b[j].transform.position, s = (GameSpawner.Instance.BuildingSize(b[i].TypeKey.ToString()) + GameSpawner.Instance.BuildingSize(b[j].TypeKey.ToString())) * 0.5f;
+                if (Mathf.Abs(d.x) < s.x && Mathf.Abs(d.z) < s.z) return false;
+            }
+        return true;
+    }
+
+    static NetworkBuilding site;
+
+    static IEnumerator Place(string type, Vector3 pos)
+    {
+        var before = new HashSet<NetworkBuilding>(NetworkBuilding.All);
+        Relay.SendBuild(type, pos, Zone(pos), Units("villager")[0].Object.Id);
+        yield return For(() => NetworkBuilding.All.Any(b => !before.Contains(b)), 4);
+        site = NetworkBuilding.All.FirstOrDefault(b => !before.Contains(b));
+    }
+
+    /// <summary>Building anywhere: exactly where the player clicks, when the ground is free.</summary>
+    static IEnumerator Placement()
+    {
+        var villager = Units("villager")[0].Object.Id;
+        yield return For(() => Done("barracks").QueueCount == 0, 40);
+        var sites = new List<NetworkBuilding>();
+        var wanted = new[] { new KeyValuePair<string, Vector3>("house", new Vector3(-88, 0, 4)), new KeyValuePair<string, Vector3>("house", new Vector3(-40.5f, 0, -12)),
+                             new KeyValuePair<string, Vector3>("barracks", new Vector3(3, 0, -2)), new KeyValuePair<string, Vector3>("dock", new Vector3(10, 0, 43)) };
+        foreach (var w in wanted)
+        {
+            yield return Place(w.Key, w.Value);
+            Check(w.Key + " exactly at " + At(w.Value), ok && Flat(site.transform.position - w.Value) < 0.1f, site != null ? At(site.transform.position) : "nothing built");
+            if (site != null) sites.Add(site);
+        }
+        yield return Place("house", wanted[0].Value);
+        Check("a second House on the same ground goes beside it", ok && NoOverlap() && Flat(site.transform.position - wanted[0].Value) < 12f, site != null ? At(site.transform.position) : "nothing built");
+        if (site != null) sites.Add(site);
+        Shot("placement", new Vector3(-30, 60, -60), new Vector3(-30, 0, 5));
+        yield return Refused("House in the sea", () => Relay.SendBuild("house", new Vector3(-65, 0, 62), "P1Base", villager));
+        yield return Refused("House outside the map", () => Relay.SendBuild("house", new Vector3(-130, 0, 10), "P1Base", villager));
+        yield return Refused("Dock far from the shore", () => Relay.SendBuild("dock", new Vector3(-65, 0, 5), "P1Base", villager));
+        yield return Refused("House in the enemy base with a wrong zone name", () => Relay.SendBuild("house", new Vector3(60, 0, 20), "P1Base", villager));
+        foreach (var s in sites) if (Alive(s)) s.TakeDamage(s.Hp + 1f);
     }
 
     // ---- the AI panel with the real gateway ----

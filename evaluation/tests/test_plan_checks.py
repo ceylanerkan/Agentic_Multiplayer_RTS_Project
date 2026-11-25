@@ -42,7 +42,8 @@ def test_domain_rules_mirror_csharp_tests():
     assert pc.validate_action(house, s) == "cannot build in the enemy base"
     assert pc.validate_action(dict(house, target_zone="P1Harbor"), s) == "buildings need a land target_zone"
     dock = {"action_type": "BUILD", "building_type": "dock", "target_zone": "Center"}
-    assert "coastal" in pc.validate_action(dock, s)
+    assert "shore" in pc.validate_action(dock, s)
+    assert pc.validate_action(dict(dock, target_zone="NorthGate"), s) is None
     assert pc.validate_action(dict(dock, target_zone="P1Base"), s) is None
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "archer", "target_zone": "OpenSea"}, s)
     assert pc.validate_action({"action_type": "MOVE_GROUP", "unit_group": "warship", "target_zone": "Center"}, s)

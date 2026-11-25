@@ -19,6 +19,7 @@ def load_data():
 
 
 DATA = load_data()
+SHORE = {"P1Base", "P2Base", "NorthGate"}  # land zones at the sea
 
 
 def _requirement(requires, age, techs, buildings):
@@ -40,7 +41,7 @@ def _pay(cost, count, resources, reserved):
     return None
 
 
-def validate_action(a, state, reserved=None, slot=1, coastal_zones=("P1Base",)):
+def validate_action(a, state, reserved=None, slot=1):
     """Returns None if the action is valid, otherwise the reason. `state` is a safe snapshot dict."""
     reserved = {} if reserved is None else reserved
     res = state["resources"]
@@ -66,8 +67,8 @@ def validate_action(a, state, reserved=None, slot=1, coastal_zones=("P1Base",)):
             return "buildings need a land target_zone"
         if zone == ("P2Base" if slot == 1 else "P1Base"):
             return "cannot build in the enemy base"
-        if a["building_type"] == "dock" and zone not in coastal_zones:
-            return "dock needs a free coastal slot in your own base"
+        if a["building_type"] == "dock" and zone not in SHORE:
+            return "dock needs a shore zone: your own base or NorthGate"
         return _requirement(b["requires"], age, techs, buildings) or _pay(b["cost"], count, res, reserved)
     if kind == "RESEARCH":
         t = DATA["techs"].get(a.get("tech_type"))

@@ -93,6 +93,6 @@
     "requires": [],
     "trains": ["raider_boat", "warship"],
     "researches": [],
-    "description": "Naval building. Must be placed on a coastal build slot of your own base, next to your harbor (P1Harbor or P2Harbor). Trains Raider Boats, and Warships after Age II. Can be attacked from land and from water."
+    "description": "Naval building. Must be placed on the shore (at most 2.5 m from the water) of your own base or of NorthGate; its ships appear in the water in front of it. Trains Raider Boats, and Warships after Age II. Can be attacked from land and from water."
   }
 ]

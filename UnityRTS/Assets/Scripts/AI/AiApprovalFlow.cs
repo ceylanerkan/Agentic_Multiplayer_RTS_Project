@@ -102,10 +102,14 @@ public static class AiApprovalFlow
                 var builder = PickVillager(me);
                 Vector3 centre;
                 if (builder == null || ZoneMap.Instance == null || !ZoneMap.Instance.TryGetCentre(a.TargetZone, out centre)) return false;
-                if (BuildSlot.All.Count > 0 && BuildSlot.FindNear(a.TargetZone, a.BuildingType == "dock", centre) == null)
-                    { blocked = "no free build slot in " + a.TargetZone; return false; }
+                // the plan only names a zone: a place near its centre with room to walk around it, or else any free place
+                int slot = relay.GetComponent<NetworkPlayerState>().Slot;
+                Vector3 place;
+                if (!BuildPlaces.TryFind(a.BuildingType, a.TargetZone, centre, slot, 45f, 4f, me, out place)
+                    && !BuildPlaces.TryFind(a.BuildingType, a.TargetZone, centre, slot, 45f, BuildSite.Gap, me, out place))
+                    { blocked = "no free place in " + a.TargetZone; return false; }
                 builders.Add(builder);
-                relay.SendBuild(a.BuildingType, centre, a.TargetZone, builder.Object.Id); // the host snaps to the nearest free slot
+                relay.SendBuild(a.BuildingType, place, a.TargetZone, builder.Object.Id); // the host checks the place again
                 return true;
             }
             case "MOVE_GROUP":

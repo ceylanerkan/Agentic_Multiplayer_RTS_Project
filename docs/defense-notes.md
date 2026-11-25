@@ -23,7 +23,7 @@ embeddings (average of normalised BM25 and cosine) -> top-k chunks with ids -> t
 
 ## 4. Validator
 `GameActionValidator` (`Core/Rules`): count 1-20; unit/building/tech known; population; prerequisites (buildings, Age II);
-resources with reservation across actions; land vs water zones; no building in the enemy base; Dock only on a free coastal slot.
+resources with reservation across actions; land vs water zones; no building in the enemy base; Dock only on the shore (own base or NorthGate).
 It runs three times: gateway (JSON Schema), Unity on Approve (`AiApprovalFlow` -> `ApprovalEvaluator`), host in the RPC handler.
 
 ## 5. One security test explained

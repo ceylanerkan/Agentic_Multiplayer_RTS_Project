@@ -1,8 +1,8 @@
-# Automatic play test (Unity 6000.4.9f1, 2026-11-25 14:06)
+# Automatic play test (Unity 6000.4.9f1, 2026-11-25 15:10)
 
 `AutoPlayTest.Run` (editor only): host session, real commands, checked on the host; player 2 is a stand-in. Mouse input and the look of the UI are not tested.
 
-**66 passed, 0 failed.**
+**76 passed, 0 failed.**
 
 | Section | Check | Result | Detail |
 |---|---|---|---|
@@ -17,11 +17,11 @@
 | Town Center | train villager | ok | 12 s, zone P1Base |
 | Town Center | train villager | ok | 12 s, zone P1Base |
 | Town Center | refused: Villager above the population limit (5200w 5100f 5100g, pop 5/5) | ok |  |
-| Houses | build house | ok | 4 s with 5 Villagers at z=13 |
-| Houses | build house | ok | 6 s with 5 Villagers at z=13 |
-| Houses | build house | ok | 5 s with 5 Villagers at z=25 |
+| Houses | build house | ok | 3 s with 5 Villagers at (-67, 17) P1Base |
+| Houses | build house | ok | 4 s with 5 Villagers at (-61, 16) P1Base |
+| Houses | build house | ok | 4 s with 5 Villagers at (-57, 22) P1Base |
 | Houses | 3 Houses give 15 population | ok | 5110w 5100f 5100g, pop 5/20 |
-| Barracks | build barracks | ok | 12 s with 5 Villagers at z=25 |
+| Barracks | build barracks | ok | 7 s with 5 Villagers at (-54, 14) P1Base |
 | Barracks | train scout | ok | 10 s, zone P1Base |
 | Barracks | train spearman | ok | 14 s, zone P1Base |
 | Barracks | train archer | ok | 16 s, zone P1Base |
@@ -34,14 +34,14 @@
 | Age II | refused: Age II a second time | ok |  |
 | Age II | Age II reached | ok | age 2 |
 | Age II | research horse_collar | ok | 25 s |
-| Blacksmith | build blacksmith | ok | 6 s with 6 Villagers at z=13 |
+| Blacksmith | build blacksmith | ok | 6 s with 6 Villagers at (-50, 22) P1Base |
 | Blacksmith | research iron_weapons | ok | 30 s |
 | Blacksmith | Iron Weapons: Spearman +2 attack, Scout none | ok |  |
 | Blacksmith | refused: Iron Weapons a second time | ok |  |
 | Blacksmith | research fletching | ok | 25 s |
 | Blacksmith | Fletching: Archer +1 range | ok |  |
 | Blacksmith | train catapult | ok | 30 s, zone P1Base |
-| Stable | build stable | ok | 11 s with 6 Villagers at z=43 |
+| Stable | build stable | ok | 6 s with 6 Villagers at (-47, 14) P1Base |
 | Stable | train cavalry | ok | 20 s, zone P1Base |
 | Combat | an enemy next to us is visible | ok |  |
 | Combat | Cavalry hits an Archer (counter x1.5, Iron Weapons) | ok | first damage seen 15,0, one Cavalry hit 15,0 (others may hit too) |
@@ -49,18 +49,18 @@
 | Combat | a distant enemy is hidden | ok |  |
 | Catapult | Catapult hits a building (x3) | ok | damage 36,0, expected 36,0 |
 | Catapult | refused: building a House on the enemy's order | ok |  |
-| Dock | a coastal slot is still free for the Dock | ok | 1 free |
-| Dock | build dock | ok | 8 s with 6 Villagers at z=43 |
+| Dock | build dock | ok | 10 s with 6 Villagers at (-48, 43) P1Base |
+| Dock | the Dock stands on the shore | ok | (-48, 43) P1Base |
 | Dock | train raider_boat | ok | 15 s, zone P1Harbor |
 | Dock | train warship | ok | 30 s, zone P1Harbor |
 | Dock | train raider_boat | ok | 15 s, zone P1Harbor |
-| Dock | ships appear side by side in the own harbor | ok | closest pair 4,0 m |
+| Dock | ships appear side by side in the water before the Dock | ok | closest pair 4,0 m |
 | Ships | a ship stops at the shore | ok | P1Harbor z=45 |
 | Ships | a land unit stops at the shore | ok | P1Base z=45 |
 | Ships | Raider Boat attacks an enemy Dock from the sea | ok | damage 6,0 |
 | Ships | Warship shoots a land unit on the shore | ok |  |
 | Ships | sunk ships free their population | ok | 19 -> 16 |
-| Gathering | gather wood | ok | +10 after 27 s, node 22 m from the Town Center |
+| Gathering | gather wood | ok | +10 after 32 s, node 22 m from the Town Center |
 | Gathering | gather gold | ok | +10 after 46 s, node 55 m from the Town Center |
 | Gathering | gather food | ok | +10 after 59 s, node 85 m from the Town Center |
 | AI approval | approve: 2 Spearmen are queued | ok | Approved plan-001: 1 action(s) sent. |
@@ -68,9 +68,19 @@
 | AI approval | approve: researched technology is refused | ok | Approved plan-003: 0 sent, 1 skipped (already researched). |
 | AI approval | approve: Archers to the OpenSea are refused | ok | Approved plan-004: 0 sent, 1 skipped (land units cannot enter water zones). |
 | AI approval | approve: building in the enemy base is refused | ok | Approved plan-005: 0 sent, 1 skipped (cannot build in the enemy base). |
-| AI approval | approve: no free slot is said, not 'sent' | ok | Approved plan-006: 0 sent, 1 skipped (no free build slot in P1Base). |
-| AI approval | reject changes nothing | ok | Rejected plan-007. Nothing was changed. |
-| AI approval | approve: Cavalry moves to NorthGate | ok | Approved plan-008: 1 action(s) sent. |
+| AI approval | approve: a Dock without a shore is refused | ok | Approved plan-006: 0 sent, 1 skipped (dock needs a shore zone: your own base or NorthGate). |
+| AI approval | approve: two Houses in one plan do not overlap | ok | Approved plan-007: 2 action(s) sent. |
+| AI approval | reject changes nothing | ok | Rejected plan-008. Nothing was changed. |
+| AI approval | approve: Cavalry moves to NorthGate | ok | Approved plan-009: 1 action(s) sent. |
+| Placement | house exactly at (-88, 4) P1Base | ok | (-88, 4) P1Base |
+| Placement | house exactly at (-41, -12) WestMine | ok | (-41, -12) WestMine |
+| Placement | barracks exactly at (3, -2) Center | ok | (3, -2) Center |
+| Placement | dock exactly at (10, 43) NorthGate | ok | (10, 43) NorthGate |
+| Placement | a second House on the same ground goes beside it | ok | (-84, 4) P1Base |
+| Placement | refused: House in the sea | ok |  |
+| Placement | refused: House outside the map | ok |  |
+| Placement | refused: Dock far from the shore | ok |  |
+| Placement | refused: House in the enemy base with a wrong zone name | ok |  |
 | Victory | destroying the enemy Town Center wins the match | ok | result 1 |
 
 Errors in the Unity log during the run: 0

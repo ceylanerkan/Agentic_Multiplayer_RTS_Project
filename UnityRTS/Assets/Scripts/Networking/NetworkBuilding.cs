@@ -58,7 +58,7 @@ public class NetworkBuilding : NetworkBehaviour
         if (st != null) st.RecalculateCapacity(); // a finished House raises the population capacity
     }
 
-    /// <summary>Host only. A destroyed building frees its slot and population capacity.</summary>
+    /// <summary>Host only. A destroyed building takes its population capacity with it.</summary>
     /// <returns>true when this hit destroyed the building</returns>
     public bool TakeDamage(float amount)
     {
@@ -68,8 +68,6 @@ public class NetworkBuilding : NetworkBehaviour
         if (Hp > 0) return false;
         Hp = 0;
         GameEvents.Report(Owner, "BUILDING_LOST", transform.position, TypeKey.ToString());
-        foreach (var slot in BuildSlot.All)
-            { Vector3 d = slot.transform.position - transform.position; d.y = 0; if (d.sqrMagnitude < 1f) slot.occupied = false; } // XZ only: the building is lifted onto the ground
         var st = GameSpawner.Instance.StateOf(Owner);
         if (st != null) { st.PopUsed = Mathf.Max(0, st.PopUsed - queue.UnitCount); st.RecalculateCapacity(this); } // queued units never appear: free their reserved population // this building is still in All until Despawned runs
         bool wasTownCenter = TypeKey.ToString() == "town_center";
@@ -134,35 +132,35 @@ public class NetworkBuilding : NetworkBehaviour
         else
         {
             // Population was reserved when the unit was queued, so the unit just appears next to the building.
-            float clear = FootprintHalf() + 1.5f;   // next to the building, not inside or on top of it
-            Vector3 first = transform.position + new Vector3(clear, 0, -clear), column = new Vector3(0, 0, -1.6f), row = new Vector3(1.6f, 0, 0);
-            Vector3 harbor;
-            if (GameDataProvider.Get().Units[item.Key].Domain == "water" && ZoneMap.Instance != null
-                && ZoneMap.Instance.TryGetCentre(st != null && st.Slot == 2 ? "P2Harbor" : "P1Harbor", out harbor))
-            {
-                // Ships appear in the player's own harbor (a water zone), not on the shore next to the Dock.
-                first = harbor + new Vector3(-6f, 0, -4f); column = new Vector3(4f, 0, 0); row = new Vector3(0, 0, 4f);
-            }
-            GameSpawner.Instance.SpawnUnit(Owner, item.Key, FreeSpot(first, column, row));
+            GameSpawner.Instance.SpawnUnit(Owner, item.Key, FreeSpot(GameDataProvider.Get().Units[item.Key]));
             GameEvents.Report(Owner, "UNIT_TRAINED", transform.position, item.Key);
         }
     }
 
-    /// <summary>First of twelve spots (rows of four) where no unit stands, so trained units do not appear inside each other.</summary>
-    static Vector3 FreeSpot(Vector3 first, Vector3 column, Vector3 row)
+    static readonly Vector2[] Corners = { new Vector2(1, -1), new Vector2(-1, -1), new Vector2(1, 1), new Vector2(-1, 1) };
+
+    /// <summary>
+    /// Where a trained unit appears: next to a corner of the building (twelve spots each), on its own ground (a ship in the water
+    /// before the Dock), not inside another building or unit.
+    /// </summary>
+    Vector3 FreeSpot(DefRecord unit)
     {
-        for (int i = 0; i < 12; i++)
-        {
-            Vector3 p = first + column * (i % 4) + row * (i / 4);
-            bool free = true;
-            foreach (var u in NetworkUnit.All)
+        bool ship = DomainRules.DomainOfUnit(unit) == DomainRules.Water;
+        float clear = FootprintHalf() + 1.5f, step = ship ? 4f : 1.6f;
+        foreach (var c in Corners)
+            for (int i = 0; i < 12; i++)
             {
-                Vector3 d = u.transform.position - p; d.y = 0;
-                if (d.sqrMagnitude < 1f) { free = false; break; }
+                Vector3 p = transform.position + new Vector3(c.x * (clear + i / 4 * step), 0, c.y * (clear + i % 4 * step));
+                if (!BuildPlaces.CanStand(unit, p)) continue;
+                bool free = true;
+                foreach (var u in NetworkUnit.All)
+                {
+                    Vector3 d = u.transform.position - p; d.y = 0;
+                    if (d.magnitude < step * 0.6f) { free = false; break; }
+                }
+                if (free) return p;
             }
-            if (free) return p;
-        }
-        return first;
+        return transform.position + new Vector3(clear, 0, ship ? clear + 3f : -clear); // everything is full
     }
 
     void Mirror()

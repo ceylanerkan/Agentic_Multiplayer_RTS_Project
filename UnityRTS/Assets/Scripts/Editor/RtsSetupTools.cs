@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Saves editor work: creates the placeholder prefabs (capsules, cubes) and fills the open Game scene with the map markers,
-/// build slots, resource nodes, GameSpawner, the gameplay "Systems" and the UI (HUD, selection panel, game over, AI panel).
+/// resource nodes, GameSpawner, the gameplay "Systems" and the UI (HUD, selection panel, game over, AI panel).
 ///   Tools > RTS > 0 Create Menu and Game scenes     (new scenes, Build Settings, then runs 1-3 for you)
 ///   Tools > RTS > 1 Create placeholder prefabs
 ///   Tools > RTS > 2 Setup open Game scene          (open Assets/Scenes/Game.unity first)
@@ -169,7 +169,7 @@ public static class RtsSetupTools
         sea.GetComponent<Renderer>().sharedMaterial = Mat("SeaMat", "0.1,0.3,0.7");
 
         // zone centres: nearest centre wins, so the coast lies halfway between a land and a water centre (z = 45)
-        // (RulesTests.GeneratedMapLayout_PutsSlotsAndResourcesInTheRightZones repeats these numbers: change both together)
+        // (RulesTests.GeneratedMapLayout_PutsShoreAndResourcesInTheRightZones repeats these numbers: change both together)
         var zones = new Dictionary<ZoneVolume.Zone, Vector3>
         {
             { ZoneVolume.Zone.P1Base, new Vector3(-65, 0, 25) }, { ZoneVolume.Zone.P2Base, new Vector3(65, 0, 25) },
@@ -187,31 +187,12 @@ public static class RtsSetupTools
         }
         zoneRoot.AddComponent<ZoneMap>();
 
-        // build slots around each base; the two slots toward the sea are coastal
-        var slotRoot = new GameObject("BuildSlots"); slotRoot.transform.SetParent(root.transform);
-        foreach (int side in new[] { -1, 1 })
-        {
-            Vector3 b = new Vector3(65 * side, 0, 25);
-            for (int i = 0; i < 6; i++)
-            {
-                var s = new GameObject("Slot_" + (side < 0 ? "P1_" : "P2_") + i); s.transform.SetParent(slotRoot.transform);
-                s.transform.position = b + new Vector3(-14 + (i % 3) * 14, 0, i < 3 ? -12 : 0);
-                s.AddComponent<BuildSlot>();
-            }
-            for (int i = 0; i < 2; i++)
-            {
-                var s = new GameObject("Slot_" + (side < 0 ? "P1" : "P2") + "_Coast" + i); s.transform.SetParent(slotRoot.transform);
-                s.transform.position = b + new Vector3(-8 + i * 16, 0, 18); // at the waterline (coast z = 45): a Raider Boat (reach 4) must reach the Dock
-                s.AddComponent<BuildSlot>().coastal = true;
-            }
-        }
-
         // resource nodes (scene objects with a NetworkObject: Fusion spawns them when the scene loads through the runner)
         var nodeRoot = new GameObject("Resources"); nodeRoot.transform.SetParent(root.transform);
         PlaceNodes(nodeRoot.transform, "Tree", new Vector3(65, 0, -30), 8, 6f);
         PlaceNodes(nodeRoot.transform, "BerryBush", new Vector3(0, 0, -35), 6, 5f);
         PlaceNodes(nodeRoot.transform, "GoldMine", new Vector3(-65, 0, -30), 5, 7f);
-        // small forest on the outer side of each base (2 x 2, mirrored), clear of the build slots: early wood is equally near
+        // small forest on the outer side of each base (2 x 2, mirrored): early wood is equally near
         foreach (int side in new[] { -1, 1 }) PlaceNodes(nodeRoot.transform, "Tree", new Vector3(89 * side, 0, 27), 4, 4f, 2);
 
         // spawner

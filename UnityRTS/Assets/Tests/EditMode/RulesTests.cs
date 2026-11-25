@@ -70,12 +70,25 @@ namespace RTS.Tests
             Assert.IsTrue(validator.Validate(a, s, reserved).Ok);
             Assert.IsFalse(validator.Validate(a, s, reserved).Ok); // the first action already reserved 50 of the 60 gold
         }
-        [Test] public void Dock_NeedsCoastalSlot()
+        [Test] public void BuildSite_FreeLandAnywhere_DockOnTheShore()
         {
-            var a = new PlanAction { ActionType = "BUILD", BuildingType = "dock", TargetZone = "P1Base" };
-            Assert.IsFalse(validator.Validate(a, Fresh()).Ok);
-            var s = Fresh(); s.CoastalSlotZones.Add("P1Base");
-            Assert.IsTrue(validator.Validate(a, s).Ok);
+            var z = MapZones();
+            var taken = new List<Block> { new Block(-65, 25, 3, 3) }; // the Town Center
+            System.Func<string, float, float, string> why = (key, x, zz) => BuildSite.WhyNot(key, x, zz, 1.5f, 1.5f, 1, z.ZoneAt, taken);
+            Assert.IsNull(why("house", -90, 5));                                    // anywhere in the own base
+            Assert.IsNull(why("house", 0, -10));                                    // and in a neutral zone
+            Assert.AreEqual("the place is taken", why("house", -62, 25));
+            Assert.AreEqual("cannot build in the enemy base", why("house", 65, 20));
+            Assert.AreEqual("buildings stand on land", why("house", -65, 60));
+            Assert.AreEqual("too close to the water", why("house", -65, 44));
+            Assert.AreEqual("outside the map", why("house", -99.5f, 5));
+            Assert.IsNull(why("dock", -80, 43));
+            Assert.IsNull(why("dock", 10, 43));                                     // NorthGate lies at the sea too
+            Assert.AreEqual("a Dock must stand on the shore", why("dock", -80, 40));
+            float fx, fz;
+            Assert.IsTrue(BuildSite.FindNear(-65, 25, 20, (x, zz) => why("house", x, zz) == null, out fx, out fz)); // next to the Town Center
+            Assert.Less((fx + 65) * (fx + 65) + (fz - 25) * (fz - 25), 8 * 8);
+            Assert.IsFalse(BuildSite.FindNear(-65, 60, 12, (x, zz) => why("house", x, zz) == null, out fx, out fz)); // the sea is wider than that
         }
         [Test] public void Move_DomainRules()
         {
@@ -388,14 +401,16 @@ namespace RTS.Tests
 
         // ---- Night 10: domain rules ----
         [Test]
-        public void Domain_DockNeedsOwnCoastalSlot()
+        public void Domain_DockNeedsAShoreZone()
         {
             var s = Fresh(); s.Resources["wood"] = 500;
             var dock = new PlanAction { ActionType = "BUILD", BuildingType = "dock", TargetZone = "P1Base" };
-            Assert.IsFalse(validator.Validate(dock, s).Ok);                 // no free coastal slot
-            s.CoastalSlotZones.Add("P1Base");
             Assert.IsTrue(validator.Validate(dock, s).Ok);
-            dock.TargetZone = "Center";                                      // slot exists only in the own base
+            dock.TargetZone = "NorthGate";                                   // borders the sea
+            Assert.IsTrue(validator.Validate(dock, s).Ok);
+            dock.TargetZone = "P2Base";                                      // the enemy base
+            Assert.IsFalse(validator.Validate(dock, s).Ok);
+            dock.TargetZone = "Center";                                      // no shore
             Assert.IsFalse(validator.Validate(dock, s).Ok);
             dock.TargetZone = "P1Harbor";                                    // water zone: buildings are land only
             Assert.IsFalse(validator.Validate(dock, s).Ok);
@@ -626,24 +641,27 @@ namespace RTS.Tests
             return list;
         }
 
-        [Test]
-        public void GeneratedMapLayout_PutsSlotsAndResourcesInTheRightZones()
+        static ZoneLookup MapZones()
         {
             // Same zone centres as Editor/RtsSetupTools.cs (SetupScene). If you move them there, update them here.
             var z = new ZoneLookup();
             z.Add("P1Base", -65, 25); z.Add("P2Base", 65, 25); z.Add("Center", 0, 0); z.Add("NorthGate", 0, 30);
             z.Add("WestMine", -65, -30); z.Add("SouthField", 0, -35); z.Add("EastForest", 65, -30);
             z.Add("P1Harbor", -65, 65); z.Add("OpenSea", 0, 60); z.Add("P2Harbor", 65, 65);
+            return z;
+        }
+
+        [Test]
+        public void GeneratedMapLayout_PutsShoreAndResourcesInTheRightZones()
+        {
+            var z = MapZones();
             Assert.IsTrue(z.IsComplete());
 
             foreach (int side in new[] { -1, 1 })
             {
                 string own = side < 0 ? "P1Base" : "P2Base";
                 float bx = 65 * side, bz = 25;
-                for (int i = 0; i < 6; i++)   // normal slots
-                    Assert.AreEqual(own, z.ZoneAt(bx - 14 + (i % 3) * 14, bz + (i < 3 ? -12 : 0)), "slot " + i);
-                for (int i = 0; i < 2; i++)   // coastal slots must be in the own (land) base, or the Dock can never be built
-                    Assert.AreEqual(own, z.ZoneAt(bx - 8 + i * 16, bz + 18), "coastal slot " + i);
+                Assert.AreEqual(own, z.ZoneAt(bx, bz + 18));           // the shore before the base belongs to the base (Dock)
                 Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(bx, 65)));   // ships spawn at the harbour centre
                 Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(bx, 44)));  // the coast is at z = 45
             }
@@ -651,13 +669,13 @@ namespace RTS.Tests
             Assert.AreEqual("EastForest", z.ZoneAt(65 + 6, -30 + 6));
             Assert.AreEqual("SouthField", z.ZoneAt(0 - 5, -35 + 5));
             Assert.AreEqual("WestMine", z.ZoneAt(-65 - 7, -30 + 7));
-            // small forest of each base (2 x 2, spacing 4): inside the own base and at least 8 outside the build slots
+            // small forest of each base (2 x 2, spacing 4): inside the own base and not next to the Town Center
             foreach (int side in new[] { -1, 1 })
                 foreach (int x in new[] { 87, 91 })
                     foreach (int tz in new[] { 23, 27 })
                     {
                         Assert.AreEqual(side < 0 ? "P1Base" : "P2Base", z.ZoneAt(x * side, tz));
-                        Assert.GreaterOrEqual(x - (65 + 14), 8, "tree too close to the outer build slots");
+                        Assert.GreaterOrEqual(x - 65, 20, "tree too close to the Town Center");
                     }
         }
 

@@ -19,7 +19,6 @@ namespace RTS.Core.Rules
         public int Slot = 1;   // 1 = P1, 2 = P2: decides which base is "own"
         public HashSet<string> Techs = new HashSet<string>();
         public Dictionary<string, int> CompletedBuildings = new Dictionary<string, int>();
-        public HashSet<string> CoastalSlotZones = new HashSet<string>(); // own zones with a free coastal slot
     }
 
     public class ValidationResult
@@ -38,6 +37,7 @@ namespace RTS.Core.Rules
     {
         static readonly HashSet<string> LandZones = new HashSet<string> { "P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center" };
         static readonly HashSet<string> WaterZones = new HashSet<string> { "P1Harbor", "P2Harbor", "OpenSea" };
+        static readonly HashSet<string> ShoreZones = new HashSet<string> { "P1Base", "P2Base", "NorthGate" }; // land zones at the sea
         // the unit_group values of action_plan.schema.json; a unit type is also a group (all units of that type)
         static readonly HashSet<string> Groups = new HashSet<string> { "all_military", "all_ships", "idle_villagers" };
         readonly GameData data;
@@ -74,7 +74,8 @@ namespace RTS.Core.Rules
             if (a.TargetZone == null || !LandZones.Contains(a.TargetZone)) return ValidationResult.Fail("buildings need a land target_zone");
             string enemyBase = s.Slot == 1 ? "P2Base" : "P1Base";
             if (a.TargetZone == enemyBase) return ValidationResult.Fail("cannot build in the enemy base");
-            if (a.BuildingType == "dock" && !s.CoastalSlotZones.Contains(a.TargetZone)) return ValidationResult.Fail("dock needs a free coastal slot in your own base");
+            // the exact place (free ground, the shore for a Dock) is checked by BuildSite when the building is placed
+            if (a.BuildingType == "dock" && !ShoreZones.Contains(a.TargetZone)) return ValidationResult.Fail("dock needs a shore zone: your own base or NorthGate");
             var req = Requirement(b.Requires, s);
             if (req != null) return ValidationResult.Fail(req);
             return Pay(b.Cost, a.Count, s, reserved);

@@ -4,8 +4,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Building placement ghost. A UI button calls BeginPlacement("house"). A translucent cube follows the mouse and
-/// snaps to the nearest free BuildSlot of the right kind in the player's own base (a Dock needs a coastal slot).
+/// Building placement ghost. A UI button calls BeginPlacement("house"). A translucent cube follows the mouse; a building can
+/// stand anywhere on land outside the enemy base where the ground is free, a Dock only on the shore (the ghost snaps to it).
 /// Green = valid and affordable, red = invalid. Left click sends the BUILD command with the selected Villager;
 /// right click or Esc cancels. The host checks everything again, so the ghost is only a convenience.
 /// </summary>
@@ -14,13 +14,13 @@ public class BuildPlacement : MonoBehaviour
     public static BuildPlacement Instance { get; private set; }
 
     [SerializeField] Camera cam;
-    [SerializeField] float snapRadius = 6f; // the mouse must be this close to a free slot for the ghost to be valid
+    const float SnapRadius = 2f, ShoreSnapRadius = 8f; // how far the ghost may move from the mouse to a free place (Dock: to the shore)
 
     string buildingKey;
     GameObject ghost;
     Renderer ghostRenderer;
     Material ghostMaterial;
-    BuildSlot target;
+    Vector3 target;
 
     public bool Active { get { return buildingKey != null; } }
     /// <summary>Frame in which placement used a mouse click (place or right-click cancel), so SelectionManager and
@@ -55,7 +55,7 @@ public class BuildPlacement : MonoBehaviour
 
     public void Cancel()
     {
-        buildingKey = null; target = null;
+        buildingKey = null;
         if (ghost != null) Destroy(ghost);
     }
 
@@ -72,24 +72,23 @@ public class BuildPlacement : MonoBehaviour
         if (!plane.Raycast(ray, out float dist)) return;
         Vector3 point = ray.GetPoint(dist);
 
-        string zone = relay.GetComponent<NetworkPlayerState>().Slot == 1 ? "P1Base" : "P2Base"; // own base only
-        target = BuildSlot.FindNear(zone, buildingKey == "dock", point);
-        bool near = target != null && (target.transform.position - point).magnitude <= snapRadius;
-        bool ok = near && CanAfford(relay);
-        ghost.transform.position = (near ? target.transform.position : point) + Vector3.up * (ghost.transform.localScale.y * 0.5f);
+        bool free = BuildPlaces.TryFind(buildingKey, null, point, relay.GetComponent<NetworkPlayerState>().Slot,
+                                        buildingKey == "dock" ? ShoreSnapRadius : SnapRadius, BuildSite.Gap, relay.Object.InputAuthority, out target);
+        bool ok = free && CanAfford(relay);
+        ghost.transform.position = (free ? target : point) + Vector3.up * (ghost.transform.localScale.y * 0.5f);
         ghostMaterial.color = ok ? new Color(0.2f, 1f, 0.3f, 0.5f) : new Color(1f, 0.2f, 0.2f, 0.5f);
 
         if (ok && mouse.leftButton.wasPressedThisFrame && !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
         {
             NetworkUnit builder = FirstSelectedVillager();
             if (builder == null) return; // a Villager must be selected to build
-            relay.SendBuild(buildingKey, target.transform.position, zone, builder.Object.Id);
+            relay.SendBuild(buildingKey, target, ZoneMap.Instance.ZoneAt(target), builder.Object.Id);
             UsedClickFrame = Time.frameCount;
             Cancel();
         }
     }
 
-    // URP Unlit is opaque by default, so the 0.5 alpha of the ghost colour was ignored and the ghost hid the slot.
+    // URP Unlit is opaque by default, so the 0.5 alpha of the ghost colour was ignored and the ghost hid the ground.
     // These are the settings the URP material inspector writes for Surface Type = Transparent (harmless on Sprites/Default).
     static void MakeTransparent(Material m)
     {

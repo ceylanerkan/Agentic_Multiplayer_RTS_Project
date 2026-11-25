@@ -38,7 +38,7 @@ def _plan_format():
         "\nPlan format (JSON only, no other text; every action needs a short `reason`):\n"
         f"- action_type: {', '.join(d['action']['properties']['action_type']['enum'])}\n"
         f"- TRAIN_UNIT needs unit_type and count (1-20); unit_type: {enum('unit_type')}\n"
-        f"- BUILD needs building_type and target_zone (the player's own base, build slots exist only there); building_type: {enum('building_type')}\n"
+        f"- BUILD needs building_type and target_zone (a land zone, normally the player's own base, never the enemy base; dock: only the own base or NorthGate); building_type: {enum('building_type')}\n"
         f"- RESEARCH needs tech_type: {enum('tech_type')}\n"
         f"- MOVE_GROUP needs unit_group and target_zone; unit_group: {enum('unit_group')}\n"
         f"- zones: {enum('zone')}. Land units go only to land zones, ships only to water zones (P1Harbor, P2Harbor, OpenSea).\n"

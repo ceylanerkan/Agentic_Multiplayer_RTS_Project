@@ -6,7 +6,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 ## Şu an ne durumda
 | Bölüm (puan) | Durum | Eksik |
 |---|---|---|
-| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock ve gemiler otomatik maçta (66/66) | fare ile ve gözle deneme |
+| RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler ve serbest bina yerleştirme otomatik maçta (76/76) | fare ile ve gözle deneme |
 | Multiplayer (15) | 24 Kasım: iki build ile kontrol listesinin hepsi oldu (öğrenci denedi) | M3 için ekran kaydı |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
 | LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | kanıtta kaynak id'si yok |
@@ -16,8 +16,9 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
-Son push: `7dc5ea0`; otomatik maç ve sonrası henüz push edilmedi.
-Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelineGlobalSettings`, `ProjectSettings`, `UnityConnectSettings`) commit'lenmedi.
+Son push: `96a7792`; ayar dosyaları ve serbest yerleştirme henüz push edilmedi.
+Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soruluk
+ölçüm bu değişiklikten önceki istemle yapıldı (yeniden ölçmek öğrenciye soruldu).
 
 ## Kararlar
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
@@ -50,12 +51,14 @@ Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelin
       Unity derleyicisiyle derlendi, oyunda denenmedi.
 - [x] Claude: otomatik maç `Assets/Scripts/Editor/AutoPlayTest.cs` (build'e girmez; komut `docs/setup.md` bölüm 5): host oturumu, gerçek komutlar, 2. oyuncu
       vekil. Villager, House, Barracks, Age II, Iron Weapons, Fletching, Horse Collar, Stable/Cavalry, Catapult, Dock/gemi, toplama, AI onayı, zafer ve retler:
-      **66/66** (`evaluation/unity_autoplay.md`), Unity logunda hata yok.
+      **76/76** (`evaluation/unity_autoplay.md`), Unity logunda hata yok.
 - [x] Claude: otomatik maçın bulduğu üç hata düzeltildi ve yeniden oynandı: (1) AI ve en yakın yer seçimi kıyı yerini Barracks/Blacksmith'e veriyordu, Dock
       kurulamıyordu; (2) Raider Boat düşman Dock'una ulaşamıyordu (düz yol kıyıda kesiliyordu, artık kıyı boyunca kayıyor); (3) bir bina 4'ten fazla birlik
       üretince birlikler iç içe çıkıyordu.
 - [ ] Öğrenci: son build'den sonra kısa bakış (fare ile bina yerleştirme, düğmeler, gemiyle saldırı). Otomatik maç fareyi ve görünüşü denemez.
-- Bilinen sınır: üs başına 7 bina yeri var; bütün bina türleri kurulunca 3 House kalır, nüfus en çok 20 (kuraldaki üst sınır 50). Raporda sınır olarak yazılır.
+- [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
+      yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
+      kalktı; eskiden 7 yer yüzünden nüfus 20'de kalıyordu. C# testleri 54/54, otomatik maç 76/76. Eski build ve yeni editör uyuşmaz: yeniden build.
 
 ### 3. AI değerlendirmesi ve hız (25 Kasım) - 3a ile başla
 - [x] Claude: `evaluation/run_eval.py`'ye **ortanca ve en yavaş gecikme** (ödev 12.1 şartı) ve prompt-injection sonucu.
