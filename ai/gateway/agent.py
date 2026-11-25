@@ -74,9 +74,25 @@ ROUTED_ADVICE = ("These tool results were fetched for the player's question. If 
 REFUSAL = re.compile(r"\b(sorry|I (cannot|can['\u2019]t|won['\u2019]t|will not|am unable|am not able|am not allowed|do not have access"
                      r"|don['\u2019]t have access)|I['\u2019]m (unable|not able|not allowed))\b", re.I)
 
+SOURCE_ID = re.compile(r"[a-z]+_([a-z0-9_]+)_v\d+")   # tech_iron_weapons_v1 -> iron_weapons
+
 
 class AgentError(Exception):
     pass
+
+
+def evidence(plan, used, history, tool_names):
+    """Evidence is what was really read: a tool that was not called or a source that was not retrieved is none. The small model
+    cites the search tool but not the source, so the sources that its answer names (or else the best hit) are added."""
+    found = [[r["source_id"] for r in h["result"].get("results", [])] for h in history
+             if h["role"] == "tool" and h["name"] == "search_game_knowledge" and isinstance(h["result"], dict)]
+    retrieved = list(dict.fromkeys(i for hits in found for i in hits))
+    kept = [e for e in plan.get("evidence", []) if e in used or e in retrieved or not (e in tool_names or SOURCE_ID.fullmatch(e))]
+    if retrieved and not any(e in retrieved for e in kept):
+        said = " ".join([plan["summary"]] + [a.get("reason", "") for a in plan["actions"]]).lower()
+        named = [i for i in retrieved if (m := SOURCE_ID.fullmatch(i)) and m.group(1).replace("_", " ") in said]
+        kept += named[:3] or [found[-1][0] if found[-1] else retrieved[0]]
+    return kept[:12]
 
 
 def refusal_plan(text):
@@ -215,8 +231,7 @@ class Agent:
                 continue
             try:
                 plan = _parse_plan(reply.text)
-                # evidence is what was really read: a tool that was not called is none
-                plan["evidence"] = [e for e in plan.get("evidence", []) if e in used or e not in {t["name"] for t in tools}]
+                plan["evidence"] = evidence(plan, used, history, {t["name"] for t in tools})
                 return plan, used
             except (ValueError, jsonschema.ValidationError) as e:
                 if repaired:
