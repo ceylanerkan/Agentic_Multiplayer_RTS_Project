@@ -102,7 +102,8 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [ ] Öğrenci: hocaya tek kişilik takım için yazılı onay sor (PDF 2 kişi diyor). Claude mesaj taslağını yazar.
 
 ### 5. Kapanış (29-30 Kasım)
-- [ ] Claude: bir kez tam `pytest -q ai evaluation`, gizli anahtar taraması, temiz klondan kurulum (`docs/setup.md`).
+- [x] Claude (25 Kasım): tam `pytest -q ai evaluation` (88), gizli anahtar taraması (temiz), temiz klonda dizin + testler + mock değerlendirme çalıştı.
+      Paketler Anaconda'dan geldi: `pip install` ve Unity tarafı temiz klonda denenmedi. Kod değişirse 29 Kasım'da bir kez daha.
       `tools/compile-check` artık derlenmeyebilir (stub'da `Runner.SceneManager` yok): düzelt ya da setup.md'den çıkar.
 - [ ] Öğrenci: son Windows build, demo provası (editör kapalı, gateway önceden açık), `docs/defense-notes.md` ile savunma provası.
 - [ ] Teslim.
