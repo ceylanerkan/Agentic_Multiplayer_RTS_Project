@@ -12,31 +12,47 @@ public class FogOfWar : MonoBehaviour
 {
     [SerializeField] Vector2 mapCentre = Vector2.zero;
     [SerializeField] Vector2 mapSize = new Vector2(200, 160);
-    [SerializeField] float overlayHeight = 6f;      // above the ground, below the camera
-    [SerializeField] int resolution = 96;           // texture pixels along the long side
     [SerializeField] float interval = 0.25f;
 
-    Texture2D tex; Color32[] pixels; int w, h;
+    const int Resolution = 128;        // texture pixels along the long side
+    const byte Darkness = 165;         // fog where nothing is seen (0 = clear, 255 = black)
+    const float Softness = 1.5f;       // metres over which the edge fades
+
+    Texture2D tex; float[] wanted, shown; byte[] pixels; int w, h;
     float next;
-    GameObject quad;
 
     void Start()
     {
         GameEvents.Local.Clear(); // new match, new log
-        float aspect = mapSize.y / mapSize.x;
-        w = resolution; h = Mathf.Max(8, Mathf.RoundToInt(resolution * aspect));
-        tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
-        pixels = new Color32[w * h];
-        for (int i = 0; i < pixels.Length; i++) pixels[i] = new Color32(0, 0, 0, 150); // dark until the local player exists (a new texture is white)
-        tex.SetPixels32(pixels); tex.Apply(false);
-        quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        Destroy(quad.GetComponent<Collider>()); // must not block raycasts
-        quad.transform.SetParent(transform, false);
-        quad.transform.position = new Vector3(mapCentre.x, overlayHeight, mapCentre.y);
-        quad.transform.rotation = Quaternion.Euler(90, 0, 0);
-        quad.transform.localScale = new Vector3(mapSize.x, mapSize.y, 1);
-        var mat = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex }; // supports alpha without extra setup
-        quad.GetComponent<Renderer>().material = mat;
+        w = Resolution; h = Mathf.Max(8, Mathf.RoundToInt(Resolution * mapSize.y / mapSize.x));
+        tex = new Texture2D(w, h, TextureFormat.Alpha8, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+        wanted = new float[w * h]; shown = new float[w * h]; pixels = new byte[w * h];
+        for (int i = 0; i < pixels.Length; i++) { wanted[i] = shown[i] = 1f; pixels[i] = Darkness; } // dark until the local player exists
+        tex.SetPixelData(pixels, 0); tex.Apply(false);
+
+        // a box around the map; the shader projects the texture onto everything inside it (Resources: the shader is in every build)
+        var shader = UnityEngine.Resources.Load<Shader>("FogOfWar");
+        if (shader == null) { Debug.LogError("FogOfWar: shader Resources/FogOfWar not found, no fog is drawn."); return; }
+        var box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        box.name = "FogBox";
+        Destroy(box.GetComponent<Collider>()); // must not block raycasts
+        box.transform.SetParent(transform, false);
+        box.transform.position = new Vector3(mapCentre.x, 4f, mapCentre.y);
+        box.transform.localScale = new Vector3(mapSize.x, 16f, mapSize.y);
+        var mat = new Material(shader);
+        mat.SetTexture("_FogTex", tex);
+        mat.SetVector("_FogMap", new Vector4(mapCentre.x - mapSize.x * 0.5f, mapCentre.y - mapSize.y * 0.5f, 1f / mapSize.x, 1f / mapSize.y));
+        var r = box.GetComponent<Renderer>();
+        r.sharedMaterial = mat; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+    }
+
+    /// <summary>Fades the picture towards what is seen now (it is recomputed only four times a second).</summary>
+    void LateUpdate()
+    {
+        float k = 1f - Mathf.Exp(-8f * Time.unscaledDeltaTime);
+        for (int i = 0; i < shown.Length; i++) { shown[i] += (wanted[i] - shown[i]) * k; pixels[i] = (byte)(shown[i] * Darkness); }
+        tex.SetPixelData(pixels, 0);
+        tex.Apply(false);
     }
 
     void Update()
@@ -75,18 +91,23 @@ public class FogOfWar : MonoBehaviour
         foreach (var go in dead) renderers.Remove(go);
     }
 
+    // only the picture (soft edges); what is hidden is decided by VisibilityService above
     void Paint(int me, List<MapObject> all)
     {
+        var mine = all.FindAll(o => o.Owner == me && o.Los > 0);
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
             {
-                float wx = mapCentre.x + ((x + 0.5f) / w - 0.5f) * mapSize.x;
-                float wz = mapCentre.y + ((y + 0.5f) / h - 0.5f) * mapSize.y;
-                bool seen = VisibilityService.PointVisible(me, wx, wz, all);
-                pixels[y * w + x] = seen ? new Color32(0, 0, 0, 0) : new Color32(0, 0, 0, 150);
+                float wx = mapCentre.x + ((x + 0.5f) / w - 0.5f) * mapSize.x, wz = mapCentre.y + ((y + 0.5f) / h - 0.5f) * mapSize.y;
+                float inside = -1000f; // metres inside the nearest sight circle (negative: outside)
+                foreach (var o in mine)
+                {
+                    float dx = wx - o.X, dz = wz - o.Z, reach = o.Los + Softness;
+                    float d2 = dx * dx + dz * dz;
+                    if (d2 < reach * reach) inside = Mathf.Max(inside, o.Los - Mathf.Sqrt(d2));
+                }
+                wanted[y * w + x] = Mathf.SmoothStep(1f, 0f, (inside + Softness * 0.5f) / Softness);
             }
-        tex.SetPixels32(pixels);
-        tex.Apply(false);
     }
 
     // ENEMY_SIGHTED: when an enemy object comes into view, again only after it was out of sight for RearmSeconds.

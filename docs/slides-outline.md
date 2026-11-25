@@ -2,7 +2,7 @@
 
 1. **Title**: project name, your name, course, "one-person team (instructor approved)".
 2. **Idea**: two-player RTS + an AI commander that advises, never acts alone. One screenshot of the game with the AI panel.
-3. **Game design**: map with 10 zones, 3 resources, 8 units with counter loops (small diagram), win condition; one in-game
+3. **Game design**: map with 10 zones, 3 resources, 9 units with counter loops (small diagram), win condition; one in-game
    screenshot with the blue/red team discs and labels (placeholder graphics, readable by design).
 4. **Architecture**: the Mermaid diagram from `docs/design-brief.md` (Unity <-> gateway <-> agent <-> MCP server <-> SQLite/RAG).
 5. **Multiplayer**: Fusion Host Mode; what is replicated; `CommandRelay` RPC path; why Host Mode.

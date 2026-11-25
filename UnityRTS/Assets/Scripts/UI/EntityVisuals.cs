@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Makes placeholder objects easy to tell apart (UNITY_FEEDBACK 2026-11-18): a team disc under every unit and building
@@ -7,6 +8,7 @@ using UnityEngine;
 /// Added at run time by NetworkUnit, NetworkBuilding and ResourceNode, so the existing prefabs need no editor work.
 /// The disc and label are NOT children of the object: parents have non-uniform scales (buildings are flattened cubes)
 /// that would stretch them. They follow the object in LateUpdate and copy its visibility, so fog of war still hides them.
+/// A resource shows its label only near the mouse: sixty trees with a text each would cover the map.
 /// </summary>
 public class EntityVisuals : MonoBehaviour
 {
@@ -73,7 +75,7 @@ public class EntityVisuals : MonoBehaviour
         label.transform.position = p + Vector3.up * (labelHeight * 0.5f + 0.4f);
         var cam = Camera.main;
         if (cam != null) label.transform.rotation = cam.transform.rotation;   // billboard: always faces the camera
-        label.GetComponent<Renderer>().enabled = visible;
+        label.GetComponent<Renderer>().enabled = visible && (node == null || NearMouse(p));
 
         int team = Team();
         if (team != lastTeam)
@@ -84,6 +86,27 @@ public class EntityVisuals : MonoBehaviour
             label.color = c;
         }
         if (Time.time >= nextText) { nextText = Time.time + 0.25f; UpdateText(); }
+    }
+
+    const float HoverRadius = 2.5f;
+    static int mouseFrame = -1; static Vector3 mouseGround; static bool mouseValid;
+
+    /// <summary>Is the mouse over the ground near this point? (The ray is computed once per frame for all labels.)</summary>
+    static bool NearMouse(Vector3 p)
+    {
+        if (mouseFrame != Time.frameCount)
+        {
+            mouseFrame = Time.frameCount; mouseValid = false;
+            var cam = Camera.main; var mouse = Mouse.current;
+            if (cam != null && mouse != null)
+            {
+                var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+                mouseValid = new Plane(Vector3.up, new Vector3(0, 0.8f, 0)).Raycast(ray, out float d);
+                if (mouseValid) mouseGround = ray.GetPoint(d);
+            }
+        }
+        float dx = p.x - mouseGround.x, dz = p.z - mouseGround.z;
+        return mouseValid && dx * dx + dz * dz < HoverRadius * HoverRadius;
     }
 
     /// <summary>0 = resource or unknown yet, 1 = the local player's, 2 = the opponent's.</summary>
@@ -106,7 +129,7 @@ public class EntityVisuals : MonoBehaviour
             label.text = Pretty(b.Key) + "\n<size=90%>" + (building.Completed ? Mathf.CeilToInt(building.Hp) + "/" + b.Hp
                                                                           : "building " + Mathf.RoundToInt(building.BuildProgress * 100f) + "%") + "</size>";
         else if (node != null && node.Object != null && node.Object.IsValid)
-            label.text = Pretty(node.Resource) + "\n<size=90%>" + Mathf.CeilToInt(node.Amount) + "</size>";
+            label.text = (node.InWater ? "Fish" : Pretty(node.Resource)) + "\n<size=90%>" + Mathf.CeilToInt(node.Amount) + "</size>";
     }
 
     /// <summary>"raider_boat" -> "Raider Boat" (rule in RTS.Core, tested). Also used by SelectionPanel.</summary>

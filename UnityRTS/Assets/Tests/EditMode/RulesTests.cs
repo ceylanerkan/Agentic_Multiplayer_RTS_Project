@@ -96,7 +96,7 @@ namespace RTS.Tests
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "OpenSea" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_military", TargetZone = "NorthGate" }, Fresh()).Ok);
             Assert.IsTrue(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "idle_villagers", TargetZone = "EastForest" }, Fresh()).Ok);
-            foreach (var bad in new[] { null, "dragons", "villager" }) // unknown groups are rejected by the validator too, not only by the schema
+            foreach (var bad in new[] { null, "dragons", "villager", "fishing_boat" }) // unknown groups are rejected by the validator too, not only by the schema
                 Assert.AreEqual("unknown unit_group", validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = bad, TargetZone = "Center" }, Fresh()).Reason);
         }
     
@@ -695,18 +695,23 @@ namespace RTS.Tests
                 Assert.IsTrue(ZoneLookup.IsWater(z.ZoneAt(bx, 65)));   // ships spawn at the harbour centre
                 Assert.IsFalse(ZoneLookup.IsWater(z.ZoneAt(bx, 44)));  // the coast is at z = 45
             }
-            // resource clusters (PlaceNodes: 3 x 3 grid, spacing 6 / 5 / 7)
-            Assert.AreEqual("EastForest", z.ZoneAt(65 + 6, -30 + 6));
-            Assert.AreEqual("SouthField", z.ZoneAt(0 - 5, -35 + 5));
-            Assert.AreEqual("WestMine", z.ZoneAt(-65 - 7, -30 + 7));
-            // small forest of each base (2 x 2, spacing 4): inside the own base and not next to the Town Center
-            foreach (int side in new[] { -1, 1 })
-                foreach (int x in new[] { 87, 91 })
-                    foreach (int tz in new[] { 23, 27 })
-                    {
-                        Assert.AreEqual(side < 0 ? "P1Base" : "P2Base", z.ZoneAt(x * side, tz));
-                        Assert.GreaterOrEqual(x - 65, 20, "tree too close to the Town Center");
-                    }
+            // resources (MapLayout): the same for both halves, land resources on land, fish in the water, free ground around the Town Centers
+            var nodes = MapLayout.Build();
+            var left = nodes.FindAll(n => n.X < 0); var right = nodes.FindAll(n => n.X > 0);
+            Assert.AreEqual(left.Count, right.Count);
+            foreach (var kind in new[] { "tree", "berry", "gold", "fish" })
+            {
+                Assert.Greater(left.FindAll(n => n.Kind == kind).Count, 4, kind);
+                Assert.AreEqual(left.FindAll(n => n.Kind == kind).Count, right.FindAll(n => n.Kind == kind).Count, kind);
+                int near = kind == "fish" ? 0 : nodes.FindAll(n => n.Kind == kind && z.ZoneAt(n.X, n.Z) == "P1Base").Count;
+                if (kind != "fish") Assert.Greater(near, 1, kind + " near the base");
+            }
+            foreach (var n in nodes)
+            {
+                Assert.AreEqual(n.Kind == "fish", ZoneLookup.IsWater(z.ZoneAt(n.X, n.Z)), n.Kind + " at " + n.X + ", " + n.Z);
+                Assert.Less(System.Math.Abs(n.X), 99f); Assert.Greater(n.Z, -69f); Assert.Less(n.Z, n.Kind == "fish" ? 78f : 43f);
+                Assert.Greater((System.Math.Abs(n.X) - 65) * (System.Math.Abs(n.X) - 65) + (n.Z - 25) * (n.Z - 25), 9 * 9, "too close to a Town Center");
+            }
         }
 
         [Test]

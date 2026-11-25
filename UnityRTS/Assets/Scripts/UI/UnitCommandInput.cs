@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Right click with units selected:
 ///  - on an own building under construction: Villagers help build it
-///  - on a resource node: Villagers gather, other units just move there
+///  - on a resource node: Villagers gather (Fishing Boats: fish), other units just move there
 ///  - on an enemy unit or building: all selected units attack it
 ///  - on the ground: move, with a grid formation around the clicked point
 /// Everything goes through CommandRelay (RPC to the host), the same path the AI commander uses later.
@@ -38,7 +38,7 @@ public class UnitCommandInput : MonoBehaviour
         {
             foreach (var u in sel.Units)
             {
-                if (u.GetComponent<VillagerGatherer>() != null) relay.SendHelpBuild(u.Object.Id, site.Object.Id);
+                if (u.CanBuild) relay.SendHelpBuild(u.Object.Id, site.Object.Id);
                 else relay.SendMove(u.Object.Id, site.transform.position);
             }
             return;
@@ -67,7 +67,7 @@ public class UnitCommandInput : MonoBehaviour
     {
         foreach (var u in units)
         {
-            if (u.GetComponent<VillagerGatherer>() != null) relay.SendGather(u.Object.Id, node.Object.Id);
+            if (u.GetComponent<VillagerGatherer>() != null && u.IsShip == node.InWater) relay.SendGather(u.Object.Id, node.Object.Id);
             else relay.SendMove(u.Object.Id, node.transform.position);
         }
     }

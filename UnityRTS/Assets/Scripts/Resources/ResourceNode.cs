@@ -3,7 +3,7 @@ using Fusion;
 using UnityEngine;
 
 /// <summary>
-/// A finite tree, berry bush or gold mine. The host owns the remaining amount; clients only read it.
+/// A finite tree, berry bush, gold mine or fish shoal. The host owns the remaining amount; clients only read it.
 /// The node despawns itself when empty (rule_resources_v1).
 /// </summary>
 public class ResourceNode : NetworkBehaviour
@@ -16,6 +16,9 @@ public class ResourceNode : NetworkBehaviour
     [Networked] public float Amount { get; set; }
 
     public string Resource { get { return resource; } }
+
+    /// <summary>A fish shoal: only Fishing Boats gather it, and it does not block ships.</summary>
+    public bool InWater { get { return ZoneMap.Instance != null && RTS.Core.Rules.ZoneLookup.IsWater(ZoneMap.Instance.ZoneAt(transform.position)); } }
 
     public override void Spawned()
     {
@@ -37,12 +40,12 @@ public class ResourceNode : NetworkBehaviour
         return true;
     }
 
-    public static ResourceNode Nearest(Vector3 from, string resource, float maxDistance)
+    public static ResourceNode Nearest(Vector3 from, string resource, float maxDistance, bool inWater = false)
     {
         ResourceNode best = null; float bestD = maxDistance * maxDistance;
         foreach (var n in All)
         {
-            if (n.Resource != resource || n.Amount <= 0) continue;
+            if (n.Resource != resource || n.Amount <= 0 || n.InWater != inWater) continue;
             float d = (n.transform.position - from).sqrMagnitude;
             if (d < bestD) { bestD = d; best = n; }
         }

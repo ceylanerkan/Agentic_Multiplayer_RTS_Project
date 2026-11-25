@@ -142,7 +142,7 @@ public static class AiApprovalFlow
         foreach (var u in NetworkUnit.All)
         {
             var g = u.GetComponent<VillagerGatherer>();
-            if (u.Owner != me || g == null) continue;
+            if (u.Owner != me || g == null || !u.CanBuild) continue;
             if (any == null) any = u;
             if (builders.Contains(u)) continue; // a second BUILD of the same plan would pull it off the first site
             if (!g.Busy) return u;              // prefer an idle Villager
@@ -158,7 +158,7 @@ public static class AiApprovalFlow
         switch (group)
         {
             case "all_military": return t != "villager" && !ship;
-            case "all_ships": return ship;
+            case "all_ships": return ship && t != "fishing_boat";
             case "idle_villagers": { var g = u.GetComponent<VillagerGatherer>(); return t == "villager" && g != null && !g.Busy && !u.HasMoveTarget; }
             default: return t == group;
         }

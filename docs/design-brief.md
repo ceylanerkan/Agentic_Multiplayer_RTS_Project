@@ -15,7 +15,7 @@ All values below are our own design (not Age of Empires data). The canonical num
 ## 2. Rules summary
 
 **Resources:** wood (trees, EastForest, plus 4 trees in each base), food (berries, SouthField), gold (mines, WestMine).
-Villagers gather 0.6/s, carry 10, deposit at the Town Center.
+Villagers gather 0.6/s, carry 10, deposit at the Town Center; Fishing Boats do the same with fish shoals and a Dock.
 **Start:** 1 Town Center, 3 Villagers, 200 wood / 200 food / 100 gold, population 3/5.
 
 | Unit | Domain | Cost | HP | Atk | Armor | Range | Speed | Trained at | Strong vs | Weak vs |
@@ -26,8 +26,9 @@ Villagers gather 0.6/s, carry 10, deposit at the Town Center.
 | Cavalry | land | 70F 60G | 100 | 8 | 2 | 1 | 5.5 | Stable (Age II) | Archer, Villager, Catapult | Spearman |
 | Scout | land | 50F 20W | 40 | 2 | 0 | 1 | 6.0 | Barracks | – (line of sight 12) | – |
 | Catapult | land | 150W 80G | 80 | 12 | 1 | 8 | 2.0 | Blacksmith (Age II) | Warship, buildings (3×) | Cavalry |
-| Raider Boat | water | 60W 15G | 70 | 6 | 0 | 1 | 6.0 | Dock | Warship | Archer |
+| Raider Boat | water | 60W 15G | 70 | 6 | 0 | 1 | 6.0 | Dock | Warship, Fishing Boat | Archer |
 | Warship | water | 150W 60G | 220 | 9 | 2 | 7 | 3.5 | Dock (Age II) | Archer, Villager | Raider Boat, Catapult |
+| Fishing Boat | water | 40W | 35 | 2 | 0 | 0.8 | 4.0 | Dock | – | Raider Boat |
 
 Damage = max(1, attack × multiplier − armor); multiplier 1.5 when countering, 0.75 when countered. Catapults
 deal 3× damage to buildings. Land units stay on land and ships stay on water. Melee units only attack targets in

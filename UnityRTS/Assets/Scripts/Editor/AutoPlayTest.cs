@@ -176,7 +176,7 @@ public static class AutoPlayTest
     static IEnumerator StartMatch()
     {
         yield return For(() => GameLauncher.Instance != null, 30);
-        GameLauncher.Instance.StartHost("autotest-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+        GameLauncher.Instance.StartHost("autotest", true);   // practice: no second player needed
         yield return For(() => CommandRelay.Local != null && CommandRelay.Local.Object != null && Units("villager").Count == 3 && Done("town_center") != null, 90);
         Check("host session, Town Center and 3 Villagers", ok, ok ? Stock() : "GameLauncher: " + GameLauncher.LastMessage + " / " + GameSpawner.SpawnError);
         if (!ok) { sections.Clear(); yield break; }
@@ -362,10 +362,11 @@ public static class AutoPlayTest
         yield return Train("raider_boat", "dock");
         yield return Train("warship", "dock");
         yield return Train("raider_boat", "dock");
-        var ships = Units("raider_boat").Concat(Units("warship")).ToList();
+        yield return Train("fishing_boat", "dock");
+        var ships = Units("raider_boat").Concat(Units("warship")).Concat(Units("fishing_boat")).ToList();
         float closest = float.MaxValue;
         for (int i = 0; i < ships.Count; i++) for (int j = i + 1; j < ships.Count; j++) closest = Mathf.Min(closest, Vector3.Distance(ships[i].transform.position, ships[j].transform.position));
-        Check("ships appear side by side in the water before the Dock", ships.Count == 3 && closest > 2f && ships.All(s => Zone(s.transform.position) == "P1Harbor"), "closest pair " + closest.ToString("0.0") + " m");
+        Check("ships appear side by side in the water before the Dock", ships.Count == 4 && closest > 2f && ships.All(s => Zone(s.transform.position) == "P1Harbor"), "closest pair " + closest.ToString("0.0") + " m");
         var d = Done("dock");
         if (d != null) Shot("dock", d.transform.position + new Vector3(0, 30, -30), d.transform.position + new Vector3(0, 0, 12));
     }
@@ -400,7 +401,19 @@ public static class AutoPlayTest
         Check("Warship shoots a land unit on the shore", ok);
         if (Alive(spear)) Me.Runner.Despawn(spear.Object);
         if (Alive(dock)) Me.Runner.Despawn(dock.Object);
-        int pop = Me.PopUsed; var sunk = Units("raider_boat").Concat(Units("warship")).ToList();
+        // fish: only a Fishing Boat gathers it, and it brings it to the Dock
+        var fisher = Units("fishing_boat")[0]; var villager = Units("villager")[0];
+        var shoal = ResourceNode.Nearest(fisher.transform.position, "food", 60f, true);
+        Check("a fish shoal lies near the own harbor", shoal != null && shoal.InWater, shoal != null ? At(shoal.transform.position) : "none");
+        int food = Me.Food; float t0 = Time.time;
+        Relay.SendGather(villager.Object.Id, shoal.Object.Id);
+        yield return 1f;
+        Check("a Villager cannot fish", !villager.GetComponent<VillagerGatherer>().Busy);
+        Relay.SendGather(fisher.Object.Id, shoal.Object.Id);
+        yield return For(() => Me.Food > food, 60);
+        Check("a Fishing Boat brings fish to the Dock", ok, "+" + (Me.Food - food) + " food after " + (Time.time - t0).ToString("0") + " s, " + shoal.Amount.ToString("0") + " left");
+        yield return Refused("a Fishing Boat cannot build", () => { foreach (var b in NetworkBuilding.All.Where(x => x.Owner == MyRef && !x.Completed)) Relay.SendHelpBuild(fisher.Object.Id, b.Object.Id); });
+        int pop = Me.PopUsed; var sunk = Units("raider_boat").Concat(Units("warship")).Concat(Units("fishing_boat")).ToList();
         foreach (var s in sunk) s.TakeDamage(s.Hp + 1f);
         yield return 1f;
         Check("sunk ships free their population", Me.PopUsed == pop - sunk.Count, pop + " -> " + Me.PopUsed);

@@ -81,10 +81,10 @@ public class CommandRelay : NetworkBehaviour
     void RPC_Gather(NetworkId unitId, NetworkId nodeId)
     {
         var unit = FindOwned<NetworkUnit>(unitId);
-        var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null; // only Villagers have a gatherer
+        var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null; // only Villagers and Fishing Boats have a gatherer
         if (g == null || !Runner.TryFindObject(nodeId, out var nodeObj)) return;
         unit.AttackTarget = default; // gathering replaces an attack order (UnitCombat would keep chasing the old target)
-        g.StartGather(nodeObj.GetComponent<ResourceNode>());
+        g.StartGather(nodeObj.GetComponent<ResourceNode>()); // refuses fish for Villagers and land resources for boats
     }
 
     const float HostSearchRadius = 12f;

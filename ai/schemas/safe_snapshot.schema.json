@@ -37,7 +37,7 @@
         "required": ["type", "count", "zone"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship"]},
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "fishing_boat"]},
           "count": {"type": "integer", "minimum": 0},
           "zone": {"$ref": "#/$defs/zone"},
           "idle": {"type": "integer", "minimum": 0},
@@ -68,7 +68,7 @@
         "required": ["type", "count", "zone"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "town_center", "house", "barracks", "stable", "blacksmith", "dock"]},
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "fishing_boat", "town_center", "house", "barracks", "stable", "blacksmith", "dock"]},
           "count": {"type": "integer", "minimum": 1},
           "zone": {"$ref": "#/$defs/zone"}
         }

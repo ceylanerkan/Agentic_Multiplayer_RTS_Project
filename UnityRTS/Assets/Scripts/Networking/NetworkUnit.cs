@@ -75,7 +75,10 @@ public class NetworkUnit : NetworkBehaviour
         return pathIndex < path.Count || grid.LineFree(a.x, a.z, MoveTarget.x, MoveTarget.z, IsShip);
     }
 
-    bool IsShip { get { return DomainRules.DomainOfUnit(GameDataProvider.Get().Units[TypeKey.ToString()]) == DomainRules.Water; } }
+    /// <summary>Only Villagers build; a Fishing Boat gathers too but never builds.</summary>
+    public bool CanBuild { get { return TypeKey.ToString() == "villager"; } }
+
+    public bool IsShip { get { return DomainRules.DomainOfUnit(GameDataProvider.Get().Units[TypeKey.ToString()]) == DomainRules.Water; } }
 
     /// <summary>Host only: a new attack order; a shore block from an older move must not cancel it.</summary>
     public void Attack(NetworkId target) { AttackTarget = target; BlockedByShore = false; }

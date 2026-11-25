@@ -50,6 +50,7 @@ public class BuildPlacement : MonoBehaviour
             if (sh != null) ghostMaterial = new Material(sh);
             else { ghostMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit")); MakeTransparent(ghostMaterial); }
         }
+        ghostMaterial.renderQueue = 3200; // after the fog of war: the colour must stay clear
         ghostRenderer.sharedMaterial = ghostMaterial;
     }
 
@@ -112,7 +113,7 @@ public class BuildPlacement : MonoBehaviour
     {
         var sel = SelectionManager.Instance;
         if (sel == null) return null;
-        foreach (var u in sel.Units) if (u.GetComponent<VillagerGatherer>() != null) return u;
+        foreach (var u in sel.Units) if (u.CanBuild) return u;
         return null;
     }
 

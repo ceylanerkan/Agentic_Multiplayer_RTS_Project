@@ -107,9 +107,9 @@
     "trained_at": "dock",
     "requires": ["dock"],
     "stats": {"hp": 70, "attack": 6, "armor": 0, "range": 1.0, "speed": 6.0, "line_of_sight": 8},
-    "strengths": ["warship"],
+    "strengths": ["warship", "fishing_boat"],
     "weaknesses": ["archer"],
-    "description": "Small, fast rowing boat crewed by warriors. Boards enemy ships at close range and deals 1.5x damage to Warships. It moves only on water and, being a melee unit, can only attack ships and Docks. Archers on the shore deal 1.5x damage to it. Available in Age I."
+    "description": "Small, fast rowing boat crewed by warriors. Boards enemy ships at close range and deals 1.5x damage to Warships and Fishing Boats, so it protects your own fishing and raids the enemy's. It moves only on water and, being a melee unit, can only attack ships and Docks. Archers on the shore deal 1.5x damage to it. Available in Age I."
   },
   {
     "id": "unit_warship_v1",
@@ -126,5 +126,21 @@
     "strengths": ["archer", "villager"],
     "weaknesses": ["raider_boat", "catapult"],
     "description": "Large sailing ship with ranged weapons. From the water it can shoot land units and buildings within its 7-unit range of the shore, for example on the NorthGate path. Deals 1.5x damage to Archers and Villagers. Weak against boarding Raider Boats and Catapults on the shore. Requires Age II and a Dock."
+  },
+  {
+    "id": "unit_fishing_boat_v1",
+    "type": "unit",
+    "key": "fishing_boat",
+    "name": "Fishing Boat",
+    "domain": "water",
+    "cost": {"wood": 40},
+    "population": 1,
+    "train_time_s": 12,
+    "trained_at": "dock",
+    "requires": ["dock"],
+    "stats": {"hp": 35, "attack": 2, "armor": 0, "range": 0.8, "speed": 4.0, "line_of_sight": 7},
+    "strengths": [],
+    "weaknesses": ["raider_boat"],
+    "description": "Economic ship. Gathers food from fish shoals (carries 10 per trip) and brings it to the nearest own Dock. It moves only on water, cannot build and is almost defenceless. Available in Age I."
   }
 ]

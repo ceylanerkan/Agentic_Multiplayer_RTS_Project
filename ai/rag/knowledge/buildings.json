@@ -91,8 +91,8 @@
     "population_provided": 0,
     "line_of_sight": 8,
     "requires": [],
-    "trains": ["raider_boat", "warship"],
+    "trains": ["fishing_boat", "raider_boat", "warship"],
     "researches": [],
-    "description": "Naval building. Must be placed on the shore (at most 2.5 m from the water) of your own base or of NorthGate; its ships appear in the water in front of it. Trains Raider Boats, and Warships after Age II. Can be attacked from land and from water."
+    "description": "Naval building. Must be placed on the shore (at most 2.5 m from the water) of your own base or of NorthGate; its ships appear in the water in front of it. Trains Fishing Boats and Raider Boats, and Warships after Age II; Fishing Boats bring their fish here. Can be attacked from land and from water."
   }
 ]

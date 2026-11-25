@@ -95,7 +95,7 @@ namespace RTS.Core.Rules
         {
             if (a.TargetZone == null || (!LandZones.Contains(a.TargetZone) && !WaterZones.Contains(a.TargetZone))) return ValidationResult.Fail("unknown target_zone");
             // checked here too, not only by the schema: an unknown group would otherwise be treated as land units
-            if (a.UnitGroup == null || (!Groups.Contains(a.UnitGroup) && (!data.Units.ContainsKey(a.UnitGroup) || a.UnitGroup == "villager")))
+            if (a.UnitGroup == null || (!Groups.Contains(a.UnitGroup) && (!data.Units.ContainsKey(a.UnitGroup) || a.UnitGroup == "villager" || a.UnitGroup == "fishing_boat")))
                 return ValidationResult.Fail("unknown unit_group");
             bool ships = a.UnitGroup == "all_ships" || a.UnitGroup == "raider_boat" || a.UnitGroup == "warship";
             if (ships && !WaterZones.Contains(a.TargetZone)) return ValidationResult.Fail("ships can only move to water zones");

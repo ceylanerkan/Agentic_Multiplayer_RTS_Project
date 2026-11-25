@@ -49,7 +49,7 @@ public class UnitCombat : NetworkBehaviour
         if (!explicitTarget)
         {
             bool busy = unit.HasMoveTarget || (gatherer != null && gatherer.Busy);
-            if (busy || unit.TypeKey.ToString() == "villager") return;
+            if (busy || gatherer != null) return; // Villagers and Fishing Boats never start fights
             FindAuto(range, me, out tu, out tb);
             if (tu == null && tb == null) return;
         }

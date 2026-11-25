@@ -30,6 +30,6 @@ public class GameOverUI : MonoBehaviour
     /// <summary>Hooked to the "Back to menu" button.</summary>
     public void OnMenuClicked()
     {
-        if (GameLauncher.Instance != null) GameLauncher.Instance.ReturnToMenu("Mac bitti.");
+        if (GameLauncher.Instance != null) GameLauncher.Instance.ReturnToMenu("");
     }
 }

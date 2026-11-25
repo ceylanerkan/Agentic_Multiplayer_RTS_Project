@@ -33,8 +33,10 @@ public class HudUI : MonoBehaviour
         if (gold) gold.text = "Gold " + state.Gold;
         if (population) population.text = "Pop " + state.PopUsed + "/" + state.PopCapacity;
         // "P1 | Age I": which player this window is, so the two screens are easy to tell apart in the demo video
-        if (age) age.text = (state.Slot > 0 ? "P" + state.Slot + "  |  " : "") + "Age " + (state.Age == 2 ? "II" : "I") + (WaitingForOpponent() ? "  |  waiting for P2" : "");
+        if (age) age.text = (state.Slot > 0 ? "P" + state.Slot + "  |  " : "") + "Age " + (state.Age == 2 ? "II" : "I") + (Practice() ? "  |  practice" : WaitingForOpponent() ? "  |  waiting for P2" : "");
     }
+
+    static bool Practice() { return GameLauncher.Instance != null && GameLauncher.Instance.Solo; }
 
     /// <summary>The host is alone in the Game scene until the second player joins; say so, or it looks like nothing started.</summary>
     static bool WaitingForOpponent()

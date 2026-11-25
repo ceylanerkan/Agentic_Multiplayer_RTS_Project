@@ -22,7 +22,7 @@
     }
   },
   "$defs": {
-    "unit_type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship"]},
+    "unit_type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "fishing_boat"]},
     "building_type": {"enum": ["house", "barracks", "stable", "blacksmith", "dock"]},
     "tech_type": {"enum": ["age_2", "iron_weapons", "fletching", "horse_collar"]},
     "zone": {

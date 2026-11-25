@@ -82,7 +82,7 @@ def validate_action(a, state, reserved=None, slot=1):
         if zone not in LAND and zone not in WATER:
             return "unknown target_zone"
         group = a.get("unit_group")
-        if group not in GROUPS and (group not in DATA["units"] or group == "villager"):
+        if group not in GROUPS and (group not in DATA["units"] or group in ("villager", "fishing_boat")):
             return "unknown unit_group"
         ships = a.get("unit_group") in ("all_ships", "raider_boat", "warship")
         if ships and zone not in WATER:

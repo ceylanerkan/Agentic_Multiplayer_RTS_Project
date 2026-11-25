@@ -6,6 +6,7 @@ using UnityEngine;
 /// The Villager gather loop, run only on the host: walk to the node, gather (GatherState: 0.6/s, carry 10),
 /// walk to the nearest own Town Center, deposit, and walk back. It also builds: walk to an unfinished building and
 /// add work until it is complete. Movement goes through NetworkUnit.MoveTo.
+/// A Fishing Boat has it too: it gathers fish shoals, brings them to the nearest own Dock and never builds.
 /// </summary>
 [RequireComponent(typeof(NetworkUnit))]
 public class VillagerGatherer : NetworkBehaviour
@@ -14,6 +15,7 @@ public class VillagerGatherer : NetworkBehaviour
 
     const float NodeReach = 2.5f;      // how close to a node/Town Center counts as "there"
     const float DepositReach = 4.5f;   // Town Center is a big cube, so a larger reach
+    const float ShipDepositReach = 6f; // a Dock stands on the shore, the boat stays in the water before it
     const float FindNewNodeRadius = 30f;
 
     NetworkUnit unit;
@@ -34,7 +36,7 @@ public class VillagerGatherer : NetworkBehaviour
     /// <summary>Host only (called from CommandRelay after the ownership check).</summary>
     public void StartGather(ResourceNode target)
     {
-        if (!HasStateAuthority || target == null) return;
+        if (!HasStateAuthority || target == null || target.InWater != unit.IsShip) return;
         if (target.Resource != resource) bag.Deposit(); // switching resource: the old bag is lost, like in most RTS games
         node = target; resource = target.Resource;
         lastNodePos = target.transform.position; hasLastNode = true;
@@ -45,7 +47,7 @@ public class VillagerGatherer : NetworkBehaviour
     /// <summary>Host only: walk to an unfinished building and work on it until it is done.</summary>
     public void StartBuild(NetworkBuilding b)
     {
-        if (!HasStateAuthority || b == null) return;
+        if (!HasStateAuthority || b == null || !unit.CanBuild) return;
         site = b; node = null; phase = Phase.ToBuild;
         unit.MoveTo(b.transform.position);
     }
@@ -69,7 +71,7 @@ public class VillagerGatherer : NetworkBehaviour
 
             case Phase.Gathering:
                 if (!NodeAlive()) { node = null; FindOtherNodeOrStop(); break; }
-                bool horseCollar = Owner() != null && Owner().HasTech("horse_collar"); // +20% food, see TechEffects
+                bool horseCollar = !unit.IsShip && Owner() != null && Owner().HasTech("horse_collar"); // +20% food from the fields, see TechEffects
                 float taken = bag.Tick(Runner.DeltaTime, resource, node.Amount, horseCollar);
                 Vector3 nodePos = node.transform.position;
                 bool depleted = node.Take(taken); // despawns the node when empty: do not read it afterwards
@@ -88,9 +90,9 @@ public class VillagerGatherer : NetworkBehaviour
                 break;
 
             case Phase.ToDeposit:
-                var tc = NearestTownCenter(pos);
+                var tc = NearestDeposit(pos);
                 if (tc == null) { phase = Phase.Idle; break; }
-                if (Flat(tc.transform.position - pos) <= DepositReach)
+                if (Flat(tc.transform.position - pos) <= (unit.IsShip ? ShipDepositReach : DepositReach))
                 {
                     var st = Owner();
                     if (st != null) st.Add(resource, bag.Deposit());
@@ -103,7 +105,7 @@ public class VillagerGatherer : NetworkBehaviour
 
     void GoDeposit()
     {
-        var tc = NearestTownCenter(transform.position);
+        var tc = NearestDeposit(transform.position);
         if (tc == null) { phase = Phase.Idle; return; }
         phase = Phase.ToDeposit;
         unit.MoveTo(tc.transform.position);
@@ -114,7 +116,7 @@ public class VillagerGatherer : NetworkBehaviour
         if (bag.CarriedWhole > 0) { GoDeposit(); node = null; return; }
         // search around the node we worked on, not around the Villager: after a deposit it stands at the Town Center,
         // which can be far from the forest or mine (then nothing was within the radius and the Villager went idle)
-        node = ResourceNode.Nearest(hasLastNode ? lastNodePos : transform.position, resource, FindNewNodeRadius);
+        node = ResourceNode.Nearest(hasLastNode ? lastNodePos : transform.position, resource, FindNewNodeRadius, unit.IsShip);
         if (node == null) { phase = Phase.Idle; unit.StopMoving(); return; }
         lastNodePos = node.transform.position;
         phase = Phase.ToNode; unit.MoveTo(node.transform.position);
@@ -130,12 +132,14 @@ public class VillagerGatherer : NetworkBehaviour
 
     NetworkPlayerState Owner() { return GameSpawner.Instance != null ? GameSpawner.Instance.StateOf(unit.Owner) : null; }
 
-    NetworkBuilding NearestTownCenter(Vector3 from)
+    /// <summary>Town Center for Villagers, Dock for Fishing Boats.</summary>
+    NetworkBuilding NearestDeposit(Vector3 from)
     {
+        string type = unit.IsShip ? "dock" : "town_center";
         NetworkBuilding best = null; float bestD = float.MaxValue;
         foreach (var b in NetworkBuilding.All)
         {
-            if (b.Owner != unit.Owner || !b.Completed || b.TypeKey.ToString() != "town_center") continue;
+            if (b.Owner != unit.Owner || !b.Completed || b.TypeKey.ToString() != type) continue;
             float d = (b.transform.position - from).sqrMagnitude;
             if (d < bestD) { bestD = d; best = b; }
         }

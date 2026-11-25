@@ -100,7 +100,7 @@ def test_unit_groups_agree_with_units_and_validator():
     named = set(re.findall(r'"(\w+)"', re.search(r"Groups = new HashSet<string> \{([^}]*)\}", cs).group(1)))
     unit_keys = {u["key"] for u in UNITS.values()}
     assert named == {"all_military", "all_ships", "idle_villagers"}
-    assert enum == named | (unit_keys - {"villager"})
+    assert enum == named | (unit_keys - {"villager", "fishing_boat"})
 
 
 def test_every_action_type_is_validated_and_executed():

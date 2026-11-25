@@ -51,7 +51,7 @@ public class SelectionPanel : MonoBehaviour
         var sb = new StringBuilder();
         if (sel.Building != null) sb.Append("B").Append(sel.Building.Object.Id.Raw).Append(sel.Building.Completed);
         bool villager = false;
-        foreach (var u in sel.Units) if (u.GetComponent<VillagerGatherer>() != null) villager = true;
+        foreach (var u in sel.Units) if (u.CanBuild) villager = true;
         sb.Append("U").Append(sel.Units.Count).Append(villager);
         return sb.ToString();
     }
@@ -67,7 +67,7 @@ public class SelectionPanel : MonoBehaviour
         if (sel.Units.Count > 0)
         {
             bool villager = false;
-            foreach (var u in sel.Units) if (u.GetComponent<VillagerGatherer>() != null) villager = true;
+            foreach (var u in sel.Units) if (u.CanBuild) villager = true;
             if (!villager) return;
             foreach (var def in data.Buildings.Values)
             {

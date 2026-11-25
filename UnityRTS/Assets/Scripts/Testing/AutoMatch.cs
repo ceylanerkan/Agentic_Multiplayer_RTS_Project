@@ -84,7 +84,7 @@ public class AutoMatch : MonoBehaviour
     void Sample()
     {
         var launcher = GameLauncher.Instance;
-        if (launcher == null || launcher.Runner == null || !launcher.Runner.IsRunning || CommandRelay.Local == null) return;
+        if (launcher == null || launcher.Runner == null || !launcher.Runner.IsRunning || CommandRelay.Local == null || SceneManager.GetActiveScene().name == "Menu") return;
         var r = launcher.Runner;
         int tick = r.IsServer ? r.Tick.Raw : r.LatestServerTick.Raw;
         string F(float v) => v.ToString("0.00", CultureInfo.InvariantCulture);
@@ -135,6 +135,11 @@ public class AutoMatch : MonoBehaviour
     {
         yield return For(() => GameLauncher.Instance != null, 30);
         GameLauncher.Instance.StartHost(session);
+        yield return For(() => GameLauncher.Instance.Phase == GameLauncher.State.Waiting, 60);
+        Check("the host opens the waiting room", ok, GameLauncher.Instance.Phase + " " + GameLauncher.LastMessage);
+        Picture("lobby");
+        yield return new WaitForSecondsRealtime(4f);
+        Check("the match does not start without a second player", SceneManager.GetActiveScene().name == "Menu" && GameLauncher.Instance.Phase == GameLauncher.State.Waiting, SceneManager.GetActiveScene().name);
         yield return For(() => Relay != null && Units("villager").Count == 3, 90);
         Check("host is player 1 with a Town Center and 3 Villagers", ok && Me.Slot == 1 && Buildings("town_center").Count == 1, GameLauncher.LastMessage);
         if (!ok) { Finish(); yield break; }
@@ -227,9 +232,11 @@ public class AutoMatch : MonoBehaviour
     IEnumerator Client()
     {
         yield return For(() => GameLauncher.Instance != null, 30);
+        Picture("menu");
+        yield return new WaitForSecondsRealtime(10f);   // the host shows that it waits
         for (int i = 0; i < 8; i++)   // the host needs some seconds to open the session
         {
-            GameLauncher.Instance.StartClient(session);
+            if (GameLauncher.Instance.Phase == GameLauncher.State.Idle) GameLauncher.Instance.StartClient(session);
             yield return For(() => Relay != null && Units("villager").Count == 3 && Buildings("town_center").Count == 1, 25);
             if (ok) break;
             yield return new WaitForSecondsRealtime(3f);
@@ -259,6 +266,8 @@ public class AutoMatch : MonoBehaviour
         yield return Drag(new Vector2(pts.Min(p => p.x) - 40, pts.Min(p => p.y) - 40), new Vector2(pts.Max(p => p.x) + 40, pts.Max(p => p.y) + 40));
         Check("dragging a box selects all three", sel.Units.Count == 3, sel.Units.Count + " selected");
         Picture("selection");
+        yield return Look(new Vector3(60, 0, 4));
+        Picture("resources");
 
         section = "placement";
         yield return ClickButton("Build House");

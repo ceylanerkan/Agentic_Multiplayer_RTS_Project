@@ -40,13 +40,14 @@ evaluation, lessons learned, conclusion and the appendix.
 Center) and three water zones along the north edge (P1Harbor, OpenSea, P2Harbor). Every point of the map belongs to
 exactly one of the ten zones; the zones are the vocabulary shared by the game, the snapshot and the AI plans.
 
-**Economy.** Three finite resources: wood (trees), food (berry bushes), gold (mines). Most wood is in EastForest and most
-gold in WestMine; each base also has a small forest of 4 trees, so both players can start with nearby wood. A Villager gathers 0.6 units per
+**Economy.** Three finite resources: wood (trees), food (berry bushes and, in the sea, fish shoals), gold (mines). They lie in irregular
+groups with a fixed seed, mirrored between the two halves of the map, so both players get the same: groves, berries and two gold mines near
+each base, larger fields outside, contested gold in the middle and fish in the harbors and the open sea. A Villager gathers 0.6 units per
 second, carries 10 and must walk back to a Town Center to deposit. Each player starts with one Town Center, three
 Villagers and 200 wood, 200 food, 100 gold. Population is capped at 50: the Town Center and every House give +5.
 
-**Units and counters.** Eight unit types (Villager, Spearman, Archer, Cavalry, Scout, Catapult, Raider Boat,
-Warship). Damage is `max(1, attack x multiplier - armor)` with multiplier 1.5 for a counter and 0.75 when countered.
+**Units and counters.** Nine unit types (Villager, Spearman, Archer, Cavalry, Scout, Catapult, Fishing Boat, Raider Boat,
+Warship). Fishing Boats gather fish for a Dock; Raider Boats raid them. Damage is `max(1, attack x multiplier - armor)` with multiplier 1.5 for a counter and 0.75 when countered.
 The land loop is Spearman > Cavalry > Archer > Spearman; the naval loop is Raider Boat > Warship > Archer > Raider
 Boat; Catapults deal 3x damage to buildings and beat Warships. Land units stay on land and ships on water; melee
 units attack only their own domain, ranged units shoot across the shoreline.
@@ -176,7 +177,7 @@ model). The cost is an extra process in the demo; the in-process mode keeps unit
 
 ## VI. RAG Method
 
-**Corpus.** 18 structured records (8 units, 6 buildings, 4 technologies, from the same JSON files Unity reads) and
+**Corpus.** 19 structured records (9 units, 6 buildings, 4 technologies, from the same JSON files Unity reads) and
 15 rule or strategy sections from `rules.md`. Each record is one chunk with a stable `source_id` such as
 `unit_spearman_v1` or `strategy_defend_cavalry_v1`; structured records are rendered as plain text so that both
 retrieval methods can use them.

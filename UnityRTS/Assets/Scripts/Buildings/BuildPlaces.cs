@@ -80,7 +80,7 @@ public static class BuildPlaces
         var list = new List<Block>();
         foreach (var b in NetworkBuilding.All)
             if (viewer == null || b.Owner == viewer.Value || Visible(b)) list.Add(ToBlock(b));
-        foreach (var n in ResourceNode.All) list.Add(ToBlock(n));
+        foreach (var n in ResourceNode.All) if (!n.InWater) list.Add(ToBlock(n)); // ships pass over fish
         return list;
     }
 
