@@ -120,13 +120,13 @@ public class MenuUI : MonoBehaviour
         string[,] rows =
         {
             { "WASD / arrows", "move the camera" }, { "Mouse wheel", "zoom" }, { "Left click, drag", "select (Shift adds)" },
-            { "Right click", "move, gather, attack, help build" }, { "Villager + button", "place a building on free ground" },
+            { "Right click", "move, gather, attack, help build" }, { "Villager + button", "place a building on free ground" }, { "Town Center, or + on top", "train Villagers" },
             { "Esc / right click", "cancel placing" }, { "AI Commander", "ask, then approve or reject the plan" },
         };
         for (int i = 0; i < rows.GetLength(0); i++)
         {
-            var a = Text(helpPage, rows[i, 0], 21, Gold); Put(a.rectTransform, 70 + i * 40, 34, 0f, 0.40f);
-            var b = Text(helpPage, rows[i, 1], 21, Paper); Put(b.rectTransform, 70 + i * 40, 34, 0.42f, 1f);
+            var a = Text(helpPage, rows[i, 0], 21, Gold); Put(a.rectTransform, 62 + i * 37, 34, 0f, 0.40f);
+            var b = Text(helpPage, rows[i, 1], 21, Paper); Put(b.rectTransform, 62 + i * 37, 34, 0.42f, 1f);
         }
         AddButton(helpPage, "Back", 372, false, () => help = false);
 

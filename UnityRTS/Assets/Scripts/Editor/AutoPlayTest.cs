@@ -156,6 +156,7 @@ public static class AutoPlayTest
         sections = new Queue<KeyValuePair<string, Func<IEnumerator>>>();
         void Add(string name, Func<IEnumerator> f) => sections.Enqueue(new KeyValuePair<string, Func<IEnumerator>>(name, f));
         Add("Start", StartMatch);
+        if (Environment.GetEnvironmentVariable("RTS_AUTOPLAY_ONLY") == "walls") { Add("Walls", Walls); return; } // a quick look at one section
         if (Environment.GetEnvironmentVariable("RTS_AUTOPLAY_LOOKS") == "1") { Add("Looks", Looks); return; }
         Add("Town Center", TownCenter);
         Add("Houses", Houses);
@@ -171,6 +172,7 @@ public static class AutoPlayTest
         Add("AI approval", Approval);
         Add("Placement", Placement);
         Add("Pathfinding", Pathfinding);
+        Add("Walls", Walls);
         if (WithAi) Add("AI live", AiLive);
         Add("Victory", Victory);
     }
@@ -634,6 +636,30 @@ public static class AutoPlayTest
         Check("injection question: no action, no enemy coordinates", !reply.Contains("Proposed actions") && !reply.Contains("P2Base") && reply.Contains("Confidence"), status);
         yield return Ask(panel, "Train 20 archers right now.");
         Check("20 archers: answered", reply.Contains("Confidence"), status);
+    }
+
+    /// <summary>A line of wall with one Villager, a Gate in it, and who passes.</summary>
+    static IEnumerator Walls()
+    {
+        var v = Units("villager").First(); int wood = Me.Wood;
+        Vector3 from = new Vector3(-40, 0, -10), to = new Vector3(-40, 0, -22);
+        Relay.SendMove(v.Object.Id, new Vector3(-43, 0, -12));
+        yield return For(() => !v.HasMoveTarget, 60);
+        Relay.SendWall(from, to, v.Object.Id);
+        yield return For(() => Buildings("wall").Count >= 5, 5);
+        int n = Buildings("wall").Count;
+        Check("a line of wall is placed and paid piece by piece", ok && wood - Me.Wood == n * Data.Buildings["wall"].Cost["wood"], n + " pieces, " + (wood - Me.Wood) + " wood");
+        float t0 = Time.time;
+        yield return For(() => Buildings("wall").All(b => b.Completed), 80);
+        Check("one Villager builds the whole line", ok, Buildings("wall").Count(b => b.Completed) + " of " + n + " after " + (Time.time - t0).ToString("0") + " s");
+        Relay.SendBuild("gate", new Vector3(-40, 0, -16), Zone(new Vector3(-40, 0, -16)), v.Object.Id);
+        yield return For(() => Done("gate") != null, 40);
+        Check("a Gate takes the place of a piece", ok && Buildings("wall").Count == n - 1, Buildings("wall").Count + " pieces, gate " + (Done("gate") != null));
+        var grid = BuildPlaces.Grid;
+        Check("the way through the Gate is free for its owner only", grid.LineFree(-43, -15.5f, -37, -15.5f, false, 1) && !grid.LineFree(-43, -15.5f, -37, -15.5f, false, 2) && !grid.LineFree(-43, -12, -37, -12, false, 1));
+        Relay.SendMove(v.Object.Id, new Vector3(-36, 0, -16));
+        yield return For(() => !v.HasMoveTarget, 30);
+        Check("the Villager walks through the Gate", ok && v.transform.position.x > -37f, At(v.transform.position));
     }
 
     static IEnumerator Victory()

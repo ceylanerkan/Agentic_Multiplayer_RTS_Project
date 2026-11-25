@@ -37,13 +37,13 @@ public class UnitCommandInput : MonoBehaviour
         if (!mouse.rightButton.wasPressedThisFrame || sel.Units.Count == 0) return;
         if (BuildPlacement.OwnsClick) return; // right-click while placing only cancels the placement
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-        if (!Physics.Raycast(cam.ScreenPointToRay(mouse.position.ReadValue()), out var hit, 500f)) return;
+        if (!ModelLook.Under(cam.ScreenPointToRay(mouse.position.ReadValue()), out var thing, out var point)) return;
 
-        var node = hit.collider.GetComponentInParent<ResourceNode>();
+        var node = thing != null ? thing.GetComponent<ResourceNode>() : null;
         if (node != null) { GatherOrMove(sel.Units, node, relay); return; }
 
         // Own building under construction: Villagers help build it, other units just walk there.
-        var site = hit.collider.GetComponentInParent<NetworkBuilding>();
+        var site = thing != null ? thing.GetComponent<NetworkBuilding>() : null;
         if (site != null && site.Owner == relay.Object.InputAuthority && !site.Completed)
         {
             foreach (var u in sel.Units)
@@ -54,15 +54,15 @@ public class UnitCommandInput : MonoBehaviour
             return;
         }
 
-        var enemyUnit = hit.collider.GetComponentInParent<NetworkUnit>();
+        var enemyUnit = thing != null ? thing.GetComponent<NetworkUnit>() : null;
         if (enemyUnit != null && enemyUnit.Owner != relay.Object.InputAuthority && Seen(enemyUnit))
         { foreach (var u in sel.Units) relay.SendAttack(u.Object.Id, enemyUnit.Object.Id); return; }
 
-        var enemyBuilding = hit.collider.GetComponentInParent<NetworkBuilding>();
+        var enemyBuilding = thing != null ? thing.GetComponent<NetworkBuilding>() : null;
         if (enemyBuilding != null && enemyBuilding.Owner != relay.Object.InputAuthority && Seen(enemyBuilding))
         { foreach (var u in sel.Units) relay.SendAttack(u.Object.Id, enemyBuilding.Object.Id); return; }
 
-        MoveInFormation(sel.Units, new Vector3(hit.point.x, 0f, hit.point.z), relay); // ground height (the hit may be on a hidden enemy's top)
+        MoveInFormation(sel.Units, new Vector3(point.x, 0f, point.z), relay); // ground height (the hit may be on a hidden enemy's top)
     }
 
     // FogOfWar only switches renderers off; the collider stays. Without this check a right-click on an empty-looking spot

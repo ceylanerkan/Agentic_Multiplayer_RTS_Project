@@ -67,10 +67,10 @@ public class SelectionManager : MonoBehaviour
     void ClickSelect(Vector2 screen, bool add)
     {
         if (!add) Clear();
-        if (!Physics.Raycast(cam.ScreenPointToRay(screen), out var hit, 500f)) return;
-        var unit = hit.collider.GetComponentInParent<NetworkUnit>();
+        if (!ModelLook.Under(cam.ScreenPointToRay(screen), out var thing, out _) || thing == null) return;
+        var unit = thing.GetComponent<NetworkUnit>();
         if (unit != null && unit.Owner == Me) { if (!Units.Contains(unit)) Units.Add(unit); Building = null; return; }
-        var b = hit.collider.GetComponentInParent<NetworkBuilding>();
+        var b = thing.GetComponent<NetworkBuilding>();
         if (b != null && b.Owner == Me && Units.Count == 0) Building = b;
     }
 

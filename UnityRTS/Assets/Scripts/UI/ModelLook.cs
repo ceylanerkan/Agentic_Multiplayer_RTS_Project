@@ -212,10 +212,14 @@ public class ModelLook : MonoBehaviour
             foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
                 if (r.name.Contains("Sword") || r.name.Contains("Bow")) continue;
-                r.BakeMesh(baked, true);
-                foreach (var q in baked.vertices) { float y = model.InverseTransformPoint(r.transform.TransformPoint(q)).y; low = Mathf.Min(low, y); high = Mathf.Max(high, y); }
+                r.BakeMesh(baked); // without the scale of its transform: only its place and turn are left
+                foreach (var q in baked.vertices) { float y = model.InverseTransformPoint(r.transform.position + r.transform.rotation * q).y; low = Mathf.Min(low, y); high = Mathf.Max(high, y); }
             }
             Destroy(baked);
+            // the head bone as a check: a skin that measures something else is not believed
+            Transform head = Find(model, "Head_end") ?? Find(model, "Head");
+            float h = head != null ? model.InverseTransformPoint(head.position).y : 0f;
+            if (h > 0.01f && (high - low < h * 0.8f || high - low > h * 2.2f)) { Debug.LogWarning("Model " + model.name + " measures " + (high - low) + ", head bone at " + h); low = 0f; high = h * 1.12f; }
             v = new Vector2(low, high);
             sizes[model.name] = v;
         }
@@ -303,6 +307,72 @@ public class ModelLook : MonoBehaviour
             r.sharedMaterials = mats;
         }
         return go;
+    }
+
+    // ---- clicking: the model counts, not only the collider (a roof is higher than the old box) ----
+    static readonly List<ModelLook> all = new List<ModelLook>();
+    static readonly Dictionary<Mesh, KeyValuePair<Vector3[], int[]>> shapes = new Dictionary<Mesh, KeyValuePair<Vector3[], int[]>>();
+
+    void OnEnable() { all.Add(this); }
+    void OnDisable() { all.Remove(this); }
+
+    /// <summary>What is under the mouse: the unit, building or resource (null = ground) and the point. False when there is nothing at all.</summary>
+    public static bool Under(Ray ray, out GameObject thing, out Vector3 point)
+    {
+        bool any = Physics.Raycast(ray, out var hit, 500f);
+        var obj = any ? hit.collider.GetComponentInParent<Fusion.NetworkObject>() : null;
+        thing = obj != null ? obj.gameObject : null;
+        point = any ? hit.point : Vector3.zero;
+        float best = any ? hit.distance + 0.6f : 500f;
+        foreach (var l in all)
+        {
+            if (l.pivot == null || l.renderers.Count == 0 || l.renderers[0] == null || !l.renderers[0].enabled || l.gameObject == thing) continue;
+            if (!l.Hit(ray, best, out float d)) continue;
+            best = d; thing = l.gameObject; point = ray.GetPoint(d); any = true;
+        }
+        return any;
+    }
+
+    bool Hit(Ray ray, float max, out float distance)
+    {
+        distance = max;
+        if (unit != null)
+        {
+            // an upright line through the body: how near does the ray come?
+            float r = ship ? 1.3f : Wide ? 0.95f : 0.55f, top = ship ? 2.2f : Height;
+            Vector3 foot = pivot.position, w = foot - ray.origin, u = ray.direction, v = Vector3.up;
+            float b = Vector3.Dot(u, v), d = Vector3.Dot(u, w), e = Vector3.Dot(v, w), den = 1f - b * b;
+            if (den < 1e-4f) return false;
+            float up = Mathf.Clamp((b * d - e) / den, 0f, top), along = Vector3.Dot(foot + v * up - ray.origin, u);
+            if (along < 0f || along > max || (foot + v * up - ray.GetPoint(along)).magnitude > r) return false;
+            distance = along;
+            return true;
+        }
+        bool hit = false;
+        foreach (var r in renderers)
+        {
+            if (r == null || !r.bounds.IntersectRay(ray, out float enter) || enter > distance) continue;
+            var f = r.GetComponent<MeshFilter>();
+            if (f == null || f.sharedMesh == null) continue;
+            if (!shapes.TryGetValue(f.sharedMesh, out var shape)) { shape = new KeyValuePair<Vector3[], int[]>(f.sharedMesh.vertices, f.sharedMesh.triangles); shapes[f.sharedMesh] = shape; }
+            // the ray in the space of the model, then every triangle (only on a click)
+            Matrix4x4 m = r.transform.worldToLocalMatrix;
+            Vector3 o = m.MultiplyPoint3x4(ray.origin), dir = m.MultiplyVector(ray.direction);
+            var v = shape.Key; var t = shape.Value;
+            for (int i = 0; i < t.Length; i += 3)
+            {
+                Vector3 a = v[t[i]], e1 = v[t[i + 1]] - a, e2 = v[t[i + 2]] - a, q = Vector3.Cross(dir, e2);
+                float det = Vector3.Dot(e1, q);
+                if (det > -1e-9f && det < 1e-9f) continue;
+                float inv = 1f / det; Vector3 s = o - a; float x = Vector3.Dot(s, q) * inv;
+                if (x < 0f || x > 1f) continue;
+                Vector3 c = Vector3.Cross(s, e1); float y = Vector3.Dot(dir, c) * inv;
+                if (y < 0f || x + y > 1f) continue;
+                float z = Vector3.Dot(e2, c) * inv; // the ray's own length: dir was not normalised
+                if (z > 0f && z < distance) { distance = z; hit = true; }
+            }
+        }
+        return hit;
     }
 
     // ---- team ----

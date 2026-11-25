@@ -15,7 +15,10 @@ public class HudUI : MonoBehaviour
     RawImage sky;
     RectTransform hintBox, menu;
     Image playerDot;
-    Button idleButton;
+    Button idleButton, trainButton;
+    RawImage trainIcon;
+    string trainReason;
+    GameActionValidator validator;
     readonly List<TMP_Text> feed = new List<TMP_Text>();
     NetworkPlayerState state;
     float nextSlow;
@@ -27,7 +30,7 @@ public class HudUI : MonoBehaviour
         if (old != null) { old.gameObject.SetActive(false); Destroy(old.gameObject); }
         var canvas = (RectTransform)transform;
 
-        var left = UiKit.Frame(canvas, "Resources"); UiKit.At((RectTransform)left.parent, 0, 1, 12, -12, 640, 52);
+        var left = UiKit.Frame(canvas, "Resources"); UiKit.At((RectTransform)left.parent, 0, 1, 12, -12, 716, 52);
         wood = Chip(left, 0, "wood", UiKit.WoodColour, "Wood: from trees. For buildings, archers and ships.");
         food = Chip(left, 1, "food", UiKit.FoodColour, "Food: from berry bushes and fish. For Villagers, soldiers and research.");
         gold = Chip(left, 2, "gold", UiKit.GoldColour, "Gold: from gold mines. For strong units and research.");
@@ -36,6 +39,10 @@ public class HudUI : MonoBehaviour
         var ii = UiKit.Icon(idleButton.transform, "idle", UiKit.Dim); UiKit.At(ii.rectTransform, 0, 0.5f, 12, 0, 26, 26);
         idle = UiKit.Text(idleButton.transform, "0", 22, UiKit.Paper, TextAlignmentOptions.Midline, FontStyles.Bold); UiKit.Stretch(idle.rectTransform, 0, 0, 1, 1, 40, 0, -8, 0);
         UiHover.Add(idleButton, () => "Villagers without work. Click to jump to the next one.");
+        trainButton = UiKit.Button(left, "QuickVillager", UiKit.Field, TrainVillager); UiKit.At((RectTransform)trainButton.transform, 0, 0.5f, 636, 0, 68, 38);
+        trainIcon = UiKit.Icon(trainButton.transform, "villager", UiKit.Paper); UiKit.At(trainIcon.rectTransform, 0, 0.5f, 6, 0, 30, 30);
+        var plus = UiKit.Text(trainButton.transform, "+", 28, UiKit.Gold, TextAlignmentOptions.Center, FontStyles.Bold); UiKit.Stretch(plus.rectTransform, 0, 0, 1, 1, 34, 2, 0, 0);
+        UiHover.Add(trainButton, () => "<b><color=#EDC25C>Train Villager</color></b>\n" + UiKit.CostText(GameDataProvider.Get().Units["villager"].Cost, true) + "\nAt your Town Center." + (trainReason != null ? "\n<color=#F2594A>" + trainReason + "</color>" : ""));
 
         var mid = UiKit.Frame(canvas, "Age"); UiKit.At((RectTransform)mid.parent, 0.5f, 1, 0, -12, 280, 52);
         var ai = UiKit.Icon(mid, "age_2", UiKit.Gold); UiKit.At(ai.rectTransform, 0, 0.5f, 16, 0, 30, 30);
@@ -130,6 +137,9 @@ public class HudUI : MonoBehaviour
         idle.text = count.ToString();
         idle.color = count > 0 ? UiKit.Gold : UiKit.Dim;
         idleButton.interactable = count > 0;
+        trainReason = WhyNotTrain(out _);
+        trainButton.interactable = trainReason == null;
+        trainIcon.color = trainReason == null ? UiKit.Paper : new Color(0.55f, 0.56f, 0.58f, 0.75f);
         ShowEvents();
     }
 
@@ -141,6 +151,31 @@ public class HudUI : MonoBehaviour
         var launcher = GameLauncher.Instance;
         if (launcher == null || launcher.Runner == null) return false;
         return System.Linq.Enumerable.Count(launcher.Runner.ActivePlayers) < PlayerSlots.MaxPlayers;
+    }
+
+    // ---- a new Villager ----
+    /// <summary>Why no Villager can be trained now (null = it can) and the Town Center with the shortest queue. The host checks again.</summary>
+    string WhyNotTrain(out NetworkBuilding best)
+    {
+        best = null;
+        string why = "no Town Center";
+        foreach (var b in NetworkBuilding.All)
+        {
+            if (b.Object == null || !b.Object.IsValid || b.Owner != state.Owner || !b.Completed || b.TypeKey.ToString() != "town_center") continue;
+            string blocked = b.WhyNotQueue("villager", false);
+            if (blocked != null) { why = blocked; continue; }
+            if (best == null || b.QueueCount < best.QueueCount) best = b;
+        }
+        if (best == null) return why;
+        if (validator == null) validator = new GameActionValidator(GameDataProvider.Get());
+        var r = validator.Validate(new PlanAction { ActionType = "TRAIN_UNIT", UnitType = "villager" }, state.ToCore());
+        return r.Ok ? null : r.Reason;
+    }
+
+    void TrainVillager()
+    {
+        if (state == null || state.Object == null || !state.Object.IsValid || WhyNotTrain(out var tc) != null || tc == null) return;
+        CommandRelay.Local.SendTrain("villager", tc.Object.Id);
     }
 
     // ---- idle Villagers ----
