@@ -50,6 +50,9 @@ venv/
 ai/rag/index/*
 !ai/rag/index/.gitkeep
 
+# Fine-tuned Laya checkpoint (about 800 MB, reproducible via evaluation/tool_router/train_router.py)
+ai/models/
+
 # Runtime data / logs
 ai/gateway/data/
 ai/logs/

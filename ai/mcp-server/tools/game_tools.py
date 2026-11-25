@@ -33,7 +33,9 @@ def _live(ctx, fn):
 
 
 def get_player_resources(ctx):
-    return _live(ctx, lambda s: {"resources": s["resources"], "population": s["population"], "age": s["age"]})
+    return _live(ctx, lambda s: {"resources": s["resources"], "population": s["population"], "age": s["age"],
+                                 "free_population": max(0, s["population"]["capacity"] - s["population"]["used"]),
+                                 "note": "The asking player's own resources. No tool knows the opponent's."})
 
 
 def get_army_status(ctx):
@@ -86,6 +88,11 @@ def estimate_plan_cost(ctx, items):
         out["affordable"] = all(v == 0 for v in out["missing"].values())
         free = ctx.snapshot["population"]["capacity"] - ctx.snapshot["population"]["used"]
         out["population_ok"] = pop <= free
+        # in words as well: the local model ignored `population_ok: false` and proposed the units anyway (evaluation)
+        problems = [f"{v} {r} missing" for r, v in out["missing"].items() if v]
+        if pop > free:
+            problems.append(f"{pop} population needed but only {max(0, free)} free (a House adds 5)")
+        out["verdict"] = "possible" if not problems else "NOT possible now: " + "; ".join(problems)
     return out
 
 

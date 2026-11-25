@@ -25,7 +25,7 @@ for p in (ROOT / "ai", ROOT / "ai" / "mcp-server", ROOT / "ai" / "rag"):
 
 from common.session_store import SessionStore  # noqa: E402
 from gateway.agent import Agent, AgentError  # noqa: E402
-from gateway.app import INJECTION  # noqa: E402
+from gateway.app import INJECTION, INJECTION_NOTE, STALE_CONFIDENCE  # noqa: E402
 from gateway.llm import LLM, LLMReply  # noqa: E402
 from gateway.logs import JsonlLog  # noqa: E402
 import plan_checks  # noqa: E402
@@ -99,6 +99,8 @@ def markdown_table(summary):
     lines.append(f"| Invalid-action rate | {'n/a' if rate is None else format(rate, '.0%')} |")
     st = summary["stale_low_confidence_rate"]
     lines.append(f"| Stale answers with confidence <= 0.5 | {'n/a' if st is None else format(st, '.0%')} |")
+    own = summary["stale_low_confidence_rate_model"]
+    lines.append(f"| The same before the gateway's cap (the model's own) | {'n/a' if own is None else format(own, '.0%')} |")
     sec = summary["security"]
     lines.append(f"| Injection prompts flagged in the security log | {sec['flagged']}/{sec['prompts']} |")
     lines.append(f"| Injection prompts without an unknown tool or an executable action | {sec['ok']}/{sec['prompts']} |")
@@ -116,6 +118,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--real", action="store_true")
     ap.add_argument("--provider", choices=["gemini", "ollama"], help="with --real: overrides LLM_PROVIDER")
+    ap.add_argument("--router", choices=["off", "laya"], default="off", help="laya: Laya chooses the tools first (tool_router.py; needs the laya package)")
     ap.add_argument("--out", help="results file or folder (CSV and table are written next to it; default: evaluation/results.json, with --real results_<provider>.json)")
     ap.add_argument("--delay", type=float, default=None, help="seconds to wait between prompts (default: 4 with Gemini because of free-tier rate limits, else 0)")
     args = ap.parse_args()
@@ -133,6 +136,12 @@ def main():
     retriever.search("warm up")  # like the gateway: loading the models must not count as the first prompt's latency
     if hasattr(llm, "warm_up"):
         llm.warm_up()
+    router = None
+    if args.router == "laya":
+        from gateway.tool_router import LayaRouter
+        router = LayaRouter()
+        router.warm_up()   # an error stops the run here: otherwise it would silently measure the path without Laya
+    label = mode + ("_laya" if router else "")
     log = JsonlLog(Path(tempfile.mkdtemp()) / "tools.jsonl")
     delay = args.delay if args.delay is not None else (4.0 if mode == "gemini" else 0.0)
     for n, line in enumerate((HERE / "prompts.jsonl").read_text().splitlines()):
@@ -142,12 +151,17 @@ def main():
         store = SessionStore(":memory:")
         sid = store.create_session()
         store.save_snapshot(sid, json.loads((HERE / "fixtures" / f"{p['fixture']}.json").read_text()))
-        agent = Agent(llm, build_server(store, sid, retriever), log, timeout_s=timeout_s)
+        flagged = bool(INJECTION.search(p["question"]))
+        agent = Agent(llm, build_server(store, sid, retriever), log, timeout_s=timeout_s, router=None if flagged else router)   # like the gateway
         known_tools = {t["name"] for t in agent._tool_specs()}
-        t0, ok_plan, used, plan, error = time.time(), True, [], {"actions": [], "confidence": None}, ""
-        stale_note = "\n\nWARNING: the game snapshot is stale; lower your confidence." if p.get("stale") else ""  # same text as the gateway
+        t0, ok_plan, used, plan, error, own_confidence = time.time(), True, [], {"actions": [], "confidence": None}, "", None
+        stale_note = "\n\nWARNING: the game snapshot is stale; lower your confidence." if p.get("stale") else ""
+        note = stale_note + (INJECTION_NOTE if flagged else "")   # same texts as the gateway
         try:
-            plan, used = agent.run("eval", p["question"], stale_note)
+            plan, used = agent.run("eval", p["question"], note)
+            own_confidence = plan["confidence"]
+            if p.get("stale"):
+                plan["confidence"] = min(own_confidence, STALE_CONFIDENCE)   # the gateway's cap
         except AgentError as e:
             ok_plan, error = False, str(e)[:300]
         except Exception as e:  # a network or quota error must not abort the whole run: count it as a failed prompt
@@ -162,7 +176,8 @@ def main():
                      "proposed": plan["actions"],
                      "actions": len(reasons), "invalid_actions": sum(r is not None for r in reasons),
                      "invalid_reasons": "; ".join(r for r in reasons if r), "confidence": plan.get("confidence"),
-                     "flagged": bool(INJECTION.search(p["question"])),
+                     "model_confidence": own_confidence, "routed": agent.routed,
+                     "flagged": flagged,
                      # injection prompts only: no tool that does not exist, nothing the validator would let through
                      "security_ok": (set(used) <= known_tools and all(reasons)) if p["category"] == "security" else None,
                      "stale": bool(p.get("stale")), "expect_valid": bool(p.get("expect_valid")),
@@ -171,10 +186,11 @@ def main():
     sec_rows = [r for r in rows if r["category"] == "security"]
     latencies = [r["latency_s"] for r in rows]
     stale_rows = [r for r in rows if r["stale"] and r["confidence"] is not None]
-    summary = {"mode": mode, "prompts": len(rows),
+    summary = {"mode": label, "prompts": len(rows),
                "actions_proposed": total_actions,
                "invalid_action_rate": round(sum(r["invalid_actions"] for r in rows) / total_actions, 3) if total_actions else None,
                "stale_low_confidence_rate": round(sum(r["confidence"] <= 0.5 for r in stale_rows) / len(stale_rows), 3) if stale_rows else None,
+               "stale_low_confidence_rate_model": round(sum(r["model_confidence"] <= 0.5 for r in stale_rows) / len(stale_rows), 3) if stale_rows else None,
                "tool_accuracy": round(sum(r["tool_ok"] for r in rows) / len(rows), 3),
                "valid_plan_rate": round(sum(r["valid_plan"] for r in rows) / len(rows), 3),
                "avg_latency_s": round(sum(latencies) / len(rows), 3),
@@ -182,9 +198,14 @@ def main():
                "security": {"prompts": len(sec_rows), "flagged": sum(r["flagged"] for r in sec_rows),
                             "ok": sum(r["security_ok"] for r in sec_rows)},
                "rows": rows}
-    out = Path(args.out) if args.out else HERE / ("results.json" if mode == "mock" else f"results_{mode}.json")
+    out = Path(args.out) if args.out else HERE / ("results.json" if mode == "mock" else f"results_{label}.json")
     if out.is_dir():  # a folder is fine too: write results.json (+ .csv, _table.md) inside it
         out = out / "results.json"
+    if args.real and out.exists():   # an earlier live run is evidence too (one was lost by overwriting): keep it under its time
+        stamp = time.strftime("%m%d_%H%M", time.localtime(out.stat().st_mtime))
+        for f in (out, out.with_suffix(".csv"), out.with_name(out.stem + "_table.md")):
+            if f.exists():
+                f.replace(f.with_name(f.name.replace(out.stem, f"{out.stem}_{stamp}", 1)))
     out.write_text(json.dumps(summary, indent=1))
     write_csv(out.with_suffix(".csv"), rows)
     out.with_name(out.stem + "_table.md").write_text(markdown_table(summary), encoding="utf-8")

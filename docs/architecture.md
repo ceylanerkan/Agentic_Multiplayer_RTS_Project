@@ -19,6 +19,7 @@ Unity (host/client, Fusion 2)           Python (ai/)
 | Session store | `ai/common/session_store.py` |
 | MCP tools | `ai/mcp-server/server.py`, `tools/game_tools.py`; docs in `docs/mcp-tools.md` |
 | Gateway, agent, logs | `ai/gateway/` (`app.py`, `agent.py`, `llm.py`, `logs.py`) |
+| Tool pre-selection with Laya (optional, `TOOL_ROUTER=laya`) | `ai/gateway/tool_router.py`, training and measurement in `evaluation/tool_router/` |
 | Evaluation | `evaluation/` |
 | Unity rules (engine-free) | `UnityRTS/Assets/Scripts/Core/Rules/` |
 

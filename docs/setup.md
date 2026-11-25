@@ -54,6 +54,19 @@ python rag/build_index.py        # optional: embeddings for hybrid retrieval
 The LLM runs locally in Ollama: no API key, no internet. Settings are optional: copy `.env.example` to `.env` to change them
 (for example `LLM_PROVIDER=gemini` with a `GEMINI_API_KEY`).
 
+Optional tool pre-selection with Laya (an open decision model that runs on the CPU; about 1.7 GB of memory):
+```bat
+rem Command Prompt, repository root. --system-site-packages: sees the packages above when they are in the global Python
+python -m venv --system-site-packages %USERPROFILE%\.venvs\laya
+%USERPROFILE%\.venvs\laya\Scripts\python -m pip install laya==0.5.3
+rem one download of the published model (about 850 MB), pinned to the reviewed revision
+%USERPROFILE%\.venvs\laya\Scripts\python -c "from huggingface_hub import snapshot_download as d; d('convaiinnovations/laya', revision='55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851', allow_patterns=['rl_agent_config.json', 'model.safetensors', 'tokenizer/*', 'encoder/*'])"
+rem fine-tune the decision layer on the CPU (estimated 10-20 minutes)
+%USERPROFILE%\.venvs\laya\Scripts\python evaluation/tool_router/train_router.py
+```
+Then set `TOOL_ROUTER=laya` in `.env`; `tools/run_gateway.bat` uses that environment when it exists (an `ai\.venv` comes first: install
+`laya` there instead). Without Laya the gateway works as before. Details: [evaluation/tool_router/README.md](../evaluation/tool_router/README.md).
+
 ## 5. Run and test
 ```bash
 # from the repository root
@@ -63,6 +76,7 @@ python evaluation/run_eval.py                               # offline mock run; 
 dotnet build tools/compile-check/CompileCheck.csproj        # optional: compile Unity scripts against stubs (no Unity needed)
 ```
 Windows shortcut: double-click `tools/run_gateway.bat` (same command as the uvicorn line).
+Set `OLLAMA_NUM_GPU=99` (in `.env`) when the whole model fits on the graphics card beside the game: 40 instead of 25 tokens/s on a 6 GB card.
 Set `MCP_TRANSPORT=stdio` (in `.env`) to run the MCP server as a subprocess with the real MCP protocol.
 C# rule tests: Unity > Window > General > Test Runner > EditMode (`RulesTests`).
 

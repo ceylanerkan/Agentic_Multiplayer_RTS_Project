@@ -24,4 +24,4 @@ Automated checks live in `ai/gateway/tests/test_gateway.py`, `ai/gateway/tests/t
 | S17 | Too-long question (501 characters) and a plan that passes the schema check but names an unknown group (validator defence in depth) | HTTP 422 + `rejected_input` before the LLM is called; `GameActionValidator` / `plan_checks.py` answer "unknown unit_group" | `test_too_long_question_is_rejected_before_the_llm`, `test_move_group_needs_a_known_group`, C# `Move_DomainRules` | n/a |
 
 Unity side: the re-check at approval time is `AiApprovalFlow.Approve`; "reject changes nothing" is `AiApprovalFlow.Reject` (log only). Both need a play test in the editor ([You]).
-The injection regex in the gateway only logs; the actual protection is that no tool can return hidden data.
+The injection regex in the gateway only logs and adds a note for the model; the actual protection is that no tool can return hidden data.

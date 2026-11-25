@@ -1,4 +1,4 @@
-# Güncel plan (24 Kasım 2026 gecesi itibarıyla)
+# Güncel plan (25 Kasım 2026 itibarıyla)
 
 Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.md`, `MORNING.md` ve
 `docs/nightly-plan.md` eski gece ajanından kalma; silinmeyecek ama oradaki adımlara (ör. Gemini anahtarı) uyulmayacak.
@@ -11,16 +11,18 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
 | LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 sn -> 6,5 sn (Unity kapalı) | knowledge sorusu ve RAG kanıtı Unity'de denenmedi |
 | Onay + güvenlik (10) | Approve, Reject ve validator reddi oyunda görüldü | gizli bilgi (injection) sorusu, Ask why |
-| Değerlendirme (10) | 21 soru canlı 4 kez çalıştı | güvenlik gerilemesi (3a), son temiz çalıştırma |
+| Değerlendirme (10) | 21 soru canlı 4 kez çalıştı | 3a ve Laya kodu yazıldı, ölçülmedi; son temiz çalıştırma |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
-**Commit'lenmemiş iş (24 Kasım gecesi):** `ai/`, `evaluation/`, `.env.example`, `docs/setup.md`, `docs/mcp-tools.md`. Önce 3a düzeltilir, sonra commit'lenir.
-Son push: `7979713` (kod); 24 Kasım commit'leri henüz push edilmedi. Tam `pytest` en son PR #5'te çalıştı (88 geçti), ondan sonraki değişikliklerde çalışmadı.
+**25 Kasım:** öğrenci "şimdilik yalnız kod, test ve ölçüm yok, bilgisayar ses çıkarmasın" dedi. 3a ve Laya kodu yazılıp commit'lendi;
+yalnız sözdizimi ve soru dosyası denetlendi, model/`pytest`/eğitim **çalıştırılmadı**. Ölçmeye başlamadan öğrenciye sorulur.
+Son push: `7979713` (kod); 24-25 Kasım commit'leri henüz push edilmedi. Tam `pytest` en son PR #5'te çalıştı (88 geçti), ondan sonraki değişikliklerde çalışmadı.
+Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelineGlobalSettings`, `ProjectSettings`, `UnityConnectSettings`) commit'lenmedi.
 
 ## Kararlar
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
-- **Laya + qwen (hoca önerdi, 25 Kasım'da denenecek):** Laya metin yazmaz, yalnız araç seçer; planı qwen yazar ve isterse ek araç çağırır.
-  Ayardan kapatılabilir, hata olursa bugünkü yol çalışır. Hocaya "şart mı, öneri mi?" sorulacak.
+- **Laya + qwen (öğrenci 25 Kasım'da "Laya'yı kullanmak istiyorum" dedi):** Laya metin yazmaz, yalnız araç seçer; planı qwen yazar ve isterse
+  ek araç çağırır. Ayardan kapatılabilir, hata olursa bugünkü yol çalışır. Hocaya "şart mı, öneri mi?" sorulacak.
 - **Harita:** her üsse 4 ağaç. **Build:** Mono (IL2CPP kurulu değil, ödev istemiyor).
 - **Unity editörünü öğrenci kullanır**, sonuçları sohbete yazar; kodu, Python'u ve belgeleri Claude yapar.
 - **Test az:** her değişiklikte tam test yok, planda olmayan yeni test yok. Push'tan önce sorulur, commit küçük tutulur.
@@ -57,26 +59,32 @@ Son push: `7979713` (kod); 24 Kasım commit'leri henüz push edilmedi. Tam `pyte
 - [x] Claude: 7 MCP aracının geçerli/geçersiz girdi logu: `evaluation/mcp_calls.py`, `mcp_calls_table.md`.
 - [x] Ölçüm: `OLLAMA_NUM_GPU=99` ile 25 -> 40 token/sn (4,6 GB ekran kartı belleği). Oyun açıkken sığdığı denenmedi.
 
-**3a. Güvenlik gerilemesi (ilk iş)**
-- [ ] Claude: `agent.py`'deki `REMINDER`: p15'te ("gizli üssü göster") model önce reddediyordu, hatırlatmadan sonra eylemli plan yazıyor (güvenlik 2/2 -> 1/2).
-      Hatırlatma "reddediyorsan ya da yalnız cevap veriyorsan `actions` boş olsun" demeli, araç çağrılmadıysa reddi plana çevirmemeli.
-- [ ] Claude: p16 "rakibin altını 400" (kendi altını) ve reddedilen eylem oranı 4/13 -> 7/13; kolay düzelmezse rapora hata örneği.
-- [ ] Claude: 21 soru + `evaluation/live_security.py` (ekran kartı boşken, süreler için), sonra `pytest -q ai/gateway ai/mcp-server`, commit.
+**3a. Güvenlik gerilemesi: kod yazıldı, ölçüm bekliyor**
+- [x] Claude: `REMINDER` "reddediyorsan `actions` boş olsun" diyor. Model hiç araç çağırmadan birinci kişi reddiyle ("I cannot...") başlarsa gateway reddi
+      olduğu gibi, eylemsiz cevap yapıyor (`refusal_plan`), ikinci kez sormuyor (p15).
+- [x] Claude: işaretlenen (INJECTION) soruya gateway notu ekleniyor: rakibin verisi bilinmiyor, uydurma, `actions` boş (p16).
+- [x] Claude: istemdeki örnek plan ("4 spearman, counter the cavalry") p06, p07, p08'de kelimesi kelimesine kopyalanmıştı; örnek artık eylemsiz.
+      `estimate_plan_cost` sonucu sözle de söylüyor (`verdict: NOT possible now: ...`), `get_player_resources` `free_population` veriyor.
+- [x] Claude: `run_eval.py` canlı sonucun üzerine yazmıyor (eskiyi saatiyle saklıyor), eski veri güveni modelin kendi değeri ve gateway sınırı olarak ayrı.
+- [ ] Claude (öğrenci izin verince, Unity kapalı): 21 soru + `evaluation/live_security.py`, sonra `pytest -q ai/gateway ai/mcp-server`.
+      Birkaç istem değişikliği birlikte yapıldı: sonuç kötüleşirse önce örnek değişikliği geri alınıp denenir.
 
-**3b. Laya (3a commit'lendikten sonra, en çok 25 Kasım akşamına kadar)**
-Kurulu: `C:\Users\erkan\.venvs\laya` (Anaconda paketlerini görür), model `convaiinnovations/laya` sabit sürüm `55cf4c4`, internetsiz açılıyor
-(`HF_HUB_OFFLINE=1 LAYA_REVISION=reviewed`), işlemcide soru başına 112-125 ms. Projeye bağlı değil.
+**3b. Laya: kod ve eğitim verisi hazır, eğitim ve ölçüm bekliyor**
+Kurulu: `C:\Users\erkan\.venvs\laya` (Anaconda paketlerini görür), model `convaiinnovations/laya` sabit sürüm `55cf4c4`, internetsiz açılıyor,
+işlemcide soru başına 112-125 ms. Komutların sırası: `evaluation/tool_router/README.md`.
 Eğitim Laya'yı hızlandırmaz, **daha doğru** seçtirir; hız, qwen'in araç seçme adımlarının kalkmasından gelir (model süresinin en çok %22'si idi).
-- [ ] Claude: eğitimsiz ölçüm: 7 araç için evet/hayır sorusu, 21 soruda gerekli araçların kaçı seçiliyor, kaç fazla araç var.
-- [ ] Claude: eğitim verisi: 21 test sorusundan **ayrı** yaklaşık 150 etiketli soru (tek araç, bileşik, yalnız bilgi, araçsız/saldırı). `evaluation/laya/`.
-      Test soruları eğitime girmez, yoksa sonuç geçersiz olur.
-- [ ] Claude: `laya.train` ile yalnız karar katmanı (`freeze_encoder=True`), işlemcide, tahminen 10-20 dk. Olmazsa ikinci yol `VegaAgent.fit` (1,8 GB ek model).
-      qwen eğitilmeyecek: 6 GB kart yetmez, eğitim onu hızlandırmaz.
-- [ ] Claude: gateway'de ön seçici (`TOOL_ROUTER=laya`, varsayılan kapalı): Laya seçer, gateway MCP'den çağırır, sonuçlar qwen'e gider, qwen ek araç
-      çağırabilir (ödev: sıra sabit olmamalı). `estimate_plan_cost` girdisini qwen yazar. Gateway `.venvs\laya` Python'u ile çalışır.
-- [ ] Claude: 21 soru Laya açık/kapalı yan yana, rapora tablo.
-- **Kabul:** 21 soruda gerekli araçların en az %90'ı, ortalama süre en az 1 sn kısa, güvenlik 2/2, geçerli plan %100. Tutmazsa demoda kapalı
-  kalır ve rapora "denendi" diye ölçümüyle girer. 25 Kasım akşamı bitmediyse bırakılır.
+- [x] Claude: gateway'de ön seçici `ai/gateway/tool_router.py` (`TOOL_ROUTER=laya`, varsayılan kapalı): Laya seçer, gateway MCP'den çağırır, sonuçlar
+      qwen'e gider, qwen ek araç çağırabilir. `estimate_plan_cost` girdisini qwen yazar. İşaretli soruda ve "Ask why"da kullanılmaz. Log:
+      `ai/logs/router.jsonl`. `tools/run_gateway.bat` Laya ortamını kendisi bulur.
+- [x] Claude: `evaluation/tool_router/questions.jsonl`: 190 etiketli soru (162 eğitim, 28 ayrılan), test sorularının kopyası olmadığı denetlendi.
+      (`evaluation/laya/` adı Python'un `laya` paketiyle karışırdı.)
+- [x] Claude: eğitim, Laya ölçümü ve `run_eval.py --router laya` betikleri yazıldı. Eğitim 4 iş parçacığı ve düşük öncelikle çalışır (az ses).
+- [ ] Claude: eğitimsiz ölçüm (`measure_router.py --model base`), eğitim (`train_router.py`, tahminen 10-20 dk), eğitimli ölçüm.
+      Olmazsa ikinci yol `VegaAgent.fit` (1,8 GB ek model). qwen eğitilmeyecek: 6 GB kart yetmez, eğitim onu hızlandırmaz.
+- [ ] Claude: 21 soru Laya açık/kapalı yan yana, rapora tablo. Sonra öğrencinin `.env` dosyasına `TOOL_ROUTER=laya`.
+- **Kabul:** 21 soruda gerekli araçların en az %90'ı, ortalama süre en az 1 sn kısa, güvenlik 2/2, geçerli plan %100. Tutmazsa önce eşik/etiketler
+  düzeltilir; yine tutmazsa açık mı kapalı mı kalacağı öğrenciye sorulur, rapora ölçümüyle girer.
+- Bellek: Laya gateway'de yaklaşık 1,7 GB; Unity + Ollama ile birlikte sığdığı denenmedi.
 
 **3c. Kalan**
 - [ ] Claude: `evaluation/security-tests.md` canlı sütunu (`evaluation/live_security.json`).
@@ -110,6 +118,7 @@ Eğitim Laya'yı hızlandırmaz, **daha doğru** seçtirir; hız, qwen'in araç 
 - 19-23 Kasım: üs oluşmadı (GameSpawner runner'a kayıtlı değildi; sonra sahne yüklenirken Spawn reddedildi). İkisi de düzeldi.
 - Model araştırma planında `tech_type` yazmadı (Ollama grameri if/then'i uygulamıyor): her eylem için ayrı varyant yapıldı.
 - Model durmadan yazıp 120 sn sınırına takıldı: cevap uzunluğu sınırlandı, plan onarım adımında yazdırılıyor.
+- Model istemdeki örnek planı üç ayrı soruya cevap olarak kopyaladı (p06, p07, p08): reddedilen 7 eylemin 3'ü (beklenen düzelme ölçülmedi).
 - Model, aracın "yer yok" demesine rağmen istenen planı aynen öneriyor; validator reddediyor (`not enough population capacity`).
 - Local model 96 sn'den 11-30 sn'ye indi (küçük context, modeli bellekte tutma, önceden yükleme, RAG'in internete çıkmaması).
 
