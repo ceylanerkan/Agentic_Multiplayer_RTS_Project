@@ -78,6 +78,8 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
       animasyonlu), atlı süvari/scout, gemiler, mancınık, karışık ağaç ve taşlar, çit duvar. `GlbModel` (yükleyici), `ModelLook` (animasyon, dönme), `Scenery`
       (taş ve çalı), `Resources/Models` (16 MB). Çarpışma ve kurallar aynı. Kaynaklar `docs/credits.md`. Öğrencinin gördüğü üç kusur (zemine gömülme, büyük halka, uyumsuz çit) düzeldi; duvar ve kapı artık binaların taşı ve
       ahşabından. Ana menü ve bina yerleştirme de modellerle. **25 Kasım 22:40: otomatik maç 88/88, iki oyunculu maç 37/37 (0 fark), logda 0 hata, yeni build 22:42.**
+      Sonra (öğrencinin isteği): her şey zemine oturur, duvar büyüdü ve eğimi izler, balıklar kendi yüzer, modelin her yerine tıklanır, üst çubukta köylü "+" düğmesi;
+      iki oyunculu maç yine 37/37, duvar bölümü 8/8. Tam otomatik maç bu son değişikliklerle henüz çalışmadı.
       Resimler: `RTS_AUTOPLAY_LOOKS=1` ile `UnityRTS/Logs/autoplay_*.png`.
 - [ ] Raporda: C# test sayısı 56 olacak, duvar/kapı ve yeni arayüz, game-icons.net atfı.
 - [x] Görünüş asset ve material'larla değişti (öğrencinin isteği, 25 Kasım).
