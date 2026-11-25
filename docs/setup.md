@@ -61,7 +61,7 @@ python -m venv --system-site-packages %USERPROFILE%\.venvs\laya
 %USERPROFILE%\.venvs\laya\Scripts\python -m pip install laya==0.5.3
 rem one download of the published model (about 850 MB), pinned to the reviewed revision
 %USERPROFILE%\.venvs\laya\Scripts\python -c "from huggingface_hub import snapshot_download as d; d('convaiinnovations/laya', revision='55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851', allow_patterns=['rl_agent_config.json', 'model.safetensors', 'tokenizer/*', 'encoder/*'])"
-rem fine-tune the decision layer on the CPU (estimated 10-20 minutes)
+rem only after a change of the questions or the option texts (about 1 minute, CPU; needs scikit-learn)
 %USERPROFILE%\.venvs\laya\Scripts\python evaluation/tool_router/train_router.py
 ```
 Then set `TOOL_ROUTER=laya` in `.env`; `tools/run_gateway.bat` uses that environment when it exists (an `ai\.venv` comes first: install

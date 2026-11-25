@@ -61,10 +61,14 @@ REMINDER = ("No listed tool was called and nothing was executed: the tools only 
             "If you still need a listed tool, call it now. Otherwise: " + ONE_LINE +
             " If you refuse or only answer the question, `actions` must be an empty list.")
 # after the results of the tools that the router chose
-ROUTED = ("These tool results were fetched for the player's question. Answer that question with them, call another tool only if a "
-          "needed fact is missing. " + ONE_LINE)
-ROUTED_COST = ("These tool results were fetched for the player's question. Before you propose or price anything, call "
-               "estimate_plan_cost with the exact items. Then: " + ONE_LINE)
+ROUTED = ("These tool results were fetched for the player's question. Answer that question with the concrete facts and numbers in them, call "
+          "another tool only if a needed fact is missing. " + ONE_LINE)
+# no JSON here: told to price and then answer, the model answered without pricing (5 of 21 evaluation prompts)
+ROUTED_COST = ("These tool results were fetched for the player's question. Do not answer yet: call estimate_plan_cost now, once, with the items "
+               "the player asks about or the items you would propose.")
+# advice against enemies: without this the model proposed 17 spearmen with three free places (evaluation p05)
+ROUTED_ADVICE = ("These tool results were fetched for the player's question. If your answer will propose to train, build or research something, "
+                 "do not answer yet: call estimate_plan_cost now, once, with exactly those items. Otherwise: " + ONE_LINE)
 # The first reply is a refusal in prose. Asking for JSON then made the model answer with an executable plan (evaluation p15),
 # so the gateway keeps the refusal as it is, as an answer without actions.
 REFUSAL = re.compile(r"\b(sorry|I (cannot|can['\u2019]t|won['\u2019]t|will not|am unable|am not able|am not allowed|do not have access"
@@ -137,15 +141,20 @@ class Agent:
     def _prefetch(self, session, question, known, history, used, seen):
         """Calls the tools the router chose before the first model step; the model sees them as its own calls and may call more."""
         self.routed = [t for t in self.router.select(session, question) if t in known]
-        calls = [{"name": t, "args": prefetch_args(t, question)} for t in self.routed if t not in NEEDS_MODEL_ARGS]
+        calls, results = [], {}
+        for tool in self.routed:
+            if tool not in NEEDS_MODEL_ARGS:
+                args = prefetch_args(tool, question, results)
+                calls.append({"name": tool, "args": args})
+                results[tool] = self._call_tool(session, tool, args)
+                seen.add(json.dumps([tool, args], sort_keys=True))
+                used.append(tool)
         if not calls:
             return
         history.append({"role": "model", "calls": calls, "text": ""})
-        for c in calls:
-            seen.add(json.dumps([c["name"], c["args"]], sort_keys=True))
-            used.append(c["name"])
-            history.append({"role": "tool", "name": c["name"], "result": self._call_tool(session, c["name"], c["args"])})
-        history.append({"role": "user", "text": ROUTED_COST if NEEDS_MODEL_ARGS & set(self.routed) else ROUTED})
+        history += [{"role": "tool", "name": tool, "result": result} for tool, result in results.items()]
+        advice = {"get_visible_enemies", "search_game_knowledge"} <= set(self.routed)
+        history.append({"role": "user", "text": ROUTED_COST if NEEDS_MODEL_ARGS & set(self.routed) else ROUTED_ADVICE if advice else ROUTED})
 
     def run(self, session, question, extra_context=""):
         """Returns (plan, tools_used). Raises AgentError."""

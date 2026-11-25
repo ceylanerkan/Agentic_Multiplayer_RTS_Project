@@ -9,13 +9,13 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat | araştırma, Stable, gemi, mancınık denenmedi |
 | Multiplayer (15) | 24 Kasım: iki build ile kontrol listesinin hepsi oldu (öğrenci denedi) | M3 için ekran kaydı |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
-| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 sn -> 6,5 sn (Unity kapalı) | knowledge sorusu ve RAG kanıtı Unity'de denenmedi |
+| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı) | knowledge sorusu ve RAG kanıtı Unity'de denenmedi |
 | Onay + güvenlik (10) | Approve, Reject ve validator reddi oyunda görüldü | gizli bilgi (injection) sorusu, Ask why |
-| Değerlendirme (10) | 25 Kasım: araç %100, geçerli plan %100, güvenlik 2/2, reddedilen eylem 2/7 | Laya ölçümü; şarjda son temiz süre ölçümü |
+| Değerlendirme (10) | 25 Kasım: araç %100, geçerli plan %100, güvenlik 2/2, reddedilen eylem 2/7 | yalnız rapora tabloların girmesi |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
-**25 Kasım:** 3a ölçülüp bitti, `pytest -q ai/gateway ai/mcp-server` 55 geçti (tam `pytest` en son PR #5'te). Laya kodu hazır, eğitim ve ölçüm
-**çalıştırılmadı**; öğrenci bilgisayarın ses çıkarmasını istemiyor, ağır işe başlamadan sorulur.
+**25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
+başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
 Son push: `7979713` (kod); 24-25 Kasım commit'leri henüz push edilmedi.
 Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelineGlobalSettings`, `ProjectSettings`, `UnityConnectSettings`) commit'lenmedi.
 
@@ -71,25 +71,20 @@ Unity'nin değiştirdiği 4 ayar dosyası (`PC_RPAsset`, `UniversalRenderPipelin
 - [x] Claude: 21 soru 4 kez (`results_ollama_1125_try1-3.*`, son tur `results_ollama.*`), `live_security.py` (6 satır güvenli), testler.
       24 Kasım'a göre: araç %95 -> %100, güvenlik 1/2 -> 2/2, reddedilen eylem 7/13 -> 2/7. **Süreler karşılaştırılamaz:** pilde 28 token/sn
       (24 Kasım'da 39), ortalama 7,2 sn, ortanca 5,7 sn; try1'de bilgisayar uyudu (115 sn). İstem aynı 21 soruya bakılarak ayarlandı, raporda söylenmeli.
-- [ ] Claude + öğrenci: süreler için bir tur daha, **şarj takılı ve uyku kapalı** (Laya açık/kapalı karşılaştırmasıyla birlikte).
+- [x] Claude: süre turu (şarjda, sessiz moda dokunmadan, uyku engelli): Laya kapalı ortalama 5,23 / ortanca 3,52 / en yavaş 14,75 sn.
 
-**3b. Laya: kod ve eğitim verisi hazır, eğitim ve ölçüm bekliyor**
-Kurulu: `C:\Users\erkan\.venvs\laya` (Anaconda paketlerini görür), model `convaiinnovations/laya` sabit sürüm `55cf4c4`, internetsiz açılıyor,
-işlemcide soru başına 112-125 ms. Komutların sırası: `evaluation/tool_router/README.md`.
-Eğitim Laya'yı hızlandırmaz, **daha doğru** seçtirir; hız, qwen'in araç seçme adımlarının kalkmasından gelir (model süresinin en çok %22'si idi).
-- [x] Claude: gateway'de ön seçici `ai/gateway/tool_router.py` (`TOOL_ROUTER=laya`, varsayılan kapalı): Laya seçer, gateway MCP'den çağırır, sonuçlar
-      qwen'e gider, qwen ek araç çağırabilir. `estimate_plan_cost` girdisini qwen yazar. İşaretli soruda ve "Ask why"da kullanılmaz. Log:
-      `ai/logs/router.jsonl`. `tools/run_gateway.bat` Laya ortamını kendisi bulur.
-- [x] Claude: `evaluation/tool_router/questions.jsonl`: 190 etiketli soru (162 eğitim, 28 ayrılan), test sorularının kopyası olmadığı denetlendi.
-      (`evaluation/laya/` adı Python'un `laya` paketiyle karışırdı.)
-- [x] Claude: eğitim, Laya ölçümü ve `run_eval.py --router laya` betikleri yazıldı. Eğitim 4 iş parçacığı ve düşük öncelikle çalışır (az ses).
-- [ ] Claude: eğitimsiz ölçüm (`measure_router.py --model base`), eğitim (`train_router.py`, tahminen 10-20 dk), eğitimli ölçüm.
-      Olmazsa ikinci yol `VegaAgent.fit` (1,8 GB ek model). qwen eğitilmeyecek: 6 GB kart yetmez, eğitim onu hızlandırmaz.
-- [ ] Claude: 21 soru Laya açık/kapalı yan yana, rapora tablo. Sonra öğrencinin `.env` dosyasına `TOOL_ROUTER=laya`.
-- **Kabul:** 21 soruda gerekli araçların en az %90'ı, ortalama süre en az 1 sn kısa, güvenlik 2/2, geçerli plan %100. Tutmazsa önce eşik/etiketler
-  düzeltilir; yine tutmazsa açık mı kapalı mı kalacağı öğrenciye sorulur, rapora ölçümüyle girer.
-- Dikkat: Laya aramaya ham soruyu veriyor; "Enemy cavalry is at the north gate. What should I do?" ile karşı birlik kuralı ilk 3'te yok. Ölçümde bak.
-- Bellek: Laya gateway'de yaklaşık 1,7 GB; Unity + Ollama ile birlikte sığdığı denenmedi.
+**3b. Laya - bitti (25 Kasım)**
+Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sürüm `55cf4c4`, internetsiz açılıyor. Ayrıntı ve tablolar:
+`evaluation/tool_router/README.md`.
+- [x] Claude: gateway ön seçicisi `ai/gateway/tool_router.py` (`TOOL_ROUTER=laya`): Laya seçer, gateway MCP'den çağırır, qwen ek araç çağırabilir,
+      `estimate_plan_cost` girdisini qwen yazar. İşaretli soruda ve "Ask why"da kullanılmaz. Log: `ai/logs/router.jsonl`.
+- [x] Claude: 190 etiketli soru (`questions.jsonl`), test sorularının kopyası olmadığı denetlendi.
+- [x] Claude: dört yol ölçüldü. Eğitimsiz 7 evet/hayır: 9/27, 2,2 sn. Karar katmanı eğitimi: 34 dk, zayıf. **Seçilen:** Laya değişmeden, çıktısı üstüne
+      küçük sınıflandırıcı (`laya_tool_weights.npz`, 86 KB, eğitimi 1 dk): 25/27 (%93), 0,25 sn.
+- [x] Claude: 21 soru Laya kapalı/açık: ortalama 5,23 -> 3,75 sn, ortanca 3,52 -> 2,95, güvenlik 2/2, geçerli plan %100, reddedilen eylem 2/7 ikisinde de.
+      Kabul şartlarının hepsi tuttu. **Bedeli:** araç doğruluğu %100 -> %86 (p02 fazla araç, p05 ve p11 maliyet hesabı yok), p08 "okçu süvariyi yener".
+- [x] Claude: gerçek gateway'de üç soruyla denendi; `tools/run_gateway.bat` Laya ortamını kendisi bulur.
+- [ ] Öğrenci: Unity + gateway + Ollama + Laya birlikte bellek (Laya yaklaşık 1,7 GB) ve kartın yetmesi oyunda denenmedi.
 
 **3c. Kalan**
 - [ ] Claude: `evaluation/security-tests.md` canlı sütunu (`evaluation/live_security.json`).

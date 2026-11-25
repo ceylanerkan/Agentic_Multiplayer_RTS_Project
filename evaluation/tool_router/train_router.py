@@ -1,17 +1,15 @@
-"""Fine-tunes the decision layer of Laya on questions.jsonl, so that it chooses the MCP tools better (not faster).
+"""Fits the small classifiers of the Laya tool router on questions.jsonl (about 1-2 minutes, CPU, no graphics card).
 
-Only the decision layer is trained (freeze_encoder), on the CPU, with few threads and a low process priority so that the computer stays
-usable and quiet: more --threads is faster and louder. The 21 evaluation prompts are not used here. The result is written to
-ai/models/laya-rts (git-ignored, about 800 MB), where ai/gateway/tool_router.py finds it.
+Laya reads every question once; its reading (tool_router.LayaReader) is the input of three logistic regressions per tool, whose
+probabilities are averaged. 6-fold cross-validation shows how good that is on questions it was not fitted on; the threshold is chosen
+there. The 21 evaluation prompts are not used here. Few threads and a low process priority keep the computer quiet.
+Outputs: ai/gateway/laya_tool_weights.npz (used by the gateway) and train_report.md next to this file
 Run with the Python of the Laya environment:
-  %USERPROFILE%\\.venvs\\laya\\Scripts\\python evaluation/tool_router/train_router.py [--threads 4] [--epochs 8]
+  %USERPROFILE%\\.venvs\\laya\\Scripts\\python evaluation/tool_router/train_router.py [--threads 4]
 """
 import argparse
-import json
 import os
-import shutil
 import sys
-import tempfile
 import time
 from pathlib import Path
 
@@ -20,7 +18,9 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import router_data  # noqa: E402  (also puts ai/ on the path)
-from gateway.tool_router import TUNED, local_checkpoint  # noqa: E402
+from gateway.tool_router import TOOLS, WEIGHTS, LayaReader  # noqa: E402
+
+C = 0.003   # strong regularisation: 190 questions, 1024 numbers per reading
 
 
 def be_quiet(threads):
@@ -33,31 +33,51 @@ def be_quiet(threads):
         kernel.SetPriorityClass(ctypes.c_void_p(kernel.GetCurrentProcess()), 0x4000)   # below normal
 
 
+def fit(x, y):
+    """Weights and bias of one logistic regression, with the standardisation folded in."""
+    from sklearn.linear_model import LogisticRegression
+    mean, std = x.mean(0), x.std(0) + 1e-9
+    model = LogisticRegression(C=C, max_iter=1000, class_weight="balanced").fit((x - mean) / std, y)
+    w = model.coef_[0] / std
+    return w, model.intercept_[0] - (w * mean).sum()
+
+
+def fit_all(features, labels):
+    import numpy as np
+    fits = [[fit(features[:, kind, t], labels[:, t]) for t in range(len(TOOLS))] for kind in range(features.shape[1])]
+    return np.array([[w for w, _ in row] for row in fits], dtype="float32"), np.array([[b for _, b in row] for row in fits], dtype="float32")
+
+
+def probabilities(features, w, b):
+    import numpy as np
+    return (1 / (1 + np.exp(-((features * w[None]).sum(-1) + b[None])))).mean(1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--threads", type=int, default=4)
-    ap.add_argument("--epochs", type=int, default=8)
     args = ap.parse_args()
+    os.environ.update(OMP_NUM_THREADS=str(args.threads), OPENBLAS_NUM_THREADS=str(args.threads), MKL_NUM_THREADS=str(args.threads))
     rows = router_data.load()
-    train, dev = router_data.split(rows)
     be_quiet(args.threads)
-    from laya.train import TrainConfig, finetune
-
-    start = time.time()
-    with tempfile.TemporaryDirectory() as tmp:
-        files = {}
-        for name, part in (("train", train), ("dev", dev)):
-            files[name] = Path(tmp) / f"{name}.jsonl"
-            files[name].write_text("\n".join(json.dumps(r) for r in router_data.to_laya(part)), encoding="utf-8")
-        config = TrainConfig(epochs=args.epochs, micro_batch=8, grad_accum=2, freeze_encoder=True, loss="soft-ce",
-                             label_smoothing=0.05, amp=False, gradient_checkpointing=False, log_every=20, eval_data=str(files["dev"]))
-        result = finetune(str(files["train"]), local_checkpoint("base"), str(TUNED), config, device="cpu")
-    shutil.rmtree(TUNED / "checkpoint_latest", ignore_errors=True)   # a second copy of the weights
-    report = {"minutes": round((time.time() - start) / 60, 1), "train_questions": len(train), "dev_questions": len(dev),
-              "epoch_loss": result["epoch_loss"], "dev": result["train_report"]["comparison"],
-              "dev_before": result["train_report"]["before"], "dev_after": result["train_report"]["after"]}
-    (HERE / "train_report.json").write_text(json.dumps(report, indent=1, default=str), encoding="utf-8")
-    print(f"done in {report['minutes']} minutes: {TUNED}")
+    import numpy as np
+    from sklearn.model_selection import StratifiedKFold
+    start, reader = time.time(), LayaReader()
+    features = np.stack([reader.features(r["question"]) for r in rows])
+    labels = np.array([[t in r["tools"] for t in TOOLS] for r in rows], dtype=int)
+    held_out = np.zeros(labels.shape)
+    for train, test in StratifiedKFold(6, shuffle=True, random_state=0).split(np.zeros(len(rows)), [r["group"] for r in rows]):
+        held_out[test] = probabilities(features[test], *fit_all(features[train], labels[train]))
+    w, b = fit_all(features, labels)
+    np.savez(WEIGHTS, w=w, b=b)
+    lines = [f"{len(rows)} questions, {time.time() - start:.0f} s. 6-fold cross-validation (every question predicted by classifiers that did not see it):", "",
+             "| Threshold | Needed tools found | Extra tools per question | Exactly right |", "|---|---|---|---|"]
+    for threshold in (0.3, 0.35, 0.4, 0.45, 0.5):
+        chosen = held_out >= threshold
+        lines.append(f"| {threshold} | {(chosen & (labels == 1)).sum() / labels.sum():.0%} | {(chosen & (labels == 0)).sum() / len(rows):.2f} | "
+                     f"{(chosen == (labels == 1)).all(1).sum()}/{len(rows)} |")
+    (HERE / "train_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(lines))
 
 
 if __name__ == "__main__":
