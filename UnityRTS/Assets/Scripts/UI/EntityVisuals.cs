@@ -3,12 +3,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Makes placeholder objects easy to tell apart (UNITY_FEEDBACK 2026-11-18): a team disc under every unit and building
-/// (blue = mine, red = enemy) and a floating name label ("Villager 25/25", "House 40%", "Wood 180").
+/// What floats around an object: a team disc under every unit and building (blue = mine, red = enemy), an HP bar (when selected, hurt
+/// or under construction) and a name label while the mouse is near ("Villager 25/25", "Wood 180").
 /// Added at run time by NetworkUnit, NetworkBuilding and ResourceNode, so the existing prefabs need no editor work.
 /// The disc and label are NOT children of the object: parents have non-uniform scales (buildings are flattened cubes)
 /// that would stretch them. They follow the object in LateUpdate and copy its visibility, so fog of war still hides them.
-/// A resource shows its label only near the mouse: sixty trees with a text each would cover the map.
 /// </summary>
 public class EntityVisuals : MonoBehaviour
 {
@@ -18,7 +17,9 @@ public class EntityVisuals : MonoBehaviour
     Renderer body;            // the object's own renderer; fog of war turns it on and off
     Transform disc; Renderer discRenderer; Material discMat;
     TextMeshPro label;
-    float labelHeight, nextText;
+    Transform bar, barFill; Renderer barBack, barFront; Material barMat;
+    float labelHeight, nextText, barWidth, hover = 2.5f;
+    bool wall;
     int lastTeam = -1;        // 0 neutral, 1 mine, 2 enemy
 
     /// <summary>TMP's default font, or null. TMP_Settings itself throws when TMP Essential Resources were never imported.</summary>
@@ -32,13 +33,16 @@ public class EntityVisuals : MonoBehaviour
     void Start()
     {
         unit = GetComponent<NetworkUnit>(); building = GetComponent<NetworkBuilding>(); node = GetComponent<ResourceNode>();
-        body = GetComponent<Renderer>();
+        body = GetComponentInChildren<Renderer>(); // a Wall or tree has it on a child
+        wall = building != null && building.Object != null && building.Object.IsValid && RTS.Core.Rules.BuildSite.IsWall(building.TypeKey.ToString());
         var col = GetComponent<Collider>();
         float halfHeight = col != null ? col.bounds.extents.y : 1f;
         float radius = col != null ? Mathf.Max(col.bounds.extents.x, col.bounds.extents.z) : 1f;
         labelHeight = halfHeight * 2f + 1.2f;
 
-        if (node == null)
+        hover = Mathf.Max(1.2f, radius * 1.25f);
+        if (node == null) MakeBar(radius);
+        if (node == null && !wall)
         {
             var d = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             d.name = name + "_TeamDisc";
@@ -54,7 +58,7 @@ public class EntityVisuals : MonoBehaviour
         var l = new GameObject(name + "_Label");
         label = l.AddComponent<TextMeshPro>();
         var font = DefaultFont(); if (font != null) label.font = font; // an unset font gives a NullReferenceException
-        label.fontSize = building != null ? 12f : 11f;   // units too: their HP line was too small to read (play test 2026-11-23)
+        label.fontSize = 9f;
         label.alignment = TextAlignmentOptions.Center;
         label.rectTransform.sizeDelta = new Vector2(30f, 5f);  // wide enough that names never wrap
         label.outlineWidth = 0.25f; label.outlineColor = new Color32(0, 0, 0, 255);
@@ -75,7 +79,9 @@ public class EntityVisuals : MonoBehaviour
         label.transform.position = p + Vector3.up * (labelHeight * 0.5f + 0.4f);
         var cam = Camera.main;
         if (cam != null) label.transform.rotation = cam.transform.rotation;   // billboard: always faces the camera
-        label.GetComponent<Renderer>().enabled = visible && (node == null || NearMouse(p));
+        bool near = visible && NearMouse(p, node != null ? HoverRadius : hover);
+        label.GetComponent<Renderer>().enabled = near;
+        if (bar != null) UpdateBar(p, visible, near, cam);
 
         int team = Team();
         if (team != lastTeam)
@@ -83,16 +89,63 @@ public class EntityVisuals : MonoBehaviour
             lastTeam = team;
             Color c = team == 1 ? Mine : team == 2 ? Enemy : Neutral;
             if (discMat != null) discMat.color = c;
-            label.color = c;
+            label.color = Color.Lerp(c, Color.white, 0.55f);
         }
         if (Time.time >= nextText) { nextText = Time.time + 0.25f; UpdateText(); }
+    }
+
+    // ---- HP bar ----
+    const float BarHeight = 0.17f;
+    static Shader barShader; static Material barBackMat;
+
+    void MakeBar(float radius)
+    {
+        if (barShader == null) barShader = Shader.Find("Sprites/Default");
+        if (barShader == null) return;
+        bar = new GameObject(name + "_Bar").transform;
+        barWidth = wall ? 1.4f : Mathf.Clamp(radius * 1.9f, 1.3f, 4.2f);
+        barMat = new Material(barShader) { renderQueue = 3250 }; // after the fog of war
+        if (barBackMat == null) barBackMat = new Material(barShader) { color = new Color(0, 0, 0, 0.8f), renderQueue = 3240 }; // shared by all
+        barBack = Quad(barBackMat, new Vector3(0, 0, 0.01f), new Vector3(barWidth + 0.08f, BarHeight + 0.08f, 1), out _);
+        barFront = Quad(barMat, Vector3.zero, new Vector3(barWidth, BarHeight, 1), out barFill);
+    }
+
+    Renderer Quad(Material material, Vector3 at, Vector3 size, out Transform t)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        Destroy(go.GetComponent<Collider>());
+        t = go.transform; t.SetParent(bar, false); t.localPosition = at; t.localScale = size;
+        var r = go.GetComponent<Renderer>();
+        r.sharedMaterial = material;
+        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        return r;
+    }
+
+    void UpdateBar(Vector3 p, bool visible, bool near, Camera cam)
+    {
+        float part = 1f; bool building100 = true, selected = false;
+        var sel = SelectionManager.Instance;
+        var data = GameDataProvider.Get();
+        if (unit != null && unit.Object != null && unit.Object.IsValid && data.Units.TryGetValue(unit.TypeKey.ToString(), out var u))
+        { part = unit.Hp / u.Hp; selected = sel != null && sel.Units.Contains(unit); }
+        else if (building != null && building.Object != null && building.Object.IsValid && data.Buildings.TryGetValue(building.TypeKey.ToString(), out var b))
+        { building100 = building.Completed; part = building100 ? building.Hp / b.Hp : building.BuildProgress; selected = sel != null && sel.Building == building; }
+        bool show = visible && (near || selected || part < 0.995f);
+        barBack.enabled = barFront.enabled = show;
+        if (!show) return;
+        bar.position = p + Vector3.up * (labelHeight * 0.5f - 0.1f);
+        if (cam != null) bar.rotation = cam.transform.rotation;
+        part = Mathf.Clamp(part, 0.02f, 1f);
+        barFill.localScale = new Vector3(barWidth * part, BarHeight, 1);
+        barFill.localPosition = new Vector3(-barWidth * (1f - part) * 0.5f, 0, 0);
+        barMat.color = !building100 ? UiKit.Gold : lastTeam == 2 ? UiKit.Red : UiKit.HpColour(part);
     }
 
     const float HoverRadius = 2.5f;
     static int mouseFrame = -1; static Vector3 mouseGround; static bool mouseValid;
 
     /// <summary>Is the mouse over the ground near this point? (The ray is computed once per frame for all labels.)</summary>
-    static bool NearMouse(Vector3 p)
+    static bool NearMouse(Vector3 p, float radius)
     {
         if (mouseFrame != Time.frameCount)
         {
@@ -102,11 +155,13 @@ public class EntityVisuals : MonoBehaviour
             {
                 var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
                 mouseValid = new Plane(Vector3.up, new Vector3(0, 1.5f, 0)).Raycast(ray, out float d);
+                var events = UnityEngine.EventSystems.EventSystem.current;
+                if (events != null && events.IsPointerOverGameObject()) mouseValid = false; // over a panel
                 if (mouseValid) mouseGround = ray.GetPoint(d);
             }
         }
         float dx = p.x - mouseGround.x, dz = p.z - mouseGround.z;
-        return mouseValid && dx * dx + dz * dz < HoverRadius * HoverRadius;
+        return mouseValid && dx * dx + dz * dz < radius * radius;
     }
 
     /// <summary>0 = resource or unknown yet, 1 = the local player's, 2 = the opponent's.</summary>
@@ -138,6 +193,8 @@ public class EntityVisuals : MonoBehaviour
     void OnDestroy()
     {
         if (disc != null) Destroy(disc.gameObject);
+        if (bar != null) Destroy(bar.gameObject);
+        if (barMat != null) Destroy(barMat);
         if (label != null) { Destroy(label.fontMaterial); Destroy(label.gameObject); }   // outlineWidth made a material copy
         if (discMat != null) Destroy(discMat);
     }

@@ -19,9 +19,21 @@ public class FogOfWar : MonoBehaviour
 
     Texture2D tex; float[] wanted, shown; byte[] pixels; int w, h;
     float next;
+    static FogOfWar instance;
+
+    /// <summary>For the mini map: how dark every fog cell is (0 = the player sees it, 1 = not), and the cell of a place. Null before the start.</summary>
+    public static float[] Cells { get { return instance != null ? instance.shown : null; } }
+
+    public static int CellAt(float x, float z)
+    {
+        int w = instance.w, h = instance.h;
+        int i = Mathf.Clamp((int)(((x - mapCentre.x) / mapSize.x + 0.5f) * w), 0, w - 1), j = Mathf.Clamp((int)(((z - mapCentre.y) / mapSize.y + 0.5f) * h), 0, h - 1);
+        return j * w + i;
+    }
 
     void Start()
     {
+        instance = this;
         GameEvents.Local.Clear(); // new match, new log
         w = Resolution; h = Mathf.Max(8, Mathf.RoundToInt(Resolution * mapSize.y / mapSize.x));
         tex = new Texture2D(w, h, TextureFormat.Alpha8, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };

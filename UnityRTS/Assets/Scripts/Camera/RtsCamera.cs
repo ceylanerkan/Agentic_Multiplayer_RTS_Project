@@ -17,7 +17,20 @@ public class RtsCamera : MonoBehaviour
     bool focused;
     float height; // set by zooming; over high ground the camera is lifted above it and comes down again afterwards
 
-    void Awake() { height = transform.position.y; }
+    static RtsCamera instance;
+
+    void Awake() { height = transform.position.y; instance = this; }
+
+    /// <summary>Moves the camera so that it looks at this point of the ground (mini map, idle Villagers).</summary>
+    public static void LookAt(Vector3 ground)
+    {
+        if (instance == null) return;
+        Vector3 p = instance.transform.position, f = instance.transform.forward;
+        if (f.y >= -0.01f) return;
+        Vector3 now = p + f * (instance.height / -f.y);
+        p.x = Mathf.Clamp(p.x + ground.x - now.x, instance.limitMin.x, instance.limitMax.x); p.z = Mathf.Clamp(p.z + ground.z - now.z, instance.limitMin.y, instance.limitMax.y);
+        instance.transform.position = p;
+    }
 
     /// <summary>The lowest allowed height of the camera here: above the ground under it and before it, more over the mountains.</summary>
     static float Lowest(Vector3 p)
@@ -70,7 +83,8 @@ public class RtsCamera : MonoBehaviour
             // accept both, otherwise zoom silently does nothing on one of them.
             float raw = mouse.scroll.ReadValue().y;
             float wheel = Mathf.Abs(raw) > 10f ? raw / 120f : raw;
-            if (Mathf.Abs(wheel) > 0.01f)
+            var events = UnityEngine.EventSystems.EventSystem.current;
+            if (Mathf.Abs(wheel) > 0.01f && !(events != null && events.IsPointerOverGameObject())) // over a panel the wheel scrolls
             {
                 Vector3 step = transform.forward * wheel * zoomSpeed;
                 float lowest = Lowest(pos), wanted = Mathf.Max(height, lowest) + step.y;

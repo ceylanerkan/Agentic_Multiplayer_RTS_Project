@@ -17,7 +17,17 @@ public class UnitCommandInput : MonoBehaviour
     [SerializeField] Camera cam;
     [SerializeField] float formationSpacing = 1.8f;
 
-    void Awake() { if (cam == null) cam = Camera.main; }
+    static UnitCommandInput instance;
+
+    void Awake() { if (cam == null) cam = Camera.main; instance = this; }
+
+    /// <summary>A right click on the mini map.</summary>
+    public static void MoveSelected(Vector3 point)
+    {
+        var sel = SelectionManager.Instance; var relay = CommandRelay.Local;
+        if (instance == null || sel == null || relay == null || sel.Units.Count == 0 || BuildPlacement.OwnsClick) return;
+        instance.MoveInFormation(sel.Units, point, relay);
+    }
 
     void Update()
     {
@@ -59,7 +69,7 @@ public class UnitCommandInput : MonoBehaviour
     // would attack the hidden enemy there and reveal it, so a hidden enemy counts as ground.
     static bool Seen(Component target)
     {
-        var r = target.GetComponent<Renderer>();
+        var r = target.GetComponentInChildren<Renderer>(); // a Wall has none on the object itself
         return r == null || r.enabled;
     }
 

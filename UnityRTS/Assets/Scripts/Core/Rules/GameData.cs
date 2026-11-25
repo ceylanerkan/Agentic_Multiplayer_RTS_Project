@@ -8,6 +8,7 @@ namespace RTS.Core.Rules
     {
         public string Key;
         public string Kind; // "unit" | "building" | "technology"
+        public string Description = ""; // for tooltips: description, and the effect of a technology
         public string Domain = "land"; // units only: "land" | "water"
         public Dictionary<string, int> Cost = new Dictionary<string, int>();
         public int Population;
@@ -43,6 +44,7 @@ namespace RTS.Core.Rules
         static DefRecord Parse(JToken r, string kind)
         {
             var rec = new DefRecord { Key = (string)r["key"], Kind = kind };
+            rec.Description = ((string)r["description"] ?? "") + (r["effect"] != null ? (r["description"] != null ? " " : "") + (string)r["effect"] : "");
             if (r["domain"] != null) rec.Domain = (string)r["domain"];
             if (r["cost"] != null && r["cost"].Type == JTokenType.Object)
                 foreach (var p in ((JObject)r["cost"]).Properties()) rec.Cost[p.Name] = (int)p.Value;

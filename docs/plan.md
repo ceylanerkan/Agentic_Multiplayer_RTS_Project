@@ -70,6 +70,11 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 - [x] Claude (öğrencinin isteği, 25 Kasım): fotoğraf dokulu zemin ve dalgalı su, haritanın ortasından nehir, harita çevresinde karlı dağlar; kamera artık
       dağların üstüne kadar gider ve orada yükselir (`RtsCamera`), sis dağlarda ince. Dağların şekli Unity dışında hesaplandı (37 ms, iki yarı aynalı); **shader'ı
       ve kamerayı öğrenci deneyecek**. Refresh gerekmez.
+- [x] Claude (öğrencinin isteği, 25 Kasım): harita artık dağın eteğinde biter (kaya duvarı, denize kadar, iki yarı aynalı; `TerrainShape.Foot`), **duvar ve kapı**
+      (fareyle çizilir, kapıdan yalnız sahibi geçer, AI planlayamaz; bilgi dizini yeniden kuruldu), **oyun içi arayüz baştan** (simgeler game-icons.net CC BY,
+      mini harita, komut kartı + ipucu, olaylar, boş köylü düğmesi, ayrılma menüsü, AI paneli katlanır). C# kural testleri Unity'siz 56/56. **Unity'de
+      denenmedi.** Duvar/kapı prefab'ları için bir kez `Tools > RTS > Refresh map resources and menu`.
+- [ ] Raporda: C# test sayısı 56 olacak, duvar/kapı ve yeni arayüz, game-icons.net atfı.
 - [ ] En son: görünüş asset ve material'larla değiştirilecek (öğrencinin isteği).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
