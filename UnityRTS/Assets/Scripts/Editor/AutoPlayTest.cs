@@ -661,11 +661,16 @@ public static class AutoPlayTest
         string[] ships = { "fishing_boat", "raider_boat", "warship" };
         for (int i = 0; i < ships.Length; i++) s.SpawnUnit(MyRef, ships[i], V(-66 + i * 8, 56));
         foreach (var w in WallLine.Points(-84, 18, -84, 34)) s.SpawnBuilding(MyRef, "wall", V(w[0], w[1]), true);
+        foreach (var w in WallLine.Points(-40, -8, -30, -20)) { var b = s.SpawnBuilding(MyRef, "wall", V(w[0], w[1]), false); b.AddBuildWork(w[0] > -33f ? 2f : 10f); }
+        s.SpawnBuilding(MyRef, "house", V(-44, -10), true); s.SpawnBuilding(MyRef, "barracks", V(-33, -32), true); s.SpawnBuilding(MyRef, "stable", V(-44, -18), true); for (int i = 0; i < 4; i++) s.SpawnUnit(MyRef, people[i], V(-40 + i * 2, -16));
         foreach (var w in WallLine.Points(-84, 18, -72, 16)) if (Mathf.Abs(w[0] + 78f) > 0.1f) s.SpawnBuilding(MyRef, w[0] == -84f ? "wall" : "wall", V(w[0], w[1]), true);
         s.SpawnBuilding(MyRef, "gate", V(-78, 18), true);
         yield return 3f;
         foreach (var u in Units("villager")) { SelectionManager.Instance.Units.Add(u); if (SelectionManager.Instance.Units.Count > 2) break; }
         yield return 1f;
+        foreach (var l in UnityEngine.Object.FindObjectsByType<ModelLook>(FindObjectsSortMode.None).Where(x => x.GetComponent<NetworkUnit>() != null).Take(8)) { var rs = l.GetComponentsInChildren<Renderer>(); var bb = rs[0].bounds; foreach (var r in rs) bb.Encapsulate(r.bounds); Debug.Log("AUTOPLAY note size " + l.name + " height " + (bb.max.y - bb.min.y).ToString("0.00") + " feet over ground " + (bb.min.y - TerrainShape.Surface(l.transform.position.x, l.transform.position.z)).ToString("0.00")); }
+        Shot("slope", new Vector3(-40, 8, -30), new Vector3(-38, 1.5f, -14)); Shot("slope2", new Vector3(-29, 5, -13), new Vector3(-36, 1.5f, -14));
+        Shot("fish", new Vector3(-58, 5, 50), new Vector3(-62, -0.3f, 57));
         Shot("near", new Vector3(-72, 7, -9), new Vector3(-70, 1, 4));
         Shot("people", new Vector3(-72, 4.2f, -3.6f), new Vector3(-70, 0.8f, 2.5f));
         Shot("wall", new Vector3(-74, 6, 8), new Vector3(-80, 1, 20));

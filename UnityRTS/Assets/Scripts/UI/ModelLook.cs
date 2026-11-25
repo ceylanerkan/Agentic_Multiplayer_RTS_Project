@@ -19,7 +19,7 @@ public class ModelLook : MonoBehaviour
 
     static readonly Dictionary<string, Def> Units = new Dictionary<string, Def>
     {
-        { "villager", new Def { File = "Monk", Person = true, Height = 1.9f } },
+        { "villager", new Def { File = "Monk", Person = true, Height = 1.85f } },
         { "spearman", new Def { File = "Warrior", Person = true, Height = 2.15f, Spear = true, Attack = "Sword_Attack", Idle = "Idle_Weapon" } },
         { "archer", new Def { File = "Ranger", Person = true, Height = 2.05f, Attack = "Bow_Attack_Shoot", Idle = "Idle_Weapon" } },
         { "cavalry", new Def { File = "horse", Scale = 0.52f, Rider = "spearman" } },
@@ -31,6 +31,8 @@ public class ModelLook : MonoBehaviour
 
     /// <summary>Height of the model over the foot, for labels and bars; 0 = no model.</summary>
     public float Height { get; private set; }
+    /// <summary>World height of the top of the model.</summary>
+    public float Top { get { return pivot != null ? pivot.position.y + Height : transform.position.y; } }
     /// <summary>Wide ones (riders, ships, catapults) get a wider ring.</summary>
     public bool Wide { get { return def != null && !def.Person; } }
     public bool Ship { get { return ship; } }
@@ -61,10 +63,19 @@ public class ModelLook : MonoBehaviour
         // at the foot of the collider, in metres whatever the scale of the prefab
         var col = go.GetComponent<Collider>();
         Vector3 s = go.transform.localScale;
-        float foot = col != null ? -col.bounds.extents.y : 0f; // not bounds.min: physics may still know the old place of a new object
-        if (building != null) foot += 0.2f;                   // GameSpawner sinks buildings a little, the models have a deep foundation instead
-        if (node != null) pivot.localPosition = new Vector3(0, Local(foot, s.y), 0); // trees and stones keep the size of their place
-        else { pivot.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z); pivot.localPosition = new Vector3(0, Local(foot, s.y), 0); }
+        Vector3 p = go.transform.position, e = col != null ? col.bounds.extents : Vector3.one;
+        if (node != null)
+        {
+            // on the ground, whatever the collider does; wide ones lie on the slope (trees and stones keep the size of their place)
+            pivot.position = new Vector3(p.x, TerrainShape.Height(p.x, p.z), p.z);
+            if (file == "gold" || file == "berry") pivot.rotation = Slope(p.x, p.z) * go.transform.rotation;
+        }
+        else
+        {
+            pivot.localScale = new Vector3(1f / s.x, 1f / s.y, 1f / s.z);
+            // a building stands on the highest ground under it, the foundation reaches down to the rest; a unit on its feet
+            pivot.position = new Vector3(p.x, building != null ? BaseHeight(key, p.x, p.z, e.x, e.z) : p.y - e.y, p.z); // not bounds.min: physics may still know the old place of a new object
+        }
 
         // the placeholder goes
         foreach (var r in go.GetComponentsInChildren<Renderer>(true))
@@ -76,21 +87,41 @@ public class ModelLook : MonoBehaviour
         return look;
     }
 
-    // the six shapes of a shoal become fish; the circle they swim in stays
+    /// <summary>The height a building (or its ghost) stands on: the highest ground under it; a Dock a little over the water.</summary>
+    public static float BaseHeight(string key, float x, float z, float halfX, float halfZ)
+    {
+        if (key == "dock") return Mathf.Max(TerrainShape.SeaLevel + 0.12f, TerrainShape.Height(x, z - 2.2f) - 0.42f);
+        float h = float.MinValue;
+        for (int i = -2; i <= 2; i++)
+            for (int j = -2; j <= 2; j++) h = Mathf.Max(h, TerrainShape.Height(x + halfX * 0.48f * i, z + halfZ * 0.48f * j));
+        return h + 0.02f;
+    }
+
+    /// <summary>The turn that lays something flat on the slope.</summary>
+    public static Quaternion Slope(float x, float z)
+    {
+        const float e = 0.7f;
+        return Quaternion.FromToRotation(Vector3.up, new Vector3(TerrainShape.Height(x - e, z) - TerrainShape.Height(x + e, z), 2f * e, TerrainShape.Height(x, z - e) - TerrainShape.Height(x, z + e)));
+    }
+
+    // the six shapes of a shoal become fish that swim on their own (FishSwim)
     static void Fish(GameObject go)
     {
         var school = go.GetComponentInChildren<FishSchool>();
         if (school == null) return;
         var old = new List<Transform>();
         foreach (Transform c in school.transform) if (c.GetComponent<Renderer>() != null) old.Add(c);
+        var fishes = new List<Transform>();
         foreach (var c in old)
         {
             var fish = GlbModel.Spawn("fish", school.transform);
             if (fish == null) return;
-            fish.transform.localPosition = c.localPosition + Vector3.down * 0.12f; fish.transform.localRotation = Quaternion.Euler(0, c.localEulerAngles.y + 180f, 0);
-            fish.transform.localScale = Vector3.one * (0.8f + 0.1f * (old.IndexOf(c) % 4));
+            fish.transform.localScale = Vector3.one * (0.75f + 0.12f * (fishes.Count % 4));
+            fishes.Add(fish.transform);
             DestroyImmediate(c.gameObject);
         }
+        school.enabled = false; school.transform.localRotation = Quaternion.identity;
+        go.AddComponent<FishSwim>().Set(fishes.ToArray());
         foreach (Transform c in go.transform)
         {
             var r = c.GetComponent<Renderer>();
@@ -149,7 +180,7 @@ public class ModelLook : MonoBehaviour
         // sheep's clothing for the height: the renderers know it after the first pose
         Bounds box = new Bounds(transform.position, Vector3.zero); bool any = false;
         foreach (var r in pivot.GetComponentsInChildren<Renderer>(true)) { renderers.Add(r); if (!any) { box = r.bounds; any = true; } else box.Encapsulate(r.bounds); }
-        Height = any ? Mathf.Clamp(box.max.y - pivot.position.y, 0.5f, 9f) : 0f;
+        Height = any ? Mathf.Clamp(box.max.y - pivot.position.y, 0.5f, 10f) : 0f;
         if (d != null && d.Person) Height = d.Height;
         if (d != null && d.Rider != null) Height = 3.1f;
         last = transform.position;
@@ -168,13 +199,30 @@ public class ModelLook : MonoBehaviour
         return a;
     }
 
-    /// <summary>Scales a character to its height (the length from the feet to the top of the head bone).</summary>
+    static readonly Dictionary<string, Vector2> sizes = new Dictionary<string, Vector2>(); // lowest and highest point of a character at scale 1
+
+    /// <summary>Scales a character to its height and puts its feet on the ground, measured on the skin itself.</summary>
     static void Fit(Transform model, float height)
     {
-        Transform head = Find(model, "Head_end") ?? Find(model, "Head");
-        float h = 0f;
-        if (head != null) { model.localScale = Vector3.one; h = (model.parent.InverseTransformPoint(head.position) - model.localPosition).y; }
-        if (h > 0.01f) model.localScale = Vector3.one * (height * 0.9f / h);
+        model.localScale = Vector3.one; model.localPosition = Vector3.zero;
+        if (!sizes.TryGetValue(model.name, out var v))
+        {
+            float low = float.MaxValue, high = float.MinValue;
+            var baked = new Mesh();
+            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (r.name.Contains("Sword") || r.name.Contains("Bow")) continue;
+                r.BakeMesh(baked, true);
+                foreach (var q in baked.vertices) { float y = model.InverseTransformPoint(r.transform.TransformPoint(q)).y; low = Mathf.Min(low, y); high = Mathf.Max(high, y); }
+            }
+            Destroy(baked);
+            v = new Vector2(low, high);
+            sizes[model.name] = v;
+        }
+        if (v.y - v.x < 0.01f || v.x > v.y) return;
+        float k = height / (v.y - v.x);
+        model.localScale = Vector3.one * k;
+        model.localPosition = new Vector3(0, -v.x * k, 0);
     }
 
     static Transform Find(Transform t, string name)
@@ -232,7 +280,7 @@ public class ModelLook : MonoBehaviour
         var rider = Person(riderDef.File, holder);
         if (rider == null) return;
         Fit(rider.transform, riderDef.Height * 0.86f);
-        rider.transform.localPosition = new Vector3(0, -0.42f, -0.12f);
+        rider.transform.localPosition += new Vector3(0, -0.62f, -0.12f);
         riderAnim = Prepare(rider.transform, riderDef);
         if (riderDef.Spear) GiveSpear(rider.transform);
         holder.SetParent(seat, true); // moves with the back of the horse
@@ -244,8 +292,9 @@ public class ModelLook : MonoBehaviour
         Units.TryGetValue(key, out var d);
         var go = d != null && d.Person ? Person(d.File, parent) : GlbModel.Spawn(d != null ? d.File : key, parent);
         if (go == null) return null;
-        go.transform.localPosition = at; go.transform.localRotation = Quaternion.Euler(0, turn, 0);
-        if (d != null && d.Person) { Fit(go.transform, d.Height * size); Prepare(go.transform, d); if (d.Spear) GiveSpear(go.transform); }
+        if (d != null && d.Person) Fit(go.transform, d.Height * size);
+        go.transform.localPosition += at; go.transform.localRotation = Quaternion.Euler(0, turn, 0);
+        if (d != null && d.Person) { Prepare(go.transform, d); if (d.Spear) GiveSpear(go.transform); }
         else go.transform.localScale = Vector3.one * size * (d != null ? d.Scale : 1f);
         foreach (var r in go.GetComponentsInChildren<Renderer>(true))
         {

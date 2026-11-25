@@ -16,6 +16,7 @@ public class ModelImport : AssetPostprocessor
         m.animationType = ModelImporterAnimationType.Legacy;
         m.importAnimation = true;
         m.importCameras = false; m.importLights = false;
+        m.isReadable = true; // ModelLook measures the skin
         m.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; // only for the names, ModelLook sets the materials
         m.materialLocation = ModelImporterMaterialLocation.InPrefab;
         m.animationCompression = ModelImporterAnimationCompression.KeyframeReduction;

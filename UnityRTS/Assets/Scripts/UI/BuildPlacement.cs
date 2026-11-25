@@ -115,7 +115,7 @@ public class BuildPlacement : MonoBehaviour
                                         buildingKey == "dock" ? ShoreSnapRadius : SnapRadius, BuildSite.Gap, relay.Object.InputAuthority, out target);
         bool ok = free && CanAfford(relay);
         Vector3 at = free ? target : BuildSite.IsWall(buildingKey) ? new Vector3(WallLine.Snap(point.x), 0, WallLine.Snap(point.z)) : point;
-        ghost.transform.position = new Vector3(at.x, TerrainShape.Surface(at.x, at.z) + (ghostHeight < 0.2f ? 0.12f : ghostHeight * 0.5f - 0.25f), at.z);
+        ghost.transform.position = new Vector3(at.x, ghostHeight < 0.2f ? ModelLook.BaseHeight(buildingKey, at.x, at.z, ghost.transform.localScale.x * 0.38f, ghost.transform.localScale.z * 0.38f) + 0.06f : TerrainShape.Surface(at.x, at.z) + ghostHeight * 0.5f - 0.25f, at.z);
         ghostMaterial.color = ok ? Good : Bad;
         for (int i = 0; i < ghostMaterials.Count; i++) ghostMaterials[i].color = ghostColours[i] * (ok ? new Color(0.75f, 1.15f, 0.75f) : new Color(1.2f, 0.42f, 0.40f));
 
@@ -146,7 +146,7 @@ public class BuildPlacement : MonoBehaviour
             if (pieces.Count <= i) pieces.Add(Piece());
             float x = points[i][0], z = points[i][1];
             pieces[i].SetActive(true);
-            pieces[i].transform.position = new Vector3(x, TerrainShape.Surface(x, z) + 0.75f, z);
+            pieces[i].transform.position = new Vector3(x, TerrainShape.Surface(x, z) + 1.1f, z);
             pieces[i].GetComponent<Renderer>().sharedMaterial = ok ? ghostMaterial : badMaterial;
         }
         for (int i = points.Count; i < pieces.Count; i++) pieces[i].SetActive(false);
@@ -169,7 +169,7 @@ public class BuildPlacement : MonoBehaviour
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         Destroy(go.GetComponent<Collider>());
-        go.name = "WallGhost"; go.transform.localScale = new Vector3(1.9f, 1.9f, 1.9f);
+        go.name = "WallGhost"; go.transform.localScale = new Vector3(1.9f, 2.4f, 1.9f);
         return go;
     }
 

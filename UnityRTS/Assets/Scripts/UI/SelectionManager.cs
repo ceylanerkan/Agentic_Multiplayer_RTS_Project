@@ -124,7 +124,16 @@ public class SelectionManager : MonoBehaviour
             }
             // at the feet, just below the team disc: the object's pivot is its centre, so a ring there was hidden inside the body
             Vector3 at = go.transform.position;
-            ring.transform.position = new Vector3(at.x, RTS.Core.Rules.TerrainShape.Surface(at.x, at.z) + 0.09f, at.z);
+            var own = go.GetComponent<NetworkBuilding>();
+            if (own != null)
+            {
+                var box = go.GetComponent<Collider>();
+                Vector3 e = box != null ? box.bounds.extents : Vector3.one;
+                ring.transform.position = new Vector3(at.x, Mathf.Max(RTS.Core.Rules.TerrainShape.SeaLevel, ModelLook.BaseHeight(own.TypeKey.ToString(), at.x, at.z, e.x * 1.4f, e.z * 1.4f)) + 0.05f, at.z);
+                continue;
+            }
+            ring.transform.position = new Vector3(at.x, RTS.Core.Rules.TerrainShape.Surface(at.x, at.z) + 0.05f, at.z);
+            ring.transform.rotation = ModelLook.Slope(at.x, at.z);
         }
     }
 

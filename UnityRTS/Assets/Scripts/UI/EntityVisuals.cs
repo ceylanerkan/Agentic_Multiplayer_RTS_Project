@@ -42,7 +42,7 @@ public class EntityVisuals : MonoBehaviour
         float halfHeight = col != null ? col.bounds.extents.y : 1f;
         float radius = col != null ? Mathf.Max(col.bounds.extents.x, col.bounds.extents.z) : 1f;
         labelHeight = halfHeight * 2f + 1.2f;
-        labelUp = look != null && look.Height > 0f ? look.Height - halfHeight + 0.7f : labelHeight * 0.5f + 0.4f;
+        labelUp = look != null && look.Height > 0f ? look.Top - transform.position.y + 0.7f : wall ? 3.2f : labelHeight * 0.5f + 0.4f;
 
         hover = Mathf.Max(1.2f, radius * 1.25f);
         if (node == null) MakeBar(radius);
@@ -79,7 +79,8 @@ public class EntityVisuals : MonoBehaviour
 
         if (disc != null)
         {
-            disc.position = new Vector3(p.x, RTS.Core.Rules.TerrainShape.Surface(p.x, p.z) + 0.14f, p.z);   // on the ground; the selection ring lies just below
+            disc.position = new Vector3(p.x, RTS.Core.Rules.TerrainShape.Surface(p.x, p.z) + 0.07f, p.z);   // on the ground, along the slope; the selection ring lies just below
+            disc.rotation = ModelLook.Slope(p.x, p.z);
             discRenderer.enabled = visible;
         }
         label.transform.position = p + Vector3.up * labelUp;

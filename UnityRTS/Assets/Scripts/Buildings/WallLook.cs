@@ -124,6 +124,9 @@ public class WallLook : MonoBehaviour
             if (Mathf.Abs(o.x) <= 1 && Mathf.Abs(o.y) <= 1) here[o] = key == "gate";
         }
         if (gate) frame.localRotation = Quaternion.Euler(0, GateTurn(here), 0);
+        Vector3 at = transform.position;
+        float ground = TerrainShape.Height(at.x, at.z);
+        look.position = new Vector3(at.x, ground - 0.05f, at.z); // on the ground itself; the pieces between follow the slope
         Colours();
         for (int i = 0; i < 4; i++)
         {
@@ -133,12 +136,14 @@ public class WallLook : MonoBehaviour
             if (on && d.x != 0 && d.y != 0 && (here.ContainsKey(new Vector2Int(d.x, 0)) || here.ContainsKey(new Vector2Int(0, d.y)))) on = false;
             links[i].gameObject.SetActive(on);
             if (!on) continue;
-            float length = WallLine.Step * Mathf.Sqrt(d.x * d.x + d.y * d.y);
+            var to = new Vector3(d.x * WallLine.Step, 0, d.y * WallLine.Step);
+            to.y = TerrainShape.Height(at.x + to.x, at.z + to.z) - ground;
+            float length = to.magnitude;
             bool half = gate || otherGate; // beside a Gate only up to its post
             var t = links[i].transform;
             if (fences) t.localScale = new Vector3(half ? length - 0.9f : length, 1f, 1f); else links[i].sharedMesh = Row(half ? length - 0.9f : length);
-            t.localPosition = gate ? new Vector3(d.x, 0, d.y) * WallLine.Step : Vector3.zero;
-            t.localRotation = Quaternion.LookRotation((gate ? -1f : 1f) * new Vector3(d.x, 0, d.y)) * Quaternion.Euler(0, -90f, 0); // the row lies along x
+            t.localPosition = gate ? to : Vector3.zero;
+            t.localRotation = Quaternion.LookRotation(gate ? -to : to) * Quaternion.Euler(0, -90f, 0); // the row lies along x
         }
     }
 

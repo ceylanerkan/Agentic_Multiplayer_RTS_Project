@@ -48,7 +48,7 @@ public class Scenery : MonoBehaviour
         var go = GlbModel.Spawn(key, transform);
         if (go == null) return;
         go.transform.position = new Vector3(x, TerrainShape.Height(x, z) - 0.05f, z);
-        go.transform.rotation = Quaternion.Euler(0, turn, 0);
+        go.transform.rotation = ModelLook.Slope(x, z) * Quaternion.Euler(0, turn, 0);
         go.transform.localScale = Vector3.one * size;
         pieces.Add(new Piece { Go = go, At = go.transform.position });
     }
