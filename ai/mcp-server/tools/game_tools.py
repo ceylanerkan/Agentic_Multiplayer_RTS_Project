@@ -92,7 +92,23 @@ def estimate_plan_cost(ctx, items):
         problems = [f"{v} {r} missing" for r, v in out["missing"].items() if v]
         if pop > free:
             problems.append(f"{pop} population needed but only {max(0, free)} free (a House adds 5)")
+        # like the first checks of GameActionValidator: what is done already, what has to be there first
+        techs, done = ctx.snapshot["researched_tech"], {b["type"] for b in ctx.snapshot["own_buildings"]}
+        done |= set(techs) | ({"age_2"} if ctx.snapshot["age"] >= 2 else set())
+        blocked = False
+        for i in lines:
+            if i["kind"] == "technology" and i["id"] in done:
+                problems.append(f"{i['id']} is already researched")
+                blocked = True
+            for r in KINDS[i["kind"]][i["id"]]["requires"]:
+                if r not in done:
+                    problems.append(f"{i['id']} requires {r} first")
+                    blocked = True
         out["verdict"] = "possible" if not problems else "NOT possible now: " + "; ".join(problems)
+        if not blocked and len(lines) == 1 and lines[0]["kind"] == "unit":
+            fits = min([max(0, free) // max(1, KINDS["unit"][lines[0]["id"]]["population"])]
+                       + [have[r] // amt for r, amt in lines[0]["cost"].items() if amt])
+            out["verdict"] += f". At most {fits} {lines[0]['id']} possible now"
     return out
 
 

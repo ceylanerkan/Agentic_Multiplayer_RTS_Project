@@ -57,7 +57,8 @@ def build_server(store, session_id, retriever=None):
 
     @mcp.tool(annotations=READ_ONLY)
     def estimate_plan_cost(items: list[dict]) -> dict:
-        """Total cost of items [{kind: unit|building|technology, id: key, count: 1-50}] vs current resources."""
+        """Total cost of items [{kind: unit|building|technology, id: key, count: 1-50}] vs current resources, free population
+        and prerequisites. Put all items of one plan into a single call; `verdict` says whether the plan is possible now."""
         return t.estimate_plan_cost(ctx(), items)
 
     @mcp.tool(annotations=READ_ONLY)

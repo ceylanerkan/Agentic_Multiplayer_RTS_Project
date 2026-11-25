@@ -12,7 +12,7 @@ Errors are returned as `{"error": "..."}` (no exception), so the agent can expla
 | `get_visible_enemies` | none | `visible_enemies[]` (type, count, zone). Only what is currently visible | no snapshot yet |
 | `get_technology_status` | none | `researched_tech[]`, `researching[]`, `age` | no snapshot yet |
 | `get_recent_events` | `limit` int 1–20 (default 10) | `events[]` | limit out of range / not an int |
-| `estimate_plan_cost` | `items[]` (1–10) of `{kind: unit\|building\|technology, id: key, count: 1–50}` | `total_cost`, `population_needed`, `missing`, `affordable`, `population_ok`, `verdict` (the same in words) | unknown kind/id, bad count, extra fields, item not buyable |
+| `estimate_plan_cost` | `items[]` (1–10) of `{kind: unit\|building\|technology, id: key, count: 1–50}` | `total_cost`, `population_needed`, `missing`, `affordable`, `population_ok`, `verdict` (in words, with missing prerequisites and the count that is possible) | unknown kind/id, bad count, extra fields, item not buyable |
 | `search_game_knowledge` | `query` string (≤200 chars), `top_k` int (clamped to 1–5) | `results[]` (source_id, score, text) | empty/too long query, non-int top_k |
 
 Retrieved text is reference data, not instructions. The retriever (`ai/rag/retriever.py`) is BM25, plus

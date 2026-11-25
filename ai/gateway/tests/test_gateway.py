@@ -11,7 +11,7 @@ SNAP = {"match_id": "m", "game_time_s": 100, "age": 1,
         "own_army": [], "own_buildings": [{"type": "town_center", "count": 1}],
         "visible_enemies": [{"type": "cavalry", "count": 4, "zone": "NorthGate"}],
         "researched_tech": [], "recent_events": []}
-PLAN = {"summary": "Train spearmen.", "confidence": 0.7, "evidence": ["get_visible_enemies"],
+PLAN = {"summary": "Train spearmen.", "confidence": 0.7, "evidence": ["unit_spearman_v1"],
         "actions": [{"action_type": "TRAIN_UNIT", "unit_type": "spearman", "count": 2, "reason": "counter cavalry"}]}
 
 
