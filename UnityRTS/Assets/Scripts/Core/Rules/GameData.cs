@@ -15,6 +15,7 @@ namespace RTS.Core.Rules
         public List<string> Requires = new List<string>();
         public List<string> Strengths = new List<string>();
         public bool Buildable = true; // false for the Town Center
+        public bool PlayerOnly;       // Wall, Gate: placed by hand, not part of an AI plan
         public float TimeSeconds;     // train_time_s (units), build_time_s (buildings), research_time_s (technologies)
         public float Speed;           // units only
         public float LineOfSight;     // units (stats) and buildings (top level); used by fog of war
@@ -66,6 +67,7 @@ namespace RTS.Core.Rules
             if (r["requires"] != null) foreach (var x in r["requires"]) rec.Requires.Add((string)x);
             if (r["strengths"] != null) foreach (var x in r["strengths"]) rec.Strengths.Add((string)x);
             if (r["buildable"] != null) rec.Buildable = (bool)r["buildable"];
+            if (r["player_only"] != null) rec.PlayerOnly = (bool)r["player_only"];
             return rec;
         }
     }

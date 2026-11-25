@@ -19,12 +19,24 @@ public static class BuildPlaces
         place = pos;
         if (GameSpawner.Instance == null || ZoneMap.Instance == null) return false;
         Vector3 half = GameSpawner.Instance.BuildingSize(key) * 0.5f;
-        var blocks = Blocks(viewer);
+        if (BuildSite.IsWall(key)) { pos.x = WallLine.Snap(pos.x); pos.z = WallLine.Snap(pos.z); radius = 0f; } // on the grid or not at all
+        var blocks = Blocks(viewer, key == "gate" ? OwnWallAt(pos, slot) : null);
         bool found = BuildSite.FindNear(pos.x, pos.z, radius,
             (x, z) => (zone == null || ZoneAt(x, z) == zone) && BuildSite.WhyNot(key, x, z, half.x, half.z, slot, ZoneAt, blocks, gap) == null,
             out float fx, out float fz);
         if (found) place = new Vector3(fx, pos.y, fz);
         return found;
+    }
+
+    /// <summary>Which pieces of a wall fit (the same test as TryFind, but all pieces at once).</summary>
+    public static bool[] WallFits(List<float[]> points, int slot, PlayerRef? viewer)
+    {
+        var fits = new bool[points.Count];
+        if (GameSpawner.Instance == null || ZoneMap.Instance == null) return fits;
+        Vector3 half = GameSpawner.Instance.BuildingSize("wall") * 0.5f;
+        var blocks = Blocks(viewer);
+        for (int i = 0; i < fits.Length; i++) fits[i] = BuildSite.WhyNot("wall", points[i][0], points[i][1], half.x, half.z, slot, ZoneAt, blocks) == null;
+        return fits;
     }
 
     /// <summary>Can a unit of that domain appear here: inside the map, on its own ground, not inside a building or a resource.</summary>
@@ -76,11 +88,32 @@ public static class BuildPlaces
 
     static string ZoneAt(float x, float z) { return ZoneMap.Instance.ZoneAt(new Vector3(x, 0, z)); }
 
-    static List<Block> Blocks(PlayerRef? viewer)
+    /// <summary>The finished piece of this player's own Wall at the place, which a Gate may replace.</summary>
+    public static NetworkBuilding OwnWallAt(Vector3 p, int slot)
+    {
+        foreach (var b in NetworkBuilding.All)
+        {
+            if (b.Object == null || !b.Object.IsValid || !b.Completed || b.TypeKey.ToString() != "wall" || SlotOf(b.Owner) != slot) continue;
+            Vector3 d = b.transform.position - p;
+            if (Mathf.Abs(d.x) < 0.5f && Mathf.Abs(d.z) < 0.5f) return b;
+        }
+        return null;
+    }
+
+    static int SlotOf(PlayerRef owner) { var s = GameSpawner.Instance != null ? GameSpawner.Instance.StateOf(owner) : null; return s != null ? s.Slot : 0; }
+
+    static List<Block> Blocks(PlayerRef? viewer, NetworkBuilding without = null)
     {
         var list = new List<Block>();
         foreach (var b in NetworkBuilding.All)
-            if (viewer == null || b.Owner == viewer.Value || Visible(b)) list.Add(ToBlock(b));
+        {
+            if (b == without || viewer != null && b.Owner != viewer.Value && !Visible(b)) continue;
+            var block = ToBlock(b);
+            string key = b.Object != null && b.Object.IsValid ? b.TypeKey.ToString() : "";
+            block.Wall = BuildSite.IsWall(key);
+            block.Pass = key == "gate" ? SlotOf(b.Owner) : 0;
+            list.Add(block);
+        }
         foreach (var n in ResourceNode.All) if (!n.InWater) list.Add(ToBlock(n)); // ships pass over fish
         return list;
     }

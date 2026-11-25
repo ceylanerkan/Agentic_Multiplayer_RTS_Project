@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RTS.Core.Rules;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,7 +8,8 @@ using UnityEngine.InputSystem;
 /// Building placement ghost. A UI button calls BeginPlacement("house"). A translucent cube follows the mouse; a building can
 /// stand anywhere on land outside the enemy base where the ground is free, a Dock only on the shore (the ghost snaps to it).
 /// Green = valid and affordable, red = invalid. Left click sends the BUILD command with the selected Villager;
-/// right click or Esc cancels. The host checks everything again, so the ghost is only a convenience.
+/// right click or Esc cancels; with Shift the next one can be placed at once. A Wall is drawn: press, move, release; all selected
+/// Villagers work on it. The host checks everything again, so the ghost is only a convenience.
 /// </summary>
 public class BuildPlacement : MonoBehaviour
 {
@@ -21,6 +23,12 @@ public class BuildPlacement : MonoBehaviour
     Renderer ghostRenderer;
     Material ghostMaterial;
     Vector3 target;
+    readonly List<GameObject> pieces = new List<GameObject>(); // ghosts of a wall
+    Material badMaterial;
+    bool drawing; Vector3 drawStart;
+
+    /// <summary>A line for the HUD while placing ("Wall: 12 pieces, 60 wood"), or null.</summary>
+    public static string Hint { get; private set; }
 
     public bool Active { get { return buildingKey != null; } }
     /// <summary>Frame in which placement used a mouse click (place or right-click cancel), so SelectionManager and
@@ -52,12 +60,20 @@ public class BuildPlacement : MonoBehaviour
         }
         ghostMaterial.renderQueue = 3200; // after the fog of war: the colour must stay clear
         ghostRenderer.sharedMaterial = ghostMaterial;
+        if (key != "wall") return;
+        ghost.SetActive(false);
+        if (badMaterial == null) badMaterial = new Material(ghostMaterial);
+        badMaterial.renderQueue = 3200; badMaterial.color = Bad; ghostMaterial.color = Good;
     }
+
+    static readonly Color Good = new Color(0.2f, 1f, 0.3f, 0.5f), Bad = new Color(1f, 0.2f, 0.2f, 0.5f);
 
     public void Cancel()
     {
-        buildingKey = null;
+        buildingKey = null; drawing = false; Hint = null;
         if (ghost != null) Destroy(ghost);
+        foreach (var g in pieces) if (g != null) Destroy(g);
+        pieces.Clear();
     }
 
     void Update()
@@ -70,12 +86,16 @@ public class BuildPlacement : MonoBehaviour
 
         if (!GroundUnder(cam.ScreenPointToRay(mouse.position.ReadValue()), out Vector3 point)) return;
 
+        if (buildingKey == "wall") { DrawWall(point, relay); return; }
+        string name = EntityVisuals.Pretty(buildingKey);
+        Hint = name + ":  left click to place,  Shift + click to place several,  right click to cancel";
+
         bool free = BuildPlaces.TryFind(buildingKey, null, point, relay.GetComponent<NetworkPlayerState>().Slot,
                                         buildingKey == "dock" ? ShoreSnapRadius : SnapRadius, BuildSite.Gap, relay.Object.InputAuthority, out target);
         bool ok = free && CanAfford(relay);
-        Vector3 at = free ? target : point;
+        Vector3 at = free ? target : BuildSite.IsWall(buildingKey) ? new Vector3(WallLine.Snap(point.x), 0, WallLine.Snap(point.z)) : point;
         ghost.transform.position = new Vector3(at.x, TerrainShape.Surface(at.x, at.z) + ghost.transform.localScale.y * 0.5f - 0.25f, at.z);
-        ghostMaterial.color = ok ? new Color(0.2f, 1f, 0.3f, 0.5f) : new Color(1f, 0.2f, 0.2f, 0.5f);
+        ghostMaterial.color = ok ? Good : Bad;
 
         if (ok && mouse.leftButton.wasPressedThisFrame && !(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()))
         {
@@ -83,8 +103,52 @@ public class BuildPlacement : MonoBehaviour
             if (builder == null) return; // a Villager must be selected to build
             relay.SendBuild(buildingKey, target, ZoneMap.Instance.ZoneAt(target), builder.Object.Id);
             UsedClickFrame = Time.frameCount;
-            Cancel();
+            if (kb == null || !kb.shiftKey.isPressed) Cancel();
         }
+    }
+
+    void DrawWall(Vector3 point, CommandRelay relay)
+    {
+        var mouse = Mouse.current;
+        bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        if (!drawing && mouse.leftButton.wasPressedThisFrame && !overUi) { drawing = true; drawStart = point; UsedClickFrame = Time.frameCount; }
+
+        var points = drawing ? WallLine.Points(drawStart.x, drawStart.z, point.x, point.z) : WallLine.Points(point.x, point.z, point.x, point.z);
+        var state = relay.GetComponent<NetworkPlayerState>();
+        var fits = BuildPlaces.WallFits(points, state.Slot, relay.Object.InputAuthority);
+        int wood = GameDataProvider.Get().Buildings["wall"].Cost["wood"], count = 0;
+        for (int i = 0; i < points.Count; i++)
+        {
+            bool ok = fits[i] && (count + 1) * wood <= state.Wood;
+            if (ok) count++;
+            if (pieces.Count <= i) pieces.Add(Piece());
+            float x = points[i][0], z = points[i][1];
+            pieces[i].SetActive(true);
+            pieces[i].transform.position = new Vector3(x, TerrainShape.Surface(x, z) + 0.75f, z);
+            pieces[i].GetComponent<Renderer>().sharedMaterial = ok ? ghostMaterial : badMaterial;
+        }
+        for (int i = points.Count; i < pieces.Count; i++) pieces[i].SetActive(false);
+        Hint = drawing ? "Wall:  " + count + " pieces,  " + count * wood + " wood.  Release to build" : "Wall:  press, draw the line and release.  Right click to cancel";
+
+        if (!drawing || !mouse.leftButton.wasReleasedThisFrame) return;
+        UsedClickFrame = Time.frameCount;
+        NetworkUnit builder = FirstSelectedVillager();
+        if (builder != null && count > 0)
+        {
+            relay.SendWall(drawStart, point, builder.Object.Id);
+            foreach (var u in SelectionManager.Instance.Units) if (u.CanBuild && u != builder) relay.SendWallWork(u.Object.Id, u.transform.position);
+        }
+        drawing = false;
+        var kb = Keyboard.current;
+        if (kb == null || !kb.shiftKey.isPressed) Cancel();
+    }
+
+    static GameObject Piece()
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Destroy(go.GetComponent<Collider>());
+        go.name = "WallGhost"; go.transform.localScale = new Vector3(1.9f, 1.9f, 1.9f);
+        return go;
     }
 
     /// <summary>Where the ray meets the hills (a few steps: meet the height of the last point again).</summary>
@@ -129,5 +193,5 @@ public class BuildPlacement : MonoBehaviour
         return null;
     }
 
-    void OnDestroy() { Cancel(); if (ghostMaterial != null) Destroy(ghostMaterial); }
+    void OnDestroy() { Cancel(); if (ghostMaterial != null) Destroy(ghostMaterial); if (badMaterial != null) Destroy(badMaterial); }
 }

@@ -61,7 +61,7 @@ public class NetworkUnit : NetworkBehaviour
         if (grid == null) return;
         float start = Time.realtimeSinceStartup;
         Vector3 pos = transform.position;
-        foreach (var p in grid.Find(pos.x, pos.z, MoveTarget.x, MoveTarget.z, IsShip)) path.Add(new Vector3(p[0], pos.y, p[1]));
+        foreach (var p in grid.Find(pos.x, pos.z, MoveTarget.x, MoveTarget.z, IsShip, Slot)) path.Add(new Vector3(p[0], pos.y, p[1]));
         LongestSearchMs = Mathf.Max(LongestSearchMs, (Time.realtimeSinceStartup - start) * 1000f);
     }
 
@@ -71,8 +71,8 @@ public class NetworkUnit : NetworkBehaviour
         var grid = BuildPlaces.Grid;
         if (grid == null) return true;
         Vector3 a = transform.position;
-        for (int i = pathIndex; i < path.Count; i++) { if (!grid.LineFree(a.x, a.z, path[i].x, path[i].z, IsShip)) return false; a = path[i]; }
-        return pathIndex < path.Count || grid.LineFree(a.x, a.z, MoveTarget.x, MoveTarget.z, IsShip);
+        for (int i = pathIndex; i < path.Count; i++) { if (!grid.LineFree(a.x, a.z, path[i].x, path[i].z, IsShip, Slot)) return false; a = path[i]; }
+        return pathIndex < path.Count || grid.LineFree(a.x, a.z, MoveTarget.x, MoveTarget.z, IsShip, Slot);
     }
 
     /// <summary>Only Villagers build; a Fishing Boat gathers too but never builds.</summary>
@@ -127,7 +127,20 @@ public class NetworkUnit : NetworkBehaviour
     bool CanStandAt(Vector3 p)
     {
         var grid = BuildPlaces.Grid;
-        return grid == null || grid.OwnDomain(p.x, p.z, IsShip);
+        if (grid == null) return true;
+        Vector3 now = transform.position;
+        return grid.OwnDomain(p.x, p.z, IsShip) && (!grid.WallAt(p.x, p.z, Slot) || grid.WallAt(now.x, now.z, Slot)); // who is already in a new wall may leave
+    }
+
+    int slot;
+    /// <summary>Player 1 or 2, 0 = not known yet.</summary>
+    int Slot
+    {
+        get
+        {
+            if (slot == 0 && GameSpawner.Instance != null) { var s = GameSpawner.Instance.StateOf(Owner); if (s != null) slot = s.Slot; }
+            return slot;
+        }
     }
 
     float lift = -1f; // pivot above the ground

@@ -7,7 +7,9 @@ namespace RTS.Core.Rules
     public struct Block
     {
         public float X, Z, HalfX, HalfZ;
-        public Block(float x, float z, float halfX, float halfZ) { X = x; Z = z; HalfX = halfX; HalfZ = halfZ; }
+        public bool Wall;    // a Wall or Gate: units never push through it
+        public int Pass;     // a Gate: the player (1 or 2) whose units may pass, 0 = nobody
+        public Block(float x, float z, float halfX, float halfZ) { X = x; Z = z; HalfX = halfX; HalfZ = halfZ; Wall = false; Pass = 0; }
     }
 
     /// <summary>
@@ -20,6 +22,9 @@ namespace RTS.Core.Rules
         public const float Gap = 1f;             // free ground between two buildings
         public const float ShoreDistance = 2.5f; // Dock: water is at most this far from its centre (a Raider Boat reaches 4)
 
+        /// <summary>Walls and Gates stand on a 2 m grid and touch their neighbours.</summary>
+        public static bool IsWall(string key) { return key == "wall" || key == "gate"; }
+
         /// <summary>Why the building cannot stand here, or null.</summary>
         public static string WhyNot(string key, float x, float z, float halfX, float halfZ, int slot,
                                     Func<float, float, string> zoneAt, List<Block> blocks, float gap = Gap)
@@ -28,6 +33,7 @@ namespace RTS.Core.Rules
             foreach (float sx in Signs)
                 foreach (float sz in Signs)
                     if (TerrainShape.Rock(x + sx * halfX, z + sz * halfZ)) return "outside the map";
+            if (IsWall(key)) gap = -0.05f;
             string zone = zoneAt(x, z);
             if (zone == null || ZoneLookup.IsWater(zone)) return "buildings stand on land";
             if (zone == (slot == 1 ? "P2Base" : "P1Base")) return "cannot build in the enemy base";

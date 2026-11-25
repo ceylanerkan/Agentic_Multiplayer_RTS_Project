@@ -17,7 +17,13 @@ namespace RTS.Core.Rules
 
         readonly int w, h;
         readonly float minX, minZ;
-        readonly bool[] water, river, rock, blocked; // river: both land units and ships; rock: the mountains, nobody
+        readonly bool[] water, river, rock; // river: both land units and ships; rock: the mountains, nobody
+        readonly byte[] blocked;            // bit 0: for player 1, bit 1: for player 2 (a Gate lets its owner pass), bit 2: by a Wall or Gate
+        const byte Everybody = 3, WallBit = 4;
+        byte mask = Everybody;              // who asks: set by the public methods (0 = blocked for anybody counts)
+
+        static byte MaskOf(int slot) { return slot == 1 ? (byte)1 : slot == 2 ? (byte)2 : Everybody; }
+
         // search state, reused: an entry counts only when its stamp is the current search
         readonly float[] cost;
         readonly int[] from, seen, closed;
@@ -27,7 +33,7 @@ namespace RTS.Core.Rules
         {
             this.minX = minX; this.minZ = minZ;
             w = (int)Math.Ceiling((maxX - minX) / Cell); h = (int)Math.Ceiling((maxZ - minZ) / Cell);
-            water = new bool[w * h]; river = new bool[w * h]; rock = new bool[w * h]; blocked = new bool[w * h];
+            water = new bool[w * h]; river = new bool[w * h]; rock = new bool[w * h]; blocked = new byte[w * h];
             cost = new float[w * h]; from = new int[w * h]; seen = new int[w * h]; closed = new int[w * h];
             for (int i = 0; i < water.Length; i++) { water[i] = isWater(X(i), Z(i)); river[i] = isRiver != null && isRiver(X(i), Z(i)); rock[i] = isRock != null && isRock(X(i), Z(i)); }
         }
@@ -42,7 +48,8 @@ namespace RTS.Core.Rules
                     for (int cx = Math.Max(0, Column(b.X - hx)); cx <= Math.Min(w - 1, Column(b.X + hx)); cx++)
                     {
                         int i = cz * w + cx;
-                        if (Math.Abs(X(i) - b.X) < hx && Math.Abs(Z(i) - b.Z) < hz) blocked[i] = true;
+                        if (Math.Abs(X(i) - b.X) < hx && Math.Abs(Z(i) - b.Z) < hz)
+                            blocked[i] |= (byte)((b.Pass == 0 ? Everybody : MaskOf(3 - b.Pass)) | (b.Wall ? WallBit : 0));
                     }
             }
         }
@@ -63,23 +70,36 @@ namespace RTS.Core.Rules
 
         bool Own(int i, bool ship) { return !rock[i] && (river[i] || water[i] == ship); }
 
-        bool Free(int i, bool ship) { return i >= 0 && !blocked[i] && Own(i, ship); }
+        bool Free(int i, bool ship) { return i >= 0 && (blocked[i] & mask) == 0 && Own(i, ship); }
 
-        public bool Free(float x, float z, bool ship) { return Free(Index(x, z), ship); }
+        public bool Free(float x, float z, bool ship, int slot = 0) { mask = MaskOf(slot); return Free(Index(x, z), ship); }
+
+        /// <summary>Does a Wall or a foreign Gate stand here? (Other buildings do not count: a unit may lean on its target.)</summary>
+        public bool WallAt(float x, float z, int slot) { int i = Index(x, z); return i >= 0 && (blocked[i] & WallBit) != 0 && (blocked[i] & MaskOf(slot)) != 0; }
 
         /// <summary>Is the straight way free (both ends included)?</summary>
-        public bool LineFree(float x0, float z0, float x1, float z1, bool ship)
+        public bool LineFree(float x0, float z0, float x1, float z1, bool ship, int slot = 0) { mask = MaskOf(slot); return LineFree(x0, z0, x1, z1, ship); }
+
+        bool LineFree(float x0, float z0, float x1, float z1, bool ship)
         {
             float dx = x1 - x0, dz = z1 - z0;
-            int n = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(dx * dx + dz * dz) / (Cell * 0.25f)));
+            int n = Math.Max(1, (int)Math.Ceiling(Math.Sqrt(dx * dx + dz * dz) / (Cell * 0.25f))), last = -1;
             for (int i = 0; i <= n; i++)
-                if (!Free(x0 + dx * i / n, z0 + dz * i / n, ship)) return false;
+            {
+                int c = Index(x0 + dx * i / n, z0 + dz * i / n);
+                if (c == last) continue;
+                if (!Free(c, ship)) return false;
+                // over a corner: both cells beside it must be free too, or the line slips between two diagonal pieces of a wall
+                if (last >= 0 && c % w != last % w && c / w != last / w && (!Free(c / w * w + last % w, ship) || !Free(last / w * w + c % w, ship))) return false;
+                last = c;
+            }
             return true;
         }
 
         /// <summary>Centre of the free cell nearest to (x, z), of two similar ones the one nearer to (towardX, towardZ).</summary>
-        public bool NearestFree(float x, float z, bool ship, float towardX, float towardZ, out float freeX, out float freeZ)
+        public bool NearestFree(float x, float z, bool ship, float towardX, float towardZ, out float freeX, out float freeZ, int slot = 0)
         {
+            mask = MaskOf(slot);
             int i = NearestFree(x, z, ship, towardX, towardZ);
             freeX = i < 0 ? x : X(i); freeZ = i < 0 ? z : Z(i);
             return i >= 0;
@@ -111,8 +131,9 @@ namespace RTS.Core.Rules
         /// of a building, the other side of the coast) the last point is the free place next to it; when b cannot be reached, the
         /// reachable place nearest to it.
         /// </summary>
-        public List<float[]> Find(float ax, float az, float bx, float bz, bool ship)
+        public List<float[]> Find(float ax, float az, float bx, float bz, bool ship, int slot = 0)
         {
+            mask = MaskOf(slot);
             var path = new List<float[]>();
             if (LineFree(ax, az, bx, bz, ship)) return path;
             int start = NearestFree(ax, az, ship, bx, bz), goal = NearestFree(bx, bz, ship, ax, az);
@@ -124,7 +145,7 @@ namespace RTS.Core.Rules
             cells.Reverse();
             // pull the string: keep only the corners
             float px = ax, pz = az;
-            if (!Free(ax, az, ship)) { px = X(start); pz = Z(start); path.Add(new[] { px, pz }); } // first out of the building
+            if (!Free(Index(ax, az), ship)) { px = X(start); pz = Z(start); path.Add(new[] { px, pz }); } // first out of the building
             int k = 0;
             while (k < cells.Count - 1)
             {
@@ -136,7 +157,7 @@ namespace RTS.Core.Rules
             }
             if (path.Count == 0) path.Add(new[] { X(end), Z(end) });
             // the last cell centre is only a stand-in for a free goal: go to the goal itself
-            if (end == goal && Free(bx, bz, ship)) path[path.Count - 1] = new[] { bx, bz };
+            if (end == goal && Free(Index(bx, bz), ship)) path[path.Count - 1] = new[] { bx, bz };
             return path;
         }
 

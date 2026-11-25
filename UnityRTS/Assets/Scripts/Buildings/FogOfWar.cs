@@ -79,7 +79,7 @@ public class FogOfWar : MonoBehaviour
 
     void SetVisible(GameObject go, bool visible)
     {
-        if (!renderers.TryGetValue(go, out var rs)) { rs = go.GetComponentsInChildren<Renderer>(); renderers[go] = rs; }
+        if (!renderers.TryGetValue(go, out var rs)) { rs = go.GetComponentsInChildren<Renderer>(true); renderers[go] = rs; }
         foreach (var r in rs) if (r != null) r.enabled = visible;
     }
 

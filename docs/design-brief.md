@@ -42,6 +42,8 @@ their own domain; ranged units (Archer, Catapult, Warship) shoot across the shor
 | Stable | 150W | 800 | Cavalry | Age II |
 | Blacksmith | 120W | 700 | Iron Weapons, Fletching, Catapult (Age II) | – |
 | Dock | 120W | 900 | Raider Boat, Warship (Age II); built on the shore of your own base or of NorthGate | – |
+| Wall | 5W | 350 | 2 m of palisade, drawn as a line by the player; nobody passes | – |
+| Gate | 25W | 500 | in a line of Walls; only its owner passes | – |
 
 | Technology | Cost | Where | Requires | Effect |
 |---|---|---|---|---|

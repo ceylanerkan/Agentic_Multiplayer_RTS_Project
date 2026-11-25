@@ -99,6 +99,7 @@ public static class AiApprovalFlow
             }
             case "BUILD":
             {
+                if (data.Buildings[a.BuildingType].PlayerOnly) { blocked = "only the player places a " + a.BuildingType; return false; }
                 var builder = PickVillager(me);
                 Vector3 centre;
                 if (builder == null || ZoneMap.Instance == null || !ZoneMap.Instance.TryGetCentre(a.TargetZone, out centre)) return false;

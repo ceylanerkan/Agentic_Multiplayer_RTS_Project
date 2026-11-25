@@ -94,5 +94,39 @@
     "trains": ["fishing_boat", "raider_boat", "warship"],
     "researches": [],
     "description": "Naval building. Must be placed on the shore (at most 2.5 m from the water) of your own base or of NorthGate; its ships appear in the water in front of it. Trains Fishing Boats and Raider Boats, and Warships after Age II; Fishing Boats bring their fish here. Can be attacked from land and from water."
+  },
+  {
+    "id": "building_wall_v1",
+    "type": "building",
+    "key": "wall",
+    "name": "Wall",
+    "cost": {"wood": 5},
+    "buildable": true,
+    "player_only": true,
+    "build_time_s": 4,
+    "hp": 350,
+    "population_provided": 0,
+    "line_of_sight": 2,
+    "requires": [],
+    "trains": [],
+    "researches": [],
+    "description": "A 2 m piece of palisade; the player draws a line of them and Villagers build it piece by piece. Nobody walks through a Wall, neither friend nor enemy: leave a Gate. Walls can be attacked; Catapults break them fastest. They cannot be built in the river."
+  },
+  {
+    "id": "building_gate_v1",
+    "type": "building",
+    "key": "gate",
+    "name": "Gate",
+    "cost": {"wood": 25},
+    "buildable": true,
+    "player_only": true,
+    "build_time_s": 8,
+    "hp": 500,
+    "population_provided": 0,
+    "line_of_sight": 3,
+    "requires": [],
+    "trains": [],
+    "researches": [],
+    "description": "A 2 m gate for a line of Walls; it can replace a finished piece of an own Wall. Units of its owner walk through it, enemies must break it."
   }
 ]

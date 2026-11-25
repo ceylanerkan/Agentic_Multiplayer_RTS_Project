@@ -37,6 +37,7 @@ public static class RtsSetupTools
         { "town_center", "TownCenter", "0.8,0.8,0.9", "6" }, { "house", "House", "0.8,0.6,0.5", "3" },
         { "barracks", "Barracks", "0.6,0.3,0.3", "4" }, { "stable", "Stable", "0.5,0.4,0.2", "4" },
         { "blacksmith", "Blacksmith", "0.3,0.3,0.3", "4" }, { "dock", "Dock", "0.3,0.4,0.6", "4" },
+        { "wall", "Wall", "0.45,0.32,0.2", "2" }, { "gate", "Gate", "0.45,0.32,0.2", "2" },
     };
 
     [MenuItem("Tools/RTS/0 Create Menu and Game scenes")]
@@ -120,14 +121,7 @@ public static class RtsSetupTools
         Save(player, "Player");
 
         for (int i = 0; i < Units.GetLength(0); i++) MakeUnit(i);
-        for (int i = 0; i < Buildings.GetLength(0); i++)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = Buildings[i, 1]; Colorize(go, Buildings[i, 1], Buildings[i, 2]);
-            float s = float.Parse(Buildings[i, 3], System.Globalization.CultureInfo.InvariantCulture); go.transform.localScale = new Vector3(s, s * 0.6f, s);
-            go.AddComponent<NetworkObject>(); go.AddComponent<NetworkTransform>(); go.AddComponent<NetworkBuilding>();
-            Save(go, Buildings[i, 1]);
-        }
+        for (int i = 0; i < Buildings.GetLength(0); i++) MakeBuilding(i);
         MakeNodes();
         AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
         Debug.Log("RTS: placeholder prefabs created in " + PrefabDir + ". Check Fusion's Network Prefab Table if a prefab is missing there.");
@@ -311,6 +305,25 @@ public static class RtsSetupTools
     }
 
     // ---------- helpers ----------
+    static void MakeBuilding(int i)
+    {
+        string key = Buildings[i, 0];
+        bool wall = RTS.Core.Rules.BuildSite.IsWall(key);
+        var go = wall ? new GameObject() : GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = Buildings[i, 1];
+        float s = float.Parse(Buildings[i, 3], System.Globalization.CultureInfo.InvariantCulture); go.transform.localScale = new Vector3(s, wall ? 1.8f : s * 0.6f, s);
+        if (wall) go.AddComponent<BoxCollider>(); else Colorize(go, Buildings[i, 1], Buildings[i, 2]);
+        go.AddComponent<NetworkObject>(); go.AddComponent<NetworkTransform>(); go.AddComponent<NetworkBuilding>();
+        if (wall) // WallLook builds the logs itself
+        {
+            var so = new SerializedObject(go.AddComponent<WallLook>());
+            so.FindProperty("wood").objectReferenceValue = Mat("WallMat", Buildings[i, 2]); so.FindProperty("dark").objectReferenceValue = Mat("TrunkMat", "0.33,0.22,0.13");
+            so.FindProperty("gate").boolValue = key == "gate";
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+        Save(go, Buildings[i, 1]);
+    }
+
     static void MakeUnit(int i)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -473,7 +486,7 @@ public static class RtsSetupTools
     }
 
     /// <summary>
-    /// Brings the existing scenes and prefabs to the current state without deleting them: resource and Fishing Boat prefabs, the
+    /// Brings the existing scenes and prefabs to the current state without deleting them: resource prefabs, missing unit and building prefabs, the
     /// resources of the Game scene, the unit list of GameSpawner, and the Menu scene. Also for batch mode (-executeMethod).
     /// </summary>
     [MenuItem("Tools/RTS/Refresh map resources and menu")]
@@ -483,6 +496,7 @@ public static class RtsSetupTools
         if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
         MakeNodes();
         for (int i = 0; i < Units.GetLength(0); i++) if (!File.Exists(PrefabDir + "/" + Units[i, 1] + ".prefab")) MakeUnit(i);
+        for (int i = 0; i < Buildings.GetLength(0); i++) if (!File.Exists(PrefabDir + "/" + Buildings[i, 1] + ".prefab")) MakeBuilding(i);
         AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
 
         var menu = EditorSceneManager.OpenScene("Assets/Scenes/Menu.unity", OpenSceneMode.Single);

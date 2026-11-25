@@ -43,6 +43,7 @@ public class NetworkBuilding : NetworkBehaviour
         Hp = def.Hp;
         construction = new ConstructionState(def.TimeSeconds);
         BuildProgress = completed ? 1f : 0f;
+        BuildPlaces.Changed(); // Spawned ran before the type and the owner were known (a Gate lets its owner pass)
     }
 
     /// <summary>Host only: a Villager calls this every tick while it builds (seconds of work).</summary>
@@ -53,7 +54,7 @@ public class NetworkBuilding : NetworkBehaviour
         BuildProgress = construction.Progress;
         if (!construction.Done) return;
         Completed = true;
-        GameEvents.Report(Owner, "BUILDING_COMPLETED", transform.position, TypeKey.ToString());
+        if (TypeKey.ToString() != "wall") GameEvents.Report(Owner, "BUILDING_COMPLETED", transform.position, TypeKey.ToString()); // forty pieces of wall would fill the event log
         var st = GameSpawner.Instance.StateOf(Owner);
         if (st != null) st.RecalculateCapacity(); // a finished House raises the population capacity
     }

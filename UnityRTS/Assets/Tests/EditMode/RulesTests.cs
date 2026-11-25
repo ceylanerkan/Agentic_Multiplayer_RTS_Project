@@ -92,6 +92,29 @@ namespace RTS.Tests
             Assert.Less((fx + 65) * (fx + 65) + (fz - 25) * (fz - 25), 8 * 8);
             Assert.IsFalse(BuildSite.FindNear(-65, 60, 12, (x, zz) => why("house", x, zz) == null, out fx, out fz)); // the sea is wider than that
         }
+        [Test] public void Walls_CloseALine_AGateLetsOnlyItsOwnerPass()
+        {
+            var line = WallLine.Points(0.3f, -10.4f, 9f, 3.2f);                      // on the grid, every piece beside or diagonal to the last
+            Assert.AreEqual(0f, line[0][0]); Assert.AreEqual(-10f, line[0][1]); Assert.AreEqual(10f, line[line.Count - 1][0]); Assert.AreEqual(4f, line[line.Count - 1][1]);
+            for (int i = 1; i < line.Count; i++) Assert.IsTrue(System.Math.Abs(line[i][0] - line[i - 1][0]) <= 2f && System.Math.Abs(line[i][1] - line[i - 1][1]) <= 2f);
+            Assert.AreEqual(WallLine.MaxPieces, WallLine.Points(-90, 0, 90, 0).Count);
+            // a closed ring with diagonal sides
+            var ring = new List<Block>();
+            foreach (var side in new[] { WallLine.Points(-10, 0, 0, 10), WallLine.Points(0, 10, 10, 0), WallLine.Points(10, 0, 0, -10), WallLine.Points(0, -10, -10, 0) })
+                foreach (var p in side) ring.Add(new Block(p[0], p[1], 1, 1) { Wall = true });
+            var grid = new PathGrid(-30, -30, 30, 30, (x, z) => false);
+            grid.SetBlocks(ring);
+            System.Func<int, float> reach = who => { var way = grid.Find(0, 0, 22, 1, false, who); var end = way.Count == 0 ? new[] { 22f, 1f } : way[way.Count - 1]; return end[0]; };
+            Assert.Less(reach(1), 12f, "nobody gets out"); Assert.IsFalse(grid.LineFree(0, 0, 20, 20, false, 1)); Assert.IsTrue(grid.WallAt(10, 0, 1));
+            ring.RemoveAll(b => b.X == 10 && b.Z == 0);
+            ring.Add(new Block(10, 0, 1, 1) { Wall = true, Pass = 1 });
+            grid.SetBlocks(ring);
+            Assert.AreEqual(22f, reach(1), 0.01f, "the owner walks through the gate"); Assert.Less(reach(2), 12f, "the enemy does not");
+            Assert.IsFalse(grid.WallAt(10, 0, 1)); Assert.IsTrue(grid.WallAt(10, 0, 2));
+            // beside another piece, but not on top of it
+            var z0 = MapZones(); var piece = new List<Block> { new Block(-40, 4, 1, 1) };
+            Assert.IsNull(BuildSite.WhyNot("wall", -38, 4, 1, 1, 1, z0.ZoneAt, piece)); Assert.IsNotNull(BuildSite.WhyNot("wall", -40, 4, 1, 1, 1, z0.ZoneAt, piece));
+        }
         [Test] public void Move_DomainRules()
         {
             Assert.IsFalse(validator.Validate(new PlanAction { ActionType = "MOVE_GROUP", UnitGroup = "all_ships", TargetZone = "WestMine" }, Fresh()).Ok);
@@ -758,7 +781,7 @@ namespace RTS.Tests
             CollectionAssert.AreEquivalent(ZoneLookup.AllZones, defs["zone"]["enum"].ToObject<List<string>>());
             CollectionAssert.AreEquivalent(data.Units.Keys, defs["unit_type"]["enum"].ToObject<List<string>>());
             var buildable = new List<string>();
-            foreach (var b in data.Buildings.Values) if (b.Buildable) buildable.Add(b.Key);
+            foreach (var b in data.Buildings.Values) if (b.Buildable && !b.PlayerOnly) buildable.Add(b.Key);
             CollectionAssert.AreEquivalent(buildable, defs["building_type"]["enum"].ToObject<List<string>>());
             CollectionAssert.AreEquivalent(data.Techs.Keys, defs["tech_type"]["enum"].ToObject<List<string>>());
         }

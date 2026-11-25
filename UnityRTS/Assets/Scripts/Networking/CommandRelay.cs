@@ -30,6 +30,9 @@ public class CommandRelay : NetworkBehaviour
     public void SendAttack(NetworkId unit, NetworkId target) { RPC_Attack(unit, target); }
     public void SendGather(NetworkId unit, NetworkId node) { RPC_Gather(unit, node); }
     public void SendBuild(string buildingKey, Vector3 pos, string zone, NetworkId builder) { RPC_Build(buildingKey, pos, zone, builder); }
+    public void SendWall(Vector3 from, Vector3 to, NetworkId builder) { RPC_Wall(from, to, builder); }
+    /// <summary>The Villager works on the unfinished wall near the point.</summary>
+    public void SendWallWork(NetworkId unit, Vector3 near) { RPC_WallWork(unit, near); }
     public void SendHelpBuild(NetworkId unit, NetworkId building) { RPC_HelpBuild(unit, building); }
     public void SendTrain(string unitKey, NetworkId building) { RPC_Train(unitKey, building); }
     public void SendResearch(string techKey, NetworkId building) { RPC_Research(techKey, building); }
@@ -99,10 +102,44 @@ public class CommandRelay : NetworkBehaviour
         // enemy base or on top of something.
         if (!BuildPlaces.TryFind(a.BuildingType, a.TargetZone, pos, state.Slot, HostSearchRadius, BuildSite.Gap, null, out pos)) return;
         state.Spend(GameDataProvider.Get().Buildings[a.BuildingType].Cost, 1);
+        if (a.BuildingType == "gate") { var old = BuildPlaces.OwnWallAt(pos, state.Slot); if (old != null) Runner.Despawn(old.Object); } // the Gate takes its place
         var b = GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, a.BuildingType, pos, false); // Villagers finish it
         var builder = FindOwned<NetworkUnit>(builderId);
         var g = builder != null ? builder.GetComponent<VillagerGatherer>() : null;
         if (g != null) { builder.AttackTarget = default; g.StartBuild(b); }
+    }
+
+    // A line of wall pieces; the ones that fit and can be paid are placed, the builder starts with the first.
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_Wall(Vector3 from, Vector3 to, NetworkId builderId)
+    {
+        if (ZoneMap.Instance == null) return;
+        NetworkBuilding first = null;
+        var points = WallLine.Points(from.x, from.z, to.x, to.z);
+        var fits = BuildPlaces.WallFits(points, state.Slot, null);
+        for (int i = 0; i < points.Count; i++)
+        {
+            if (!fits[i]) continue;
+            var pos = new Vector3(points[i][0], 0, points[i][1]);
+            var a = new PlanAction { ActionType = "BUILD", BuildingType = "wall", TargetZone = ZoneMap.Instance.ZoneAt(pos) };
+            if (!validator.Validate(a, state.ToCore()).Ok) continue;
+            state.Spend(GameDataProvider.Get().Buildings["wall"].Cost, 1);
+            var b = GameSpawner.Instance.SpawnBuilding(Object.InputAuthority, "wall", pos, false);
+            if (first == null) first = b;
+        }
+        var builder = FindOwned<NetworkUnit>(builderId);
+        var g = builder != null ? builder.GetComponent<VillagerGatherer>() : null;
+        if (g != null && first != null) { builder.AttackTarget = default; g.StartBuild(first); }
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_WallWork(NetworkId unitId, Vector3 near)
+    {
+        var unit = FindOwned<NetworkUnit>(unitId);
+        var g = unit != null ? unit.GetComponent<VillagerGatherer>() : null;
+        if (g == null) return;
+        var site = VillagerGatherer.UnfinishedWall(Object.InputAuthority, near, 2f * WallLine.Step * WallLine.MaxPieces);
+        if (site != null) { unit.AttackTarget = default; g.StartBuild(site); }
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]

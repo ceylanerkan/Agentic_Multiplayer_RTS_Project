@@ -53,7 +53,7 @@
         "required": ["type", "count"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["town_center", "house", "barracks", "stable", "blacksmith", "dock"]},
+          "type": {"enum": ["town_center", "house", "barracks", "stable", "blacksmith", "dock", "wall", "gate"]},
           "count": {"type": "integer", "minimum": 0},
           "under_construction": {"type": "integer", "minimum": 0},
           "busy": {"type": "integer", "minimum": 0}
@@ -68,7 +68,7 @@
         "required": ["type", "count", "zone"],
         "additionalProperties": false,
         "properties": {
-          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "fishing_boat", "town_center", "house", "barracks", "stable", "blacksmith", "dock"]},
+          "type": {"enum": ["villager", "spearman", "archer", "cavalry", "scout", "catapult", "raider_boat", "warship", "fishing_boat", "town_center", "house", "barracks", "stable", "blacksmith", "dock", "wall", "gate"]},
           "count": {"type": "integer", "minimum": 1},
           "zone": {"$ref": "#/$defs/zone"}
         }

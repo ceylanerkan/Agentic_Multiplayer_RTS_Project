@@ -80,12 +80,12 @@ public class VillagerGatherer : NetworkBehaviour
                 break;
 
             case Phase.ToBuild:
-                if (!SiteAlive() || site.Completed) { phase = Phase.Idle; break; }
+                if (!SiteAlive() || site.Completed) { NextWallOrStop(); break; }
                 if (Flat(site.transform.position - pos) <= DepositReach) { unit.StopMoving(); phase = Phase.Building; }
                 break;
 
             case Phase.Building:
-                if (!SiteAlive() || site.Completed) { phase = Phase.Idle; site = null; break; }
+                if (!SiteAlive() || site.Completed) { NextWallOrStop(); break; }
                 site.AddBuildWork(Runner.DeltaTime); // each Villager adds real seconds of work
                 break;
 
@@ -101,6 +101,30 @@ public class VillagerGatherer : NetworkBehaviour
                 }
                 break;
         }
+    }
+
+    const float NextWallRadius = 14f;
+
+    /// <summary>After a piece of wall the Villager goes on with the next one (like in most RTS games).</summary>
+    void NextWallOrStop()
+    {
+        bool wall = SiteAlive() && BuildSite.IsWall(site.TypeKey.ToString());
+        var next = wall ? UnfinishedWall(unit.Owner, transform.position, NextWallRadius) : null;
+        site = null; phase = Phase.Idle;
+        if (next != null) StartBuild(next);
+    }
+
+    /// <summary>Host only: the nearest unfinished Wall or Gate of the player.</summary>
+    public static NetworkBuilding UnfinishedWall(PlayerRef owner, Vector3 near, float radius)
+    {
+        NetworkBuilding best = null; float bestD = radius;
+        foreach (var b in NetworkBuilding.All)
+        {
+            if (b.Object == null || !b.Object.IsValid || b.Owner != owner || b.Completed || !BuildSite.IsWall(b.TypeKey.ToString())) continue;
+            float d = Flat(b.transform.position - near);
+            if (d < bestD) { bestD = d; best = b; }
+        }
+        return best;
     }
 
     void GoDeposit()
