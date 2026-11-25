@@ -7,7 +7,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | Bölüm (puan) | Durum | Eksik |
 |---|---|---|
 | RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler ve serbest bina yerleştirme otomatik maçta (76/76), fare build'de (sanal fare) | - |
-| Multiplayer (15) | 24 Kasım: iki build ile öğrenci denedi; 25 Kasım: yeni kodla otomatik iki oyunculu maç 35/35, iki taraf arasında 0 fark | M3 için ekran kaydı |
+| Multiplayer (15) | 24 Kasım: iki build ile öğrenci denedi; 25 Kasım: yeni kodla otomatik iki oyunculu maç 35/35, iki taraf arasında 0 fark | - |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
 | LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | istem değişti, 21 soru yeniden ölçülecek |
 | Onay + güvenlik (10) | Approve, Reject, validator reddi, gizli bilgi sorusu ve Ask why oyunda çalıştı | - |
@@ -32,7 +32,7 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 
 ## Yapılacaklar
 
-### 1. İki oyuncu (24 Kasım) - bitti, yalnız kayıt eksik
+### 1. İki oyuncu (24 Kasım) - bitti
 - [x] Claude: ağ kodu okundu, testten önce üç düzeltme: Photon bölgesi kodda `eu` (build ve editör ayrı bölge seçip "GameNotFound"
       vermesin), runner ayrı nesnede (host düşünce GameLauncher silinmesin), maç bitince AI paneli hata vermiyor.
 - [x] Öğrenci: gateway'i kapat, `ollama stop qwen2.5:7b`. Unity: `Tools > RTS > Set build window (1280x720, windowed)`,
@@ -42,7 +42,7 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
       saklıyor, TC yıkılınca Victory/Defeat, biri çıkınca diğeri Menu'ye dönüyor.
       Kazanma için ordu gerekmez: 3 köylü düşman TC'sine gidip sağ tık, TC ~3 dakikada düşer. Sert kapanmada 10 sn bekle.
 - [x] Claude: logda tek kusur, oturum kapanırken HUD'un bir karelik hatası; düzeltildi (yeni build'de görülecek).
-- [ ] Öğrenci: kısa kayıt al (M3 kanıtı). `tools/run_two_players.bat` build'i iki kez, ayrı loglarla açar.
+- [x] M3 kanıtı: ödev "Two-instance test video/log" diyor, log yeter: `evaluation/unity_two_players.md`. Kayıt istenmiyor (öğrenci çalıştığını biliyor).
 
 ### 2. Oyunun denenmemiş kısımları (24-25 Kasım) - sıradaki iş
 - [x] Claude: kaynak toplamayı beklememek için editör menüsü `Tools > RTS > Test: +1000 resources` (build'e girmez).
@@ -59,7 +59,7 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
       fareyle oynar (seçim, kutu, düğmeler, hayalet yeşil/kırmızı, sağ tık, sis, saldırı, VICTORY/DEFEAT, menüye dönüş). 35/35; iki tarafın gördüğü 1131 nesne ve
       200 oyuncu değerinde 0 fark (`evaluation/unity_two_players.md`). Ekran resimlerine bakıldı: düğmeler, HUD ve AI paneli 1280x720'de düzgün.
 - [x] Claude: oyunun Windows build'i alındı (`UnityRTS/Builds/UnityRTS.exe`, 25 Kasım 15:24, son kod). Komut: `AutoBuild.Game`, menü `Tools > RTS > Build Windows game`.
-- [ ] Öğrenci: gerçek pencerede kısa bakış (his, hız) ve kayıt; kod değişirse yeniden build.
+- Kod değişirse yeniden build (`AutoBuild.Game`).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
       kalktı; eskiden 7 yer yüzünden nüfus 20'de kalıyordu. C# testleri 54/54, otomatik maç 76/76. Eski build ve yeni editör uyuşmaz: yeniden build.
@@ -106,7 +106,7 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [x] Claude: bilgi sorusunda kanıta kaynak id'si (`tech_iron_weapons_v1`) eklendi (`agent.evidence`); getirilmemiş kaynak kanıttan siliniyor. Canlı modelle denenmedi.
 - [x] Claude: oyunda (otomatik maç) "What does Iron Weapons do?", gizli bilgi sorusu, "Train 20 archers right now." ve Ask why çalıştı. 20 okçuda model artık
       eylem önermiyor, yani validator reddi bu soruyla gösterilemez: demoya başka örnek gerek. "Enemy cavalry..." sorusunda da eylem önermedi (boş yer 2).
-- [ ] Öğrenci: MCP Inspector ekran görüntüleri (`python ai/mcp-server/make_session.py late_game` komutu yazdırır).
+- MCP Inspector görüntüsü isteğe bağlı: ödev 6.1 "MCP Inspector or your own test client ... screenshots/logs" diyor, `evaluation/mcp_calls_table.md` var.
 - [ ] Öğrenci: hocaya sor: "Laya'yı mı kastettiniz, kullanmak şart mı?"
 
 ### 4. Teslim dosyaları (27-28 Kasım)

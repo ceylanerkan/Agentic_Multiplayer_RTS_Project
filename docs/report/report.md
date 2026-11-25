@@ -285,8 +285,13 @@ failures of the real model (for example a missing prerequisite or a wrong zone) 
 
 **Unity side.** 54 EditMode tests cover damage, costs, validator, domains, visibility (including unfinished buildings),
 event log, production queue, tech effects, snapshot assembly, approval, the decision log and the contract between the
-C# AI types and `action_plan.schema.json`. They were compiled and run with the .NET SDK outside
-Unity; the same tests run in the Unity Test Runner. **[TODO live]** Two-instance test results and the demo video.
+C# AI types and `action_plan.schema.json`. They run in the Unity Test Runner (54 of 54 passed).
+
+**Automatic matches.** `AutoPlayTest` hosts a match in the Unity editor without a window and plays it through the normal commands: 76 of 76 checks
+passed (production, all technologies, combat, ships, building placement, approval and refusals; `evaluation/unity_autoplay.md`). Two instances of the
+Windows test build play a match over Photon, the client with a virtual mouse: 35 of 35 checks passed, and 100 samples of the client (1131 object values,
+200 player values) showed no difference from the host (`evaluation/unity_two_players.md`). These matches found three faults that the unit tests had not
+shown: other buildings took the places of the Dock, a Raider Boat could not reach an enemy Dock, and trained units appeared inside each other.
 
 ## X. Challenges and Lessons Learned
 
