@@ -181,8 +181,12 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [x] Claude (26 Kasım): rapor IEEE A4 Word/PDF (`docs/report/report.docx`, `report.pdf`, 7 sayfa, iki sütun, Fig. 1 mimari şekli, Fig. 2-3 oyun resimleri, 11 kaynak).
       Öğrenci iki sütundan rahatsız oldu ama ödev IEEE şablonu istediği için iki sütun kaldı (öğrenci: "template önerdiyse onu kullan").
       Yeniden üretmek: `docs/report/README.md`. Kaynak hâlâ `report.md`: değişiklik orada yapılır, sonra Word/PDF yeniden üretilir.
-- [ ] Claude: `docs/demo-script.md`'yi son hâle göre düzelt (7. senaryo: model artık geçersiz eylem önermiyor; plan al,
-      kaynağı harca, sonra Approve -> validator reddi). 9. senaryo için demoda açılacak tek sayfalık metrik tablosu. Slayt yok.
+- [x] Claude (26-27 Kasım): `docs/demo-script.md` ödevin 13. bölümüne göre yeniden yazıldı (3 bilgi sorusu, `tools/show_plan_validation.py`
+      ile 1 geçerli + 2 reddedilen plan, aynı plan bir kez Reject bir kez Approve, 7. senaryo: plan al, nüfusu doldur, sonra Approve;
+      9. senaryo: rapordaki Tablo II/III). Slayt yok.
+- [x] Claude (27 Kasım): ödevin bütün şartları kontrol edildi. Eksikler giderildi: araç hatası/eski veride cevap "Confidence is limited" diyor
+      (7.3), MCP istemcisi araçları listeliyor (6.1), raporda MCP logu (Ek F), 21 sorunun ham sonuçları (Ek G), esin kaynağı, kazanma koşulu,
+      gerçek araç sırası, iki geçersiz plan örneği. Rapor 8 sayfa.
 - [x] Öğrenci: rapora ad ve numara (26 Kasım, Claude yazdı). (Video yok, öğrencinin kararı.)
 
 ### 5. Kapanış (29-30 Kasım)
