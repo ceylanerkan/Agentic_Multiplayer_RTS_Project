@@ -1,8 +1,8 @@
-# Automatic play test (Unity 6000.4.9f1, 2026-11-25 22:38)
+# Automatic play test (Unity 6000.4.9f1, 2026-11-26 11:32)
 
 `AutoPlayTest.Run` (editor only): host session, real commands, checked on the host; player 2 is a stand-in. Mouse input and the look of the UI are not tested.
 
-**88 passed, 0 failed.**
+**93 passed, 0 failed.**
 
 | Section | Check | Result | Detail |
 |---|---|---|---|
@@ -92,7 +92,12 @@
 | Pathfinding | a Scout walks around a wall of five Barracks | ok | straight 20 m, walked 32 m in 5 s, ends at (-10, -5) Center |
 | Pathfinding | a building that appears on the way is avoided | ok | straight 30 m, walked 31 m in 5 s, ends at (20, -5) Center |
 | Pathfinding | a move order into a building ends beside it | ok | (11, -5) Center |
-| Pathfinding | the longest search of the match is short | ok | 1,0 ms |
+| Pathfinding | the longest search of the match is short | ok | 1,2 ms |
+| Walls | a line of wall is placed and paid piece by piece | ok | 7 pieces, 35 wood |
+| Walls | one Villager builds the whole line | ok | 7 of 7 after 30 s |
+| Walls | a Gate takes the place of a piece | ok | 6 pieces, gate True |
+| Walls | the way through the Gate is free for its owner only | ok |  |
+| Walls | the Villager walks through the Gate | ok | (-36, -16) WestMine |
 | Victory | destroying the enemy Town Center wins the match | ok | result 1 |
 
 Errors in the Unity log during the run: 0
