@@ -168,6 +168,8 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
       düşük, Unity yanında ~1 GB fazla bellek. Öğrenci Laya'yı kapattı (`.env` `TOOL_ROUTER=off`).
 - [x] Canlı güvenlik satırları (`live_security.py`, Laya açık): hepsi güvenli; S9 Ask why artık gerekçe veriyor ("based on the fact that it increases
       the attack ... by +2").
+- [x] Unity+AI otomatik maçı demo ayarıyla (Laya kapalı, şarjda, 26 Kasım 19:20): **99/99, Unity logunda 0 hata**. Cevaplar 2,2-20,7 sn; Ask why gerekçe
+      verdi ("With one more House, you can train up to 7 Spearman"), "Build a house in my base." -> Approve -> gönderildi (`evaluation/unity_autoplay_ai.md`).
 - Kalan model hataları (rapora): Laya'lı p14 "catapult counters archers"; Laya'sız p19 "Build a House as you need more resources".
 
 ### 4. Teslim dosyaları (27-28 Kasım)
