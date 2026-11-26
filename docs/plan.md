@@ -177,6 +177,7 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 ### 5. Kapanış (29-30 Kasım)
 - [x] Claude (25 Kasım): tam `pytest -q ai evaluation` (88), gizli anahtar taraması (temiz), temiz klonda dizin + testler + mock değerlendirme çalıştı.
       Paketler Anaconda'dan geldi: `pip install` ve Unity tarafı temiz klonda denenmedi. Kod değişirse 29 Kasım'da bir kez daha.
+      **26 Kasım akşam (AI değişikliklerinden sonra) tekrarlandı:** temiz klonda dizin (36 parça), mock değerlendirme, `pytest -q ai evaluation` 88 geçti.
 - [x] Claude: `tools/compile-check/check.ps1`: bütün C# kodunu Unity'nin içindeki derleyiciyle, gerçek Unity/Fusion dosyalarına karşı derler (18 sn, Unity açılmaz,
       .NET SDK gerekmez). Eski stub dosyaları kalktı.
 - [ ] Öğrenci: son Windows build, demo provası (editör kapalı, gateway önceden açık), `docs/defense-notes.md` ile savunma provası.
