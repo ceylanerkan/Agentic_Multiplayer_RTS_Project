@@ -1,11 +1,11 @@
 # Report
 
-`report.md` is the IEEE-structured report (Abstract, I-XII). Open items are marked **[TODO live]** (numbers from the live run with the local LLM,
-two-instance test results), plus the author line at the top. No slides and no video (student, 26 Nov 2026): the presentation is the live demo.
+`report.md` is the IEEE-structured report (Abstract, I-XII, references). All live numbers are filled in (26 Nov 2026). No slides and no video (student, 26 Nov 2026): the presentation is the live demo.
 
-Export to PDF (A4, two columns, needs pandoc and a LaTeX engine):
+`report.docx` and `report.pdf` are built from `report.md` (IEEE conference layout, A4, title block in one column, body in two
+columns, Times New Roman 10 pt). Fig. 1 is `fig1_architecture.png`. To build them again after a change, from the repository root:
 
-    pandoc docs/report/report.md -o report.pdf --pdf-engine=xelatex -V geometry:a4paper -V classoption=twocolumn -V fontsize=10pt
-
-Or paste the Markdown into Word/Google Docs and apply the IEEE conference template. Add the screenshots listed in `docs/demo-script.md`
-(AI panel with tool log, decision log, MCP Inspector, fog-of-war comparison) as figures.
+    cd tools/report && npm install docx@9.5.1 && cd ../..         # once
+    python tools/report/figure.py docs/report/fig1_architecture.png
+    node tools/report/build.js docs/report/report.md docs/report/fig1_architecture.png docs/report/report.docx
+    powershell -ExecutionPolicy Bypass -File tools/report/to_pdf.ps1  # needs Microsoft Word

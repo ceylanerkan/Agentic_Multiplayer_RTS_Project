@@ -180,7 +180,8 @@ knowledge tool and the cost tool, while "What does Iron Weapons do?" calls only 
 scripted model verify both behaviours, once in-process and once through a real stdio MCP client with the server as a
 subprocess (`MCP_TRANSPORT=stdio`). The final answer must be one `RTSActionPlan` JSON object (summary, confidence,
 evidence, up to 8 actions of four types: TRAIN_UNIT, BUILD, MOVE_GROUP, RESEARCH). It is validated with JSON Schema;
-if invalid, the agent gets one repair retry, otherwise the gateway answers with an error.
+if invalid, the agent gets one repair retry, otherwise the gateway answers with an error. The loop interleaves model steps
+and tool results in the manner of ReAct [8].
 
 **Checks after the model.** A 7-billion-parameter model makes mistakes that instructions alone did not stop (Section IX), so the
 gateway looks at the answer before the player sees it:
@@ -195,8 +196,6 @@ Each check costs at most one extra model step. The player still approves every a
 
 **Tool test client.** Besides the agent, `evaluation/mcp_calls.py` calls all seven tools over the real MCP stdio protocol with
 valid and invalid inputs and logs the results (`evaluation/mcp_calls_table.md`); it takes the place of MCP Inspector screenshots.
-
-The loop interleaves model steps and tool results in the manner of ReAct [8].
 
 **Why MCP.** The tools are the only door through which the model can reach game data. Their number, inputs and
 read-only property are easy to audit, and the same server could be used by any MCP client (MCP Inspector, another
@@ -495,8 +494,10 @@ A plan of the final run (p20, "Train 2 spearmen."), as Unity receives it:
 Two lines of `decision-log.jsonl` from the automatic match with the live AI:
 
 ```
-{"plan_id":"plan-010","decision":"approved","game_time_s":758.8,"actions":["TRAIN_UNIT spearman x2  [100F 60W]"],"validator":["OK"]}
-{"plan_id":"plan-011","decision":"approved","game_time_s":777.1,"actions":["BUILD house -> P1Base  [30W]"],"validator":["OK"]}
+{"plan_id": "plan-010", "decision": "approved", "game_time_s": 758.8,
+ "actions": ["TRAIN_UNIT spearman x2 [100F 60W]"], "validator": ["OK"]}
+{"plan_id": "plan-011", "decision": "approved", "game_time_s": 777.1,
+ "actions": ["BUILD house -> P1Base [30W]"], "validator": ["OK"]}
 ```
 
 **F. Test prompts, schemas and setup.** Prompts: `evaluation/prompts.jsonl`; fixtures: `evaluation/fixtures/`; schemas:

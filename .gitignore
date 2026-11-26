@@ -84,3 +84,7 @@ UnityRTS/Assets/StreamingAssets/knowledge.meta
 ai/exports/
 evaluation/results.csv
 evaluation/results_table.md
+
+# report generator (tools/report): npm install docx
+tools/report/node_modules/
+tools/report/package*.json

@@ -178,7 +178,9 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
 - [x] Claude (26 Kasım): rapordaki `[TODO live]` yerleri dolu; son ölçüm (Tablo II), sonuçların geçmişi (Tablo III), Laya deneyi (Tablo IV),
       gerçek hatalar ve düzeltmeleri, canlı güvenlik sonuçları, otomatik maçlar (93/93, 99/99, 37/37), ekte log örnekleri.
-- [ ] Claude: raporu IEEE A4 Word/PDF yap. `docs/demo-script.md`'yi son hâle göre düzelt (7. senaryo: model artık geçersiz eylem önermiyor; plan al,
+- [x] Claude (26 Kasım): rapor IEEE A4 Word/PDF (`docs/report/report.docx`, `report.pdf`, 7 sayfa, iki sütun, Fig. 1 mimari şekli, 11 kaynak).
+      Yeniden üretmek: `docs/report/README.md`. Kaynak hâlâ `report.md`: değişiklik orada yapılır, sonra Word/PDF yeniden üretilir.
+- [ ] Claude: `docs/demo-script.md`'yi son hâle göre düzelt (7. senaryo: model artık geçersiz eylem önermiyor; plan al,
       kaynağı harca, sonra Approve -> validator reddi). 9. senaryo için demoda açılacak tek sayfalık metrik tablosu. Slayt yok.
 - [x] Öğrenci: rapora ad ve numara (26 Kasım, Claude yazdı). (Video yok, öğrencinin kararı.)
 
