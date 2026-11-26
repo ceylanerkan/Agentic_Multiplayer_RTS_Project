@@ -19,7 +19,7 @@ for p in (AI, AI / "mcp-server", AI / "rag"):
     sys.path.insert(0, str(p))
 
 from common.session_store import SessionStore  # noqa: E402
-from gateway.agent import SNAPSHOT_SCHEMA, SYSTEM_PROMPT, Agent, AgentError  # noqa: E402
+from gateway.agent import SNAPSHOT_SCHEMA, SYSTEM_PROMPT, Agent, AgentError, similar  # noqa: E402
 from gateway.llm import agent_timeout_s, make_llm  # noqa: E402
 from gateway.logs import JsonlLog, short_id  # noqa: E402
 from gateway.tool_router import make_router  # noqa: E402
@@ -113,7 +113,7 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
             raise HTTPException(401, "unknown session token")
         return token
 
-    def answer(token, question, note="", stale=False, route=None, orders=False):
+    def answer(token, question, note="", stale=False, route=None, orders=False, repeat=None):
         if len(question) > MAX_QUESTION_LEN:
             sec_log.write(session=short_id(token), event="rejected_input", reason="question too long")
             raise HTTPException(422, "question too long")
@@ -124,7 +124,7 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
         steps, timeout = int(os.environ.get("AGENT_MAX_STEPS", 6)), agent_timeout_s()
         try:
             agent = Agent(get_llm(), mcp_for(token), tool_log, steps, timeout, route,
-                          state=lambda: (store.get_snapshot(token) or (None,))[0], orders=orders)
+                          state=lambda: (store.get_snapshot(token) or (None,))[0], orders=orders, repeat=repeat)
             plan, used = agent.run(short_id(token), question, note)
             if agent.checked:   # actions the game's rules refused before the player saw them; the model got one try to fix them
                 sec_log.write(session=short_id(token), event="plan_corrected_by_rule_check",
@@ -170,7 +170,13 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
         stale = row is None or row[1] > max_age  # "ask why" reuses the old snapshot: tell the model if it is old
         extra = "\n\nWARNING: the game snapshot is stale; lower your confidence." if stale else ""
         earlier = json.dumps({k: plan[k] for k in ("summary", "actions", "evidence")})[:1200]
-        return answer(token, body.question, WHY_NOTE.format(q=q, plan=earlier) + extra, stale)
+        res = answer(token, body.question, WHY_NOTE.format(q=q, plan=earlier) + extra, stale, repeat=plan["summary"])
+        reasons = [a["reason"] for a in plan["actions"] if a.get("reason")]
+        if reasons and similar(res["plan"]["summary"], plan["summary"]):
+            # the model repeated the plan although it was told not to (once more in agent.py): show the reasons the plan itself gave
+            based = f" Based on: {', '.join(plan['evidence'][:4])}." if plan["evidence"] else ""
+            res["plan"]["summary"] = ("Reasons given with the plan: " + "; ".join(reasons) + "." + based)[:400]
+        return res
 
     return app
 

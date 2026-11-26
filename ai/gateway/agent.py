@@ -26,6 +26,7 @@ SYSTEM_PROMPT = """You are the Strategic Commander advisor of an RTS game player
 - Reason only from visible information. You cannot know the opponent's resources, hidden units or unexplored base.
 - If a tool fails or the snapshot is old, say that your confidence is limited and lower `confidence`.
 - You can only PROPOSE actions; the player approves them later. Never say that something was trained, built or done.
+- Buildings (House, Barracks, Dock, ...) are BUILT by villagers, never trained. The game has only two ages: Age I and Age II.
 - Finish with ONE JSON object (RTSActionPlan: summary, confidence 0-1, evidence = tool names and source_ids,
   actions). Use an empty actions list for questions that only need an answer.
 {plan_format}"""
@@ -80,6 +81,11 @@ REFUSAL = re.compile(r"\b(sorry|I (cannot|can['\u2019]t|won['\u2019]t|will not|a
 # them; what it still proposes goes to the player, and the game's validator refuses it at approval with the reason.
 CHECK = ("The game would refuse these actions now: {bad}. Now: {now}. Propose only what is possible now (fewer units, a House first, "
          "or no action) and make `summary` say the same. " + ONE_LINE)
+# Counters from the game data (units.json `weaknesses`): with Laya the model proposed 3 Archers against visible Cavalry (evaluation p05).
+COUNTER = ("{weak}. Propose units that beat what is in sight, or say why not.")
+# "Ask why" repeated the earlier summary word for word (in the game, 25 and 26 Nov).
+WHY_AGAIN = ("This repeats the earlier plan. Answer only WHY: the concrete facts and numbers from the tools behind the plan (enemy types "
+             "and counts, what beats them, resources, free population). " + ONE_LINE)
 # A possible order got only an answer (evaluation p21 with Laya: "You can research fletching", nothing to approve).
 ORDER = re.compile(r"^\s*(please\s+)?(train|build|research|make|create|recruit|produce|send|move|attack|upgrade|construct|queue)\b", re.I)
 CANNOT = re.compile(r"\b(cannot|can['’]?t|can not|not possible|not enough|unable|impossible|short of)\b", re.I)
@@ -133,6 +139,28 @@ def refused_actions(plan, state):
     return bad, now
 
 
+def weak_matchups(plan, state):
+    """[(action, text)] for trained units that lose against an enemy type in sight, with what beats that enemy (game data)."""
+    units, seen = plan_checks.DATA["units"], {e["type"] for e in state.get("visible_enemies", [])}
+    out = []
+    for a in plan["actions"]:
+        u = a.get("unit_type")
+        if a.get("action_type") != "TRAIN_UNIT" or u in ("villager", "fishing_boat") or u not in units:
+            continue
+        foes = sorted(seen & set(units[u].get("weaknesses", [])))
+        if foes:
+            beats = sorted({b for f in foes for b in units.get(f, {}).get("weaknesses", [])} - {"villager", "fishing_boat"})
+            out.append((a, f"{u} loses against the {' and '.join(foes)} in sight (game data); {' and '.join(foes)} lose against "
+                           f"{', '.join(beats) or 'no unit in the data'}"))
+    return out
+
+
+def similar(a, b):
+    """Nearly the same words (a repeated summary)."""
+    wa, wb = (set(re.findall(r"[a-z0-9]+", x.lower())) for x in (a, b))
+    return bool(wa and wb) and len(wa & wb) / len(wa | wb) >= 0.7
+
+
 def _describe(a):
     what = a.get("unit_type") or a.get("building_type") or a.get("tech_type") or a.get("unit_group") or ""
     return " ".join(str(x) for x in (a["action_type"], what, f"x{a['count']}" if "count" in a else "",
@@ -153,8 +181,9 @@ def _parse_plan(text):
 
 
 class Agent:
-    def __init__(self, llm, mcp_server, tool_log, max_steps=6, timeout_s=30, router=None, state=None, orders=False):
+    def __init__(self, llm, mcp_server, tool_log, max_steps=6, timeout_s=30, router=None, state=None, orders=False, repeat=None):
         self.llm, self.mcp, self.log = llm, mcp_server, tool_log
+        self.repeat = repeat   # "ask why": the earlier summary, which the answer must not repeat
         self.state = state     # callable -> the current snapshot (dict) or None: plans are checked against the game's rules
         self.orders = orders   # the question may be an order (False for a suspected attack and for "ask why")
         self.checked = []      # what the rule check refused: [(action, reason)] before the model's correction
@@ -215,7 +244,7 @@ class Agent:
         deadline = time.time() + self.timeout_s
         tools, used = self._tool_specs(), []
         history = [{"role": "user", "text": question + extra_context}]
-        repaired = final = reminded = checked = nudged = False   # final: the model must answer now, without tools
+        repaired = final = reminded = checked = nudged = again = False   # final: the model must answer now, without tools
         self.checked = []
         asked = False                         # the model has called a tool itself
         seen = set()
@@ -229,7 +258,7 @@ class Agent:
             if step == self.max_steps - 1 and step > 0 and not final and not repaired:
                 final = True   # last step: an answer from what is known is better than "max steps reached"
                 history.append({"role": "user", "text": "You have enough tool results. " + ONE_LINE})
-            no_tools = final or repaired or checked or nudged
+            no_tools = final or repaired or checked or nudged or again
             reply = self.llm.step(SYSTEM_PROMPT, history, [] if no_tools else tools)
             step += 1
             if reply.tool_calls:
@@ -280,9 +309,13 @@ class Agent:
                 history.append({"role": "user", "text": f"Your answer was not a valid RTSActionPlan: {str(e)[:300]}. "
                                                         + ONE_LINE})
                 continue
-            note = self._second_look(plan, question, history, checked, nudged)
+            note = None
+            if self.repeat and not again and similar(plan["summary"], self.repeat):
+                note = WHY_AGAIN
+            note = note or self._second_look(plan, question, history, checked, nudged)
             if note:
-                checked, nudged = checked or note.startswith("The game"), nudged or note.startswith("The player")
+                checked, nudged = checked or note is not ORDER_NOTE and note is not WHY_AGAIN, nudged or note is ORDER_NOTE
+                again = again or note is WHY_AGAIN
                 limit = max(limit, step + 1)
                 history.append({"role": "model", "calls": [], "text": reply.text or ""})
                 history.append({"role": "user", "text": note})
@@ -298,9 +331,15 @@ class Agent:
             return None
         if plan["actions"] and not checked:
             bad, now = refused_actions(plan, state)
-            if bad:
-                self.checked = bad
-                return CHECK.format(bad="; ".join(f"{_describe(a)}: {r}" for a, r in bad), now=now)
+            weak = weak_matchups(plan, state)
+            self.checked = bad + weak
+            notes = [COUNTER.format(weak="; ".join(t for _, t in weak))] if weak else []
+            if bad:   # ends with ONE_LINE
+                notes.append(CHECK.format(bad="; ".join(f"{_describe(a)}: {r}" for a, r in bad), now=now))
+            elif notes:
+                notes.append(ONE_LINE)
+            if notes:
+                return " ".join(notes)
         if (not plan["actions"] and self.orders and not nudged and not checked and ORDER.match(question)
                 and not CANNOT.search(plan["summary"])
                 and not any(h["role"] == "tool" and h["name"] == "estimate_plan_cost" and isinstance(h["result"], dict)

@@ -106,9 +106,17 @@ def estimate_plan_cost(ctx, items):
                     blocked = True
         out["verdict"] = "possible" if not problems else "NOT possible now: " + "; ".join(problems)
         if not blocked and len(lines) == 1 and lines[0]["kind"] == "unit":
-            fits = min([max(0, free) // max(1, KINDS["unit"][lines[0]["id"]]["population"])]
-                       + [have[r] // amt for r, amt in lines[0]["cost"].items() if amt])
+            per = max(1, KINDS["unit"][lines[0]["id"]]["population"])
+            by_resources = lambda stock: [stock[r] // amt for r, amt in lines[0]["cost"].items() if amt]  # noqa: E731
+            fits = min([max(0, free) // per] + by_resources(have))
             out["verdict"] += f". At most {fits} {lines[0]['id']} possible now"
+            house = KINDS["building"]["house"]
+            left = {r: have[r] - house["cost"].get(r, 0) for r in have}
+            if pop > free and all(v >= 0 for v in left.values()):
+                # the model added the House up itself and got it wrong ("9 free population ... a House ... 10 archers", 26 Nov)
+                more = min([(max(0, free) + house["population_provided"]) // per] + by_resources(left))
+                price = ", ".join(f"{v} {r}" for r, v in house["cost"].items())
+                out["verdict"] += f"; after building one more House ({price}, +{house['population_provided']} population): at most {more}"
     return out
 
 

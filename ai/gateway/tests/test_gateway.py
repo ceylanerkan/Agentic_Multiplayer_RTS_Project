@@ -85,7 +85,8 @@ def test_bad_tool_args_reported_to_model(tmp_path):
 
 
 def test_why_followup(tmp_path):
-    client, h, _ = make([LLMReply(text=json.dumps(PLAN)), LLMReply(text=json.dumps(PLAN))], tmp_path)
+    why = dict(PLAN, summary="Four cavalry are in sight at NorthGate and spearmen beat cavalry.", actions=[])   # not the plan again
+    client, h, _ = make([LLMReply(text=json.dumps(PLAN)), LLMReply(text=json.dumps(why))], tmp_path)
     assert client.post("/why", json={}, headers=h).status_code == 409
     client.post("/ask", json={"snapshot": SNAP, "question": "q"}, headers=h)
     assert client.post("/why", json={}, headers=h).status_code == 200
