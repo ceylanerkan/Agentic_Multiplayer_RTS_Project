@@ -62,6 +62,8 @@ for (let i = 0; i < lines.length;) {
     i++; blocks.push({ type: "code", lines: code }); continue;
   }
   if (l.startsWith("# ")) { blocks.push({ type: "title", text: l.slice(2) }); i++; continue; }
+  const img = l.match(/^!\[(.*)\]\((.*)\)\s*$/);
+  if (img) { blocks.push({ type: "img", alt: img[1], src: img[2] }); i++; continue; }
   if (l.startsWith("## ")) { blocks.push({ type: "h1", text: l.slice(3) }); i++; continue; }
   if (l.startsWith("|")) {
     const rows = [];
@@ -95,7 +97,8 @@ for (let i = 0; i < lines.length;) {
 
 // ---------- rendering ----------
 const head = [], body = [];
-let numberInstance = 0, inRefs = false, figDone = false;
+let numberInstance = 0, inRefs = false, figDone = false, figNo = 1;
+const path = require("path");
 
 const P = (children, opts = {}) => new Paragraph({ children, alignment: AlignmentType.JUSTIFIED, spacing: { after: 0, line: 240 }, indent: { firstLine: 202 }, ...opts });
 
@@ -108,7 +111,7 @@ function caption(text) {   // "*Table II. Final ...*" -> TABLE II. Final ...
 
 function table(rows) {
   const n = rows[0].length;
-  const len = c => Math.min(40, Math.max(4, c.replace(/[`*]/g, "").length));
+  const len = c => Math.min(40, Math.max(4, c.replace(/[`*]/g, "").length * (c.startsWith("`") ? 1.5 : 1)));   // code font is wider
   const weight = Array.from({ length: n }, (_, j) => Math.max(...rows.map(r => len(r[j] || ""))));
   const sum = weight.reduce((a, b) => a + b, 0);
   const widths = weight.map(w => Math.floor(COL * w / sum));
@@ -123,7 +126,7 @@ function table(rows) {
       children: r.map((c, j) => new TableCell({
         width: { size: widths[j], type: WidthType.DXA }, borders, verticalAlign: VerticalAlign.CENTER,
         margins: { top: 20, bottom: 20, left: 50, right: 50 },
-        children: [new Paragraph({ alignment: j === 0 || (ri > 0 && c.length > 30) ? AlignmentType.LEFT : AlignmentType.CENTER, spacing: { after: 0 },
+        children: [new Paragraph({ alignment: j === 0 || (ri > 0 && c.length > 30) ? AlignmentType.LEFT : AlignmentType.CENTER, spacing: { after: 0 }, keepNext: ri < rows.length - 1,   // a table stays in one piece
           children: runs(c, { size, bold: ri === 0 }) })],
       })),
     })),
@@ -165,6 +168,17 @@ for (let b = 0; b < blocks.length; b++) {
     body.push(new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 160 },
       children: [new TextRun({ text: "Fig. 1. ", font: FONT, size: 16 }), ...runs("Architecture and the path of one question. Unity sends a visibility-filtered snapshot; the gateway's agent loop calls read-only MCP tools, checks the plan and returns it; the player approves and the host validates again.", { size: 16 })] }));
     b++; figDone = true; continue;
+  }
+  if (k.type === "img") {   // a screenshot, one column wide, caption below (IEEE)
+    const data = fs.readFileSync(path.join(path.dirname(mdPath), k.src));
+    const w = data.readUInt32BE(16), h = data.readUInt32BE(20);   // PNG header
+    body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 60 }, keepNext: true,
+      children: [new ImageRun({ type: "png", data, transformation: { width: 331, height: Math.round(331 * h / w) },
+        altText: { title: "Fig. " + (figNo + 1), description: k.alt, name: "fig" + (figNo + 1) } })] }));
+    figNo++;
+    body.push(new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { after: 160 },
+      children: [new TextRun({ text: "Fig. " + figNo + ". ", font: FONT, size: 16 }), ...runs(k.alt, { size: 16 })] }));
+    continue;
   }
   if (k.type === "p" && next && next.type === "table" && caption(k.text)) { body.push(caption(k.text)); continue; }
   if (k.type === "p" && inRefs) {

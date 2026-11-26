@@ -67,7 +67,9 @@ fish are low-poly models (CC0 or CC BY, listed in `docs/credits.md`). The ground
 coast, and the map ends at the foot of snowy mountains. A seven-minute day-night cycle runs on the same clock for both players and
 only changes the look. The interface has a minimap, a command card with tooltips, an event feed, an idle-Villager button, a leave
 menu and a foldable AI panel; its icons come from game-icons.net (CC BY 3.0). The UI scales with the window and was checked at
-1280x720. Models are only the look: selection, collision and rules use the same shapes and numbers as before.
+1280x720 (Fig. 2). Models are only the look: selection, collision and rules use the same shapes and numbers as before.
+
+![Player 1's base in an automatic match: Houses, Barracks and walls with blue roofs, enemy Cavalry and a Catapult in red, the resource and population bar, the minimap, the command card and the AI panel.](fig2_base.png)
 
 **Single source of numbers.** All values live in `ai/rag/knowledge/*.json`. Unity reads the same files at run time
 (`GameDataProvider`), the AI retrieves them as knowledge, and the evaluation reads them for its own rule checks, so
@@ -76,21 +78,6 @@ the game and the AI cannot disagree about a cost or a statistic.
 ## III. System Architecture
 
 The system has two halves connected by a local HTTP call (Fig. 1).
-
-*Fig. 1. Architecture (see also `docs/architecture.md` and `docs/design-brief.md` for the Mermaid diagram).*
-
-```
-Unity (host or client, Fusion 2)                      Python (ai/)
- VisibilityService.FilterFor -> AiSafeSnapshot --POST /ask--> Gateway (FastAPI)
- AiCommanderPanel <-- AiAnswer <------------------------------  validates snapshot, saves it (SQLite)
- Approve -> GameActionValidator -> CommandRelay RPC                  |
-          -> host authority                                          v
-                                                       Agent loop <-> local LLM in Ollama (tool calling)
-                                                          |  plan -> rule and counter check (game data)
-                                                          | MCP over stdio
-                                                          v
-                                                       MCP server: 7 read-only tools -> snapshot, RAG
-```
 
 **Engine-free core.** The game rules that must be correct and explainable (costs, population, prerequisites, damage,
 domains, visibility, production queue, win condition, approval checks) are plain C# classes in the assembly
@@ -112,6 +99,21 @@ buildings and the enemies returned by `VisibilityService.FilterFor`. (3) The gat
 asks the model, executes the tool calls it requests against the MCP server, and finally parses an `RTSActionPlan`,
 which it checks against the game rules before returning it.
 (5) Unity shows summary, confidence, evidence, tools and the proposed actions with costs.
+
+*Fig. 1. Architecture (see also `docs/architecture.md` and `docs/design-brief.md` for the Mermaid diagram).*
+
+```
+Unity (host or client, Fusion 2)                      Python (ai/)
+ VisibilityService.FilterFor -> AiSafeSnapshot --POST /ask--> Gateway (FastAPI)
+ AiCommanderPanel <-- AiAnswer <------------------------------  validates snapshot, saves it (SQLite)
+ Approve -> GameActionValidator -> CommandRelay RPC                  |
+          -> host authority                                          v
+                                                       Agent loop <-> local LLM in Ollama (tool calling)
+                                                          |  plan -> rule and counter check (game data)
+                                                          | MCP over stdio
+                                                          v
+                                                       MCP server: 7 read-only tools -> snapshot, RAG
+```
 
 ## IV. Multiplayer Method
 
@@ -142,10 +144,12 @@ last Town Center the host sets a result for both players and `GameOverUI` shows 
 
 **Fog of war.** Visibility is a pure function: a player sees all own objects and every enemy object inside the line
 of sight circle (from the knowledge base, plus the Fletching bonus) of at least one own object. The Unity adapter
-hides enemy renderers and paints a fog texture; the AI snapshot uses the same function. Because Fusion interest
+hides enemy renderers and paints a fog texture (Fig. 3); the AI snapshot uses the same function. Because Fusion interest
 management is off, every client still receives all networked objects, so a modified client could read hidden
 positions. We document this limitation honestly in Section VIII; the AI is not affected because its input is filtered
 before it leaves Unity.
+
+![The joining client (Player 2) in the automatic two-player match over Photon: its Villagers (green rings) attack the enemy Town Center, whose roof shows the enemy colour; outside the line of sight the map lies under the fog of war.](fig3_client.png)
 
 **Events.** Each player has an event log (eight event types with zone and time). The host decides which events a
 player may know (own losses and training, plus enemy sightings that come from the visibility function) and sends
@@ -465,10 +469,10 @@ server, RAG, schemas, shared plan checks), `evaluation/` (prompts, fixtures, run
 | Photon Fusion | 2.0.13 (Host Mode) |
 | Unity packages | AI Navigation 2.0.12, Input System 1.19.0, Newtonsoft JSON 3.2.2, Test Framework 1.6.0, uGUI 2.0.0, ParrelSync |
 | Python | 3.10+ |
-| Python packages | `mcp` >= 2.3, `fastapi` >= 0.115, `uvicorn` >= 0.30, `google-genai` >= 1.0 (optional, only for the Gemini adapter), `jsonschema` >= 4.23, `sentence-transformers` >= 3.0 (optional embeddings), `rank-bm25` >= 0.2.2, `python-dotenv` >= 1.0, `pytest` >= 8.0 |
-| LLM | Local: Ollama 0.40 with `qwen2.5:7b` (default). A Gemini adapter exists but is not used |
-| Tool router (optional, off) | `laya` with the checkpoint `convaiinnovations/laya`, revision `55cf4c4` (Apache 2.0), on the CPU |
-| Art and icons | `docs/credits.md`: CC0 models and textures (Quaternius, KayKit, Poly Haven), CC BY 3.0 icons (game-icons.net) and Catapult (Poly by Google) |
+| Python packages | mcp, fastapi, uvicorn, jsonschema, rank-bm25, sentence-transformers, python-dotenv, pytest (versions in `ai/requirements.txt`) |
+| LLM | Ollama 0.40, `qwen2.5:7b` (an unused Gemini adapter exists) |
+| Tool router (off) | Laya, revision 55cf4c4 (Apache 2.0), CPU |
+| Art and icons | CC0 (Quaternius, KayKit, Poly Haven), CC BY 3.0 (game-icons.net, Poly by Google); `docs/credits.md` |
 
 **C. Tests.** Python: `python -m pytest -q ai evaluation` (88 tests, no network, no API key; also passed in a clean clone).
 C#: Unity Test Runner, EditMode, assembly `RTS.Tests.EditMode` (56 tests). Evaluation: `python evaluation/run_eval.py [--real]`.
