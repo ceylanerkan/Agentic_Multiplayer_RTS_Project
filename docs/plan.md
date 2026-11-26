@@ -140,7 +140,7 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
       karşılaştırılamaz (GPU ayarı ve makinenin durumu farklı olabilir). Dünkü dosyalar `results_ollama_1125_1304.*`, `results_ollama_laya_1125_1310.*`;
       tablo `evaluation/tool_router/README.md`.
 
-**3e. AI düzeltmeleri - kod bitti, Unity+AI maçı yeniden koşuyor (26 Kasım)**
+**3e. AI düzeltmeleri - kod bitti, temiz Unity+AI maçı eksik (26 Kasım)**
 - [x] Claude: gateway her planı oyunun onay kurallarıyla (`ai/common/plan_checks.py`, eskiden `evaluation/`) kontrol ediyor; reddedilecek eylem modele
       bir kez gerekçesiyle dönüyor (log `plan_corrected_by_rule_check`). Mümkün bir emre eylem yazılmadıysa model bir kez uyarılıyor (işaretli soru ve Ask why hariç).
       Isınma istemi ve araçları da okutuyor (ilk soru 31,9 -> 2,3 sn). Ollama model başlatırken 500 verirse bir kez daha deneniyor (CUDA "shared object
@@ -149,7 +149,11 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
       yazıldı, raporda söylenmeli). Gateway ve değerlendirme testleri 57/57 (test verisinde Barracks ve kaynak düzeltildi).
 - [x] 21 soru: Laya kapalı araç %95, reddedilen 0/5, 7,33 / 6,62 sn; Laya açık araç %95, reddedilen 0/5, 6,38 / 4,50 sn; güvenlik 2/2, plan %100.
       Kalan: Laya'lı p05 süvariye karşı okçu önerdi; Laya'sız p17 "Age of Feudalism".
-- [ ] Unity+AI otomatik maçı: ilk tur 97/99 (Ollama çöktü, Ask why testi Approve'dan sonra soruyordu; ikisi düzeldi), ikinci tur 26 Kasım 12:24'te başladı.
+- [ ] Unity+AI otomatik maçı: ilk tur 97/99 (Ollama çöktü, Ask why testi Approve'dan sonra soruyordu; ikisi düzeldi). İkinci tur (12:24) sırasında kapak
+      kapandı, bilgisayar uyudu: oyun bölümleri zaman aşımı ve Photon kopması (76/82, geçersiz, commit'lenmedi), ama **AI bölümü 7/7**: bilgi sorusu 16,5 sn,
+      süvari sorusu 3 Spearman önerdi, Ask why artık gerekçe veriyor ("Spearman ... counter Cavalry and do not require gold"), Approve gönderdi, saldırı reddi,
+      20 okçu, "Build a house in my base." -> eylem -> Approve -> gönderildi. Model hatası: "9 free population ... build a House to train 10 archers" (14 olur).
+      Gateway ısınması 18 sn'de bitti. **Bilgisayar uyanıkken bir kez daha (15 dk), öğrenciye sorulacak.**
 
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
