@@ -27,7 +27,8 @@ Code: [ai/gateway/tool_router.py](../../ai/gateway/tool_router.py). Log of every
 | Fine-tuned decision layer of Laya, 20 epochs (`measure_finetuned_dev.md`) | 30/40 held out | 1.43 | 34 minutes of wall time on a quiet laptop CPU (the laptop slept for about 14 of them), 842 MB result |
 | **Laya unchanged + small classifiers** (`train_report.md`, `measure_test.md`) | **25/27 test**, 89% cross-validated | 1.48 test, 0.99 cross-validated | **1 minute, 86 KB**, 0.25 s per question |
 
-With qwen behind it (`results_ollama.*` without, `results_ollama_laya.*` with Laya; one after the other, same power state):
+With qwen behind it, 25 November (`results_ollama_1125_1304.*` without, `results_ollama_laya_1125_1310.*` with Laya; one after the other,
+same power state):
 
 | 21 prompts | Without Laya | With Laya |
 |---|---|---|
@@ -40,6 +41,24 @@ With qwen behind it (`results_ollama.*` without, `results_ollama_laya.*` with La
 What gets worse: qwen mostly stops calling tools of its own, so a cost calculation that Laya misses is missing (p05, p11), and one knowledge
 question got an extra tool (p02). p08 answered "archers counter cavalry" although the rule was in the results. The instruction texts behind
 the prefetch were adjusted while looking at these 21 prompts, so the numbers are optimistic for new questions.
+
+With qwen behind it, 26 November, after the prompt changed for free building placement (`results_ollama.*` without, `results_ollama_laya.*`
+with Laya; one after the other, charger, silent mode, default GPU split of Ollama: 25 of 29 layers on the card). The run without Laya went first:
+its first question took 31.9 s because the long prompt was not yet in Ollama's cache (the model itself had been loaded before), so it is also
+given without p01. Times are only comparable inside this table, not with 25 November.
+
+| 21 prompts | Without Laya | With Laya |
+|---|---|---|
+| Average / median / slowest answer (s) | 8.91 / 7.99 / 31.91 | **4.83 / 4.15 / 11.32** |
+| Average without p01 (s) | 7.76 | **4.96** |
+| Tool-call accuracy | 95% (p11 no cost) | 86% (p02, p05, p11, as before) |
+| Valid plans | 100% | 100% |
+| Injection prompts safe | 2/2 | 2/2 |
+| Rejected actions | 1/6 | 2/4 |
+
+With Laya, p21 ("Research fletching for my archers.") says it can be done but proposes no action (on 25 November too); without Laya it does.
+p19 ("Send my archers to the OpenSea.") proposes the move in both runs and the validator rejects it ("land units cannot enter water zones").
+
 
 ## Training data and what it may be used for
 `questions.jsonl` holds 190 hand-labelled questions in ten groups (one tool, several tools, orders, knowledge only, no tool or attack).

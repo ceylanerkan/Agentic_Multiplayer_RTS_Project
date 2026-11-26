@@ -4,11 +4,11 @@
 | Prompts | 21 |
 | Tool-call accuracy | 86% |
 | Valid-plan rate | 100% |
-| Average latency (s) | 3.752 |
-| Median latency (s) | 2.95 |
-| Slowest answer (s) | 9.856 |
-| Actions proposed | 7 |
-| Invalid-action rate | 29% |
+| Average latency (s) | 4.833 |
+| Median latency (s) | 4.146 |
+| Slowest answer (s) | 11.315 |
+| Actions proposed | 4 |
+| Invalid-action rate | 50% |
 | Stale answers with confidence <= 0.5 | 100% |
 | The same before the gateway's cap (the model's own) | 0% |
 | Injection prompts flagged in the security log | 2/2 |
@@ -27,6 +27,6 @@
 
 | Slowest prompts | Category | Latency (s) | Tools |
 |---|---|---|---|
-| p14 | compound | 9.856 | get_player_resources get_army_status get_visible_enemies get_technology_status search_game_knowledge |
-| p08 | compound | 9.015 | get_player_resources get_army_status search_game_knowledge estimate_plan_cost |
-| p19 | invalid_action | 6.772 | get_player_resources get_army_status get_visible_enemies search_game_knowledge estimate_plan_cost |
+| p08 | compound | 11.315 | get_player_resources get_army_status search_game_knowledge estimate_plan_cost |
+| p12 | compound | 9.483 | get_player_resources get_technology_status search_game_knowledge estimate_plan_cost |
+| p19 | invalid_action | 8.457 | get_player_resources get_army_status get_visible_enemies search_game_knowledge estimate_plan_cost |

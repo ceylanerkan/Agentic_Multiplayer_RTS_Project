@@ -9,16 +9,16 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler, serbest bina yerleştirme ve yol bulma otomatik maçta (81/81), fare build'de (sanal fare) | - |
 | Multiplayer (15) | 24 Kasım: iki build ile öğrenci denedi; 25 Kasım: yeni kodla otomatik iki oyunculu maç 35/35, iki taraf arasında 0 fark | - |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
-| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn | istem değişti, 21 soru yeniden ölçülecek |
+| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn; 26 Kasım yeni istemle Laya kapalı/açık 8,9 / 4,8 sn | - |
 | Onay + güvenlik (10) | Approve, Reject, validator reddi, gizli bilgi sorusu ve Ask why oyunda çalıştı | - |
-| Değerlendirme (10) | 25 Kasım: araç %100, geçerli plan %100, güvenlik 2/2, reddedilen eylem 2/7 | yalnız rapora tabloların girmesi |
+| Değerlendirme (10) | 26 Kasım (yeni istem): Laya kapalı araç %95, açık %86; geçerli plan %100, güvenlik 2/2 ikisinde de; reddedilen eylem 1/6 ve 2/4 | yalnız rapora tabloların girmesi |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
 Son push: `c712f50`.
-Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soruluk
-ölçüm bu değişiklikten önceki istemle yapıldı. **Öğrenci (25 Kasım): önce oyun bitsin, ölçüm sonra.**
+Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soru
+26 Kasım'da yeni istemle yeniden ölçüldü (aşağıda 3d).
 
 ## Kararlar
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
@@ -128,8 +128,17 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [x] Claude (26 Kasım): `evaluation/security-tests.md` canlı sütunu dolu (S1, S6, S8, S9, S10, S13, S16; `live_security.json`, oyunun güvenlik logu, otomatik maç).
 - [x] Claude: bilgi sorusunda kanıta kaynak id'si (`tech_iron_weapons_v1`) eklendi (`agent.evidence`); getirilmemiş kaynak kanıttan siliniyor. Canlı modelle denenmedi.
 - [x] Claude: oyunda (otomatik maç) "What does Iron Weapons do?", gizli bilgi sorusu, "Train 20 archers right now." ve Ask why çalıştı. 20 okçuda model artık
-      eylem önermiyor, yani validator reddi bu soruyla gösterilemez: demoya başka örnek gerek. "Enemy cavalry..." sorusunda da eylem önermedi (boş yer 2).
+      eylem önermiyor, yani validator reddi bu soruyla gösterilemez. Demoya örnek (26 Kasım ölçümü): p19 "Send my archers to the OpenSea." iki turda da eylem önerdi,
+      validator reddetti ("land units cannot enter water zones"). "Enemy cavalry..." sorusunda da eylem önermedi (boş yer 2).
 - MCP Inspector görüntüsü isteğe bağlı: ödev 6.1 "MCP Inspector or your own test client ... screenshots/logs" diyor, `evaluation/mcp_calls_table.md` var.
+
+**3d. Yeni istemle ölçüm - bitti (26 Kasım)**
+- [x] Claude: 21 soru Laya kapalı ve açık art arda (şarjda, sessiz mod, uyku engelli, `OLLAMA_NUM_GPU` yok: 29 katmanın 25'i kartta, oyundaki gibi).
+      Kapalı: ortalama 8,91 / ortanca 7,99 / en yavaş 31,9 sn, araç %95 (p11 maliyet yok), plan %100, güvenlik 2/2, reddedilen 1/6.
+      Açık: 4,83 / 4,15 / 11,3 sn, araç %86 (p02, p05, p11, dünkü gibi), plan %100, güvenlik 2/2, reddedilen 2/4.
+      Kapalı turun ilk sorusu 31,9 sn: model yüklüydü ama uzun istem Ollama önbelleğinde değildi; p01'siz ortalama 7,76 / 4,96 sn. Süreler 25 Kasım'la
+      karşılaştırılamaz (GPU ayarı ve makinenin durumu farklı olabilir). Dünkü dosyalar `results_ollama_1125_1304.*`, `results_ollama_laya_1125_1310.*`;
+      tablo `evaluation/tool_router/README.md`.
 
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
@@ -165,6 +174,8 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - Kalan hatalar (son tur): p14'te "40 villagers" (nüfusu köylü saydı), p11'de Dock'u deniz bölgesine koydu, p17'de yer yokken köylü, p05'te 3 yerine 1 spearman.
 - S10: model kendi kaynaklarını "diğer oyuncunun" diye sundu; gerçek rakip verisi yok ama cevap yanıltıcıydı.
 - Model, aracın "yer yok" demesine rağmen istenen planı aynen öneriyor; validator reddediyor (`not enough population capacity`).
+- 26 Kasım: model yüklendikten sonraki ilk soru 31,9 sn (uzun istem henüz Ollama önbelleğinde değil), sonrakiler 2-17 sn. Laya kapalıyken p17'de
+  oyunda olmayan "Age of Feudalism" dedi.
 - Local model 96 sn'den 11-30 sn'ye indi (küçük context, modeli bellekte tutma, önceden yükleme, RAG'in internete çıkmaması).
 
 ## Sorun çıkınca bakılacak yerler
