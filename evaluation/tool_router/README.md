@@ -61,7 +61,7 @@ With Laya, p21 ("Research fletching for my archers.") says it can be done but pr
 p19 ("Send my archers to the OpenSea.") proposes the move in both runs and the validator rejects it ("land units cannot enter water zones").
 
 ### 26 November, after the fixes
-Four changes, then the same 21 prompts again (`results_ollama.*`, `results_ollama_laya.*`; same power state as the table above):
+Four changes, then the same 21 prompts again (`results_ollama_1126_1201.*`, `results_ollama_laya_1126_1203.*`; same power state as the table above):
 1. **Rule check in the gateway** (`ai/gateway/agent.py`): every plan is checked with the game's approval rules (`ai/common/plan_checks.py`,
    the Python copy of `GameActionValidator`) before the player sees it. Refused actions go back to qwen once, with the reason and the
    current resources; whatever it still proposes is refused by Unity at approval as before (log: `plan_corrected_by_rule_check`).
@@ -85,6 +85,31 @@ Four changes, then the same 21 prompts again (`results_ollama.*`, `results_ollam
 With Laya the average is longer than before the fixes (4.83 s) because p05 and p11 now calculate the cost (about 18 s each) and p19 gets a
 correction step. Still wrong: with Laya p05 proposes 3 Archers against Cavalry (the rule says Spearmen); without Laya p17 names an
 "Age of Feudalism" that the game does not have.
+
+### 26 November, evening: counters, "ask why", House numbers
+Three more changes, then the 21 prompts on the charger (`results_ollama.*`, `results_ollama_laya.*`; a run on battery the same evening
+took 21.3 s on average without Laya and was not used):
+1. **Counter check** (`weak_matchups` in `agent.py`): a trained unit that loses against an enemy type in sight and beats none of them goes
+   back to qwen once, with what beats that enemy from the game data (`units.json` `weaknesses`). The first version flagged every
+   loss and turned Raider Boats against Warships into Archers because one Archer was also in sight (p11); it was made milder.
+2. **"Ask why" may not repeat the plan:** a near copy of the earlier summary gets one more step; if qwen repeats it again, the gateway
+   shows the reasons that the plan itself gave.
+3. **Cost tool:** when the population is short, the verdict also gives the number after one more House; the prompt says that buildings
+   are built, never trained, and that there are only Age I and Age II.
+
+| 21 prompts | Without Laya | With Laya |
+|---|---|---|
+| Average / median / slowest answer (s) | 7.78 / 6.37 / 18.93 | 7.76 / 5.69 / 22.98 |
+| Tool-call accuracy | **100%** | 95% (p02 one extra tool) |
+| Valid plans | 100% | 100% |
+| Injection prompts safe | 2/2 | 2/2 |
+| Rejected actions | 0/5 | 0/7 |
+| Plans corrected by the checks | 1 (p19, Archers to the sea) | 1 (p19, Archers against Warships) |
+
+p05 now proposes Spearmen against Cavalry and p11 Raider Boats against Warships on both paths. **Laya is no longer faster on average:**
+its lead in the morning (4.83 against 8.91 s) came partly from skipping the cost calculation, which caused wrong plans. Now that the cost is
+calculated and the plans are checked, both paths take 7.8 s on average; Laya's median is 0.7 s lower and it needs about 1 GB more memory
+beside Unity. Still wrong: with Laya, p14 says that a Catapult counters Archers (the data says Cavalry and Warships beat Archers).
 
 
 ## Training data and what it may be used for

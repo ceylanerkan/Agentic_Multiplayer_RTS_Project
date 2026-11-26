@@ -140,7 +140,8 @@ def refused_actions(plan, state):
 
 
 def weak_matchups(plan, state):
-    """[(action, text)] for trained units that lose against an enemy type in sight, with what beats that enemy (game data)."""
+    """[(action, text)] for trained units that lose against an enemy type in sight and beat none of them, with what beats that enemy
+    (game data). Not stricter: one Archer in sight made the check turn Raider Boats against Warships into Archers (evaluation p11)."""
     units, seen = plan_checks.DATA["units"], {e["type"] for e in state.get("visible_enemies", [])}
     out = []
     for a in plan["actions"]:
@@ -148,7 +149,8 @@ def weak_matchups(plan, state):
         if a.get("action_type") != "TRAIN_UNIT" or u in ("villager", "fishing_boat") or u not in units:
             continue
         foes = sorted(seen & set(units[u].get("weaknesses", [])))
-        if foes:
+        prey = {f for f in seen if u in units.get(f, {}).get("weaknesses", [])}   # it beats one of them: a fair choice (Raider Boat vs Warship)
+        if foes and not prey:
             beats = sorted({b for f in foes for b in units.get(f, {}).get("weaknesses", [])} - {"villager", "fishing_boat"})
             out.append((a, f"{u} loses against the {' and '.join(foes)} in sight (game data); {' and '.join(foes)} lose against "
                            f"{', '.join(beats) or 'no unit in the data'}"))

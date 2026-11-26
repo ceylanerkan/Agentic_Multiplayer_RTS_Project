@@ -9,9 +9,9 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | RTS oyunu (20) | Çalışıyor: üs, odun, House, Barracks, Archer/Spearman üretimi, sis, saldırı, Victory/Defeat; 25 Kasım: araştırma, Stable, mancınık, Dock, gemiler, serbest bina yerleştirme ve yol bulma otomatik maçta (81/81), fare build'de (sanal fare) | - |
 | Multiplayer (15) | 24 Kasım: iki build ile öğrenci denedi; 25 Kasım: yeni kodla otomatik iki oyunculu maç 35/35, iki taraf arasında 0 fark | - |
 | MCP (15) | 7 araç, testler, 7 aracın geçerli/geçersiz girdi logu (gerçek MCP) | Inspector ekran görüntüleri |
-| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn; 26 Kasım yeni istemle Laya kapalı/açık 8,9 / 4,8 sn | - |
+| LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn; 26 Kasım akşam son kodla Laya kapalı/açık 7,8 / 7,8 sn (ortanca 6,4 / 5,7) | - |
 | Onay + güvenlik (10) | Approve, Reject, validator reddi, gizli bilgi sorusu ve Ask why oyunda çalıştı | - |
-| Değerlendirme (10) | 26 Kasım (yeni istem): Laya kapalı araç %95, açık %86; geçerli plan %100, güvenlik 2/2 ikisinde de; reddedilen eylem 1/6 ve 2/4 | yalnız rapora tabloların girmesi |
+| Değerlendirme (10) | 26 Kasım akşam (son kod): Laya kapalı araç %100, açık %95; geçerli plan %100, güvenlik 2/2, reddedilen eylem 0/5 ve 0/7 | yalnız rapora tabloların girmesi |
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
@@ -156,6 +156,17 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
       Gateway ısınması 18 sn'de bitti.
       **Temiz tur (26 Kasım 18:12, pilde): 99/99, Unity logunda 0 hata** (`evaluation/unity_autoplay_ai.md`); AI bölümü 7/7, cevaplar pilde 7-32 sn.
       Ask why bu turda yine özeti tekrarladı (önceki turda gerekçe vermişti): düzeltme her seferinde tutmuyor, raporda söylenmeli.
+
+**3f. AI geliştirme, akşam (26 Kasım) - bitti**
+- [x] Claude: karşı birim kontrolü (görünen düşmana yenilen ve hiçbirini yenmeyen birim modele bir kez döner, `units.json` verisiyle), Ask why planı tekrar
+      ederse bir adım daha, yine tekrar ederse planın kendi gerekçeleri; maliyet aracı nüfus yetmezse "bir House daha: en çok N" diyor; istem: binalar
+      kurulur, yalnız Age I ve II. Tam `pytest -q ai evaluation`: 88 geçti.
+- [x] 21 soru şarjda: Laya kapalı araç %100, reddedilen 0/5, 7,78 / 6,37 sn; Laya açık araç %95, reddedilen 0/7, 7,76 / 5,69 sn; güvenlik 2/2, plan %100.
+      p05 iki yolda Spearman, p11 Raider Boat. **Laya artık ortalamada hızlı değil** (sabahki farkın bir kısmı maliyet hesabını atlamasındandı); ortanca 0,7 sn
+      düşük, Unity yanında ~1 GB fazla bellek. Laya açık mı kapalı mı: öğrenci karar verecek (`.env` `TOOL_ROUTER`).
+- [x] Canlı güvenlik satırları (`live_security.py`, Laya açık): hepsi güvenli; S9 Ask why artık gerekçe veriyor ("based on the fact that it increases
+      the attack ... by +2").
+- Kalan model hataları (rapora): Laya'lı p14 "catapult counters archers"; Laya'sız p19 "Build a House as you need more resources".
 
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.

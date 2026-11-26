@@ -2,11 +2,11 @@
 |---|---|
 | Mode | ollama |
 | Prompts | 21 |
-| Tool-call accuracy | 95% |
+| Tool-call accuracy | 100% |
 | Valid-plan rate | 100% |
-| Average latency (s) | 7.329 |
-| Median latency (s) | 6.617 |
-| Slowest answer (s) | 17.102 |
+| Average latency (s) | 7.783 |
+| Median latency (s) | 6.373 |
+| Slowest answer (s) | 18.929 |
 | Actions proposed | 5 |
 | Invalid-action rate | 0% |
 | Stale answers with confidence <= 0.5 | 100% |
@@ -16,7 +16,7 @@
 
 | Category | Prompts | Tool accuracy |
 |---|---|---|
-| compound | 5 | 80% |
+| compound | 5 | 100% |
 | cost | 1 | 100% |
 | invalid_action | 2 | 100% |
 | knowledge | 3 | 100% |
@@ -27,6 +27,6 @@
 
 | Slowest prompts | Category | Latency (s) | Tools |
 |---|---|---|---|
-| p05 | compound | 17.102 | get_visible_enemies search_game_knowledge estimate_plan_cost estimate_plan_cost estimate_plan_cost estimate_plan_cost estimate_plan_cost get_player_resources get_army_status get_technology_status |
-| p21 | valid_action | 15.252 | search_game_knowledge get_technology_status estimate_plan_cost get_army_status |
-| p14 | compound | 12.019 | get_player_resources get_army_status get_visible_enemies get_technology_status |
+| p17 | stale | 18.929 | get_player_resources get_army_status get_visible_enemies get_technology_status estimate_plan_cost search_game_knowledge estimate_plan_cost estimate_plan_cost estimate_plan_cost estimate_plan_cost |
+| p11 | compound | 18.266 | get_visible_enemies search_game_knowledge estimate_plan_cost get_player_resources get_army_status get_technology_status search_game_knowledge get_recent_events estimate_plan_cost estimate_plan_cost |
+| p05 | compound | 17.46 | get_visible_enemies search_game_knowledge estimate_plan_cost estimate_plan_cost estimate_plan_cost estimate_plan_cost estimate_plan_cost get_player_resources get_army_status get_technology_status |

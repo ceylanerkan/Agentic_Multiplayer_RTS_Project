@@ -1,0 +1,1 @@
+{"session": "860a4fc4", "scores": {"get_player_resources": 0.282, "get_army_status": 0.232, "get_visible_enemies": 0.149, "get_technology_status": 0.581, "get_recent_events": 0.034, "estimate_plan_cost": 0.28, "search_game_knowledge": 0.871}, "selected": ["get_technology_status", "search_game_knowledge"], "duration_ms": 1235, "error": null, "ts": "2026-11-26T15:39:58"}
