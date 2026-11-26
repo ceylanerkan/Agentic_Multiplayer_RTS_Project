@@ -1,7 +1,7 @@
 # An Agentic Multiplayer RTS: Photon Fusion 2, an MCP Tool Server and Retrieval-Augmented Strategy Advice
 
 **CSE-377 Game Programming, final project report (IEEE structure).**
-Author: *[student name and number]*. Team size: one student (written instructor approval: *[date / mention]*).
+Author: *[student name and number]*. Team: one student (single-person team).
 
 > Draft status: sections marked **[TODO live]** need numbers from the live run with the local LLM or screenshots from the
 > Unity editor. Everything else describes code that exists in this repository.

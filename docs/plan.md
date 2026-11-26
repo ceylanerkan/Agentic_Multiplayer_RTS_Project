@@ -12,7 +12,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | LLM + RAG + plan (20) | Local Ollama, Unity'den uçtan uca çalıştı; 21 soruda ortalama 11,3 -> 6,5 -> 5,2 sn, Laya ile 3,75 sn (Unity kapalı); Unity ile birlikte 1,4-3,8 sn; 26 Kasım akşam son kodla Laya kapalı/açık 7,8 / 7,8 sn (ortanca 6,4 / 5,7) | - |
 | Onay + güvenlik (10) | Approve, Reject, validator reddi, gizli bilgi sorusu ve Ask why oyunda çalıştı | - |
 | Değerlendirme (10) | 26 Kasım akşam (son kod): Laya kapalı araç %100, açık %95; geçerli plan %100, güvenlik 2/2, reddedilen eylem 0/5 ve 0/7 | yalnız rapora tabloların girmesi |
-| Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
+| Rapor + canlı demo (10) | Rapor taslağı, demo taslağı (slayt ve video yok, öğrencinin kararı) | 9 `[TODO live]`, demo metni, metrik sayfası |
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
 başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=off` (26 Kasım akşam, öğrencinin kararı; açmak için `laya`).
@@ -30,6 +30,8 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 - **Unity editörünü öğrenci kullanır**, sonuçları sohbete yazar; kodu, Python'u ve belgeleri Claude yapar. Öğrencinin isteğiyle (25 Kasım) Claude editör
   kapalıyken penceresiz otomatik maç (`AutoPlayTest`) çalıştırabilir: yaklaşık 9 dk, AI'sız hafif, AI ile boş RAM 0,3 GB'a iner.
 - **Test az:** her değişiklikte tam test yok, planda olmayan yeni test yok. Push'tan önce sorulur, commit küçük tutulur.
+- **Slayt ve video yok** (öğrenci, 26 Kasım): sunum = oyunun canlı gösterimi. PDF 14.1 "Presentation slides", 13 "backup video strongly recommended" diyor;
+  öğrenci biliyor ve istemiyor. Raporda takım: "one student (single-person team)", hoca onayı satırı yok.
 - **Hocaya mesaj işi yok** (öğrenci, 25 Kasım: "tamamen unut, önemsiz"): tekrar önerilmeyecek.
 - Öğrenci oyunu deneyip eklenecekleri söyleyecek (25 Kasım); AI testleri ondan sonra.
 - 29 Kasım'dan sonra yeni özellik yok.
@@ -175,8 +177,9 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
 - [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda).
-- [ ] Claude: raporu IEEE A4 Word/PDF yap, `docs/slides-outline.md`'den sunum (.pptx). `docs/demo-script.md`'yi son hâle göre düzelt.
-- [ ] Öğrenci: rapora ad ve numara; yedek demo videosu (9 senaryo, `docs/demo-script.md`).
+- [ ] Claude: raporu IEEE A4 Word/PDF yap. `docs/demo-script.md`'yi son hâle göre düzelt (7. senaryo: model artık geçersiz eylem önermiyor; plan al,
+      kaynağı harca, sonra Approve -> validator reddi). 9. senaryo için demoda açılacak tek sayfalık metrik tablosu. Slayt yok.
+- [ ] Öğrenci: rapora ad ve numara. (Video yok, öğrencinin kararı.)
 
 ### 5. Kapanış (29-30 Kasım)
 - [x] Claude (25 Kasım): tam `pytest -q ai evaluation` (88), gizli anahtar taraması (temiz), temiz klonda dizin + testler + mock değerlendirme çalıştı.

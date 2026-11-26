@@ -1,7 +1,7 @@
 # Report
 
 `report.md` is the IEEE-structured report (Abstract, I-XII). Open items are marked **[TODO live]** (numbers from the live run with the local LLM,
-two-instance test results, demo video link), plus the author line and the instructor approval note at the top.
+two-instance test results), plus the author line at the top. No slides and no video (student, 26 Nov 2026): the presentation is the live demo.
 
 Export to PDF (A4, two columns, needs pandoc and a LaTeX engine):
 
