@@ -4,6 +4,8 @@ LLM_PROVIDER in .env picks the model: "ollama" (default: local model, no key) or
 """
 import json
 import os
+import time
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 
@@ -103,13 +105,29 @@ class OllamaLLM(LLM):
     def __init__(self, model, base_url="http://127.0.0.1:11434", timeout_s=120):
         self.model, self.url, self.timeout_s = model, base_url.rstrip("/") + "/api/chat", timeout_s
 
-    def warm_up(self):
-        """Loads the model into memory (about 10 s), so the first question of a match does not wait for it."""
+    def warm_up(self, system=None, tools=None):
+        """Loads the model into memory (about 10 s), so the first question of a match does not wait for it. With the system prompt
+        and the tools it also reads them once: Ollama keeps that beginning of the prompt, and the first question took 32 s without it
+        (evaluation of 26 Nov), the next ones 2-17 s."""
         body = {"model": self.model, "messages": [], "keep_alive": KEEP_ALIVE, "options": options()}
+        if system:
+            body = self._body(system, [{"role": "user", "text": "Warm-up, no answer needed."}], tools or [])
+            body["stream"], body["options"]["num_predict"] = False, 1
         req = urllib.request.Request(self.url, json.dumps(body).encode(), {"Content-Type": "application/json"})
-        urllib.request.urlopen(req, timeout=self.timeout_s).close()
+        self._open(req).close()
 
-    def step(self, system, history, tools):
+    def _open(self, req):
+        """Ollama answers 500 when starting the model fails. Beside Unity, with little free memory, that happened twice in one match
+        (CUDA \"shared object initialization failed\", 26 Nov) and the next try worked each time, so a 500 is tried once more."""
+        try:
+            return urllib.request.urlopen(req, timeout=self.timeout_s)
+        except urllib.error.HTTPError as e:
+            if e.code != 500:
+                raise
+            time.sleep(2)
+            return urllib.request.urlopen(req, timeout=self.timeout_s)
+
+    def _body(self, system, history, tools):
         messages = [{"role": "system", "content": system}]
         for h in history:
             if h["role"] == "user":
@@ -128,12 +146,16 @@ class OllamaLLM(LLM):
             body["options"]["num_predict"] = 250  # cut off a runaway answer early; the repair step then writes the plan
             body["tools"] = [{"type": "function", "function": {
                 "name": t["name"], "description": t["description"], "parameters": t["schema"]}} for t in tools]
+        return body
+
+    def step(self, system, history, tools):
+        body = self._body(system, history, tools)
         req = urllib.request.Request(self.url, json.dumps(body).encode(), {"Content-Type": "application/json"})
         # After the tool calls the 7B model often writes a page of prose instead of the plan (10 s, a third of all model time).
         # The answer is streamed, so such a reply is dropped after a paragraph and the agent's reminder (tools or JSON, no prose) follows at once.
         may_stop = "format" not in body and any(h["role"] == "tool" for h in history)
         text, raw_calls = "", []
-        with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
+        with self._open(req) as resp:
             for line in resp:
                 part = json.loads(line)
                 if "error" in part:

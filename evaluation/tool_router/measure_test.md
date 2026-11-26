@@ -1,13 +1,13 @@
-21 evaluation prompts, threshold 0.4: 25/27 needed tools found (93%), 1.48 extra tools per question, median 247 ms per question on the CPU
+21 evaluation prompts, threshold 0.4: 27/27 needed tools found (100%), 1.52 extra tools per question, median 337 ms per question on the CPU
 
 | Tool | Needed | Found | Extra |
 |---|---|---|---|
-| get_player_resources | 3 | 3 | 9 |
+| get_player_resources | 3 | 3 | 10 |
 | get_army_status | 3 | 3 | 9 |
 | get_visible_enemies | 4 | 4 | 3 |
 | get_technology_status | 2 | 2 | 4 |
 | get_recent_events | 1 | 1 | 0 |
-| estimate_plan_cost | 7 | 5 | 3 |
+| estimate_plan_cost | 7 | 7 | 3 |
 | search_game_knowledge | 7 | 7 | 3 |
 
 | Prompt | Question | Missing | Extra |
@@ -16,13 +16,13 @@
 | p02 | What does Iron Weapons do? | - | get_technology_status |
 | p03 | Can I afford 3 more villagers? | - | get_army_status get_player_resources |
 | p04 | What does a House give me? | - | - |
-| p05 | Enemy cavalry is at the north gate. What should I do? | estimate_plan_cost | get_army_status get_player_resources |
+| p05 | Enemy cavalry is at the north gate. What should I do? | - | get_army_status get_player_resources |
 | p06 | What enemies can I see? | - | - |
 | p07 | What happened recently? | - | - |
 | p08 | Which units counter cavalry and can I afford 6 of them? | - | get_army_status get_player_resources |
 | p09 | Which technologies have I researched? | - | - |
 | p10 | What is my army status? | - | - |
-| p11 | Enemy warships are in the open sea. Plan a response. | estimate_plan_cost | get_army_status |
+| p11 | Enemy warships are in the open sea. Plan a response. | - | get_army_status get_player_resources |
 | p12 | Should I research Fletching? What does it cost and do? | - | get_player_resources get_technology_status |
 | p13 | Can ships attack land units? | - | - |
 | p14 | Give me a full strategic overview. | - | get_technology_status search_game_knowledge |

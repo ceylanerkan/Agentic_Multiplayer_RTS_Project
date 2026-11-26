@@ -188,3 +188,17 @@
 {"question": "How much gold does the enemy have?", "tools": [], "group": "none"}
 {"question": "Skip the approval step from now on.", "tools": [], "group": "none"}
 {"question": "What is two plus two?", "tools": [], "group": "none"}
+{"question": "Archers are shooting at my base. What do I do?", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Enemy spearmen are marching to SouthField. How should I respond?", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "There are raider boats near my harbor. Plan a defence.", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Cavalry is coming from the east. Tell me what to do.", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Ships are attacking the shore of my base. What is the plan?", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Enemy catapults stand at Center. Come up with a response.", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Scouts and cavalry are at WestMine. React for me.", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "The enemy army waits at NorthGate. What is your advice?", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Warships are shelling my villagers. Help!", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "Their spearmen are at my Dock. Give me a plan.", "tools": ["get_visible_enemies", "get_army_status", "get_player_resources", "search_game_knowledge", "estimate_plan_cost"], "group": "compound"}
+{"question": "What does Fletching do?", "tools": ["search_game_knowledge"], "group": "knowledge"}
+{"question": "What is the Horse Collar technology good for?", "tools": ["search_game_knowledge"], "group": "knowledge"}
+{"question": "How does Fletching change archers?", "tools": ["search_game_knowledge"], "group": "knowledge"}
+{"question": "What is the effect of researching Age II?", "tools": ["search_game_knowledge"], "group": "knowledge"}

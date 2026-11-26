@@ -26,6 +26,7 @@ Code: [ai/gateway/tool_router.py](../../ai/gateway/tool_router.py). Log of every
 | Untrained, one multiple-choice question | 13/27 test | 0.81 | 0.43 s per question |
 | Fine-tuned decision layer of Laya, 20 epochs (`measure_finetuned_dev.md`) | 30/40 held out | 1.43 | 34 minutes of wall time on a quiet laptop CPU (the laptop slept for about 14 of them), 842 MB result |
 | **Laya unchanged + small classifiers** (`train_report.md`, `measure_test.md`) | **25/27 test**, 89% cross-validated | 1.48 test, 0.99 cross-validated | **1 minute, 86 KB**, 0.25 s per question |
+| The same, 14 more training questions (26 November, see below) | **27/27 test**, 92% cross-validated | 1.52 test, 0.91 cross-validated | 1 minute, 0.34 s per question |
 
 With qwen behind it, 25 November (`results_ollama_1125_1304.*` without, `results_ollama_laya_1125_1310.*` with Laya; one after the other,
 same power state):
@@ -42,8 +43,8 @@ What gets worse: qwen mostly stops calling tools of its own, so a cost calculati
 question got an extra tool (p02). p08 answered "archers counter cavalry" although the rule was in the results. The instruction texts behind
 the prefetch were adjusted while looking at these 21 prompts, so the numbers are optimistic for new questions.
 
-With qwen behind it, 26 November, after the prompt changed for free building placement (`results_ollama.*` without, `results_ollama_laya.*`
-with Laya; one after the other, charger, silent mode, default GPU split of Ollama: 25 of 29 layers on the card). The run without Laya went first:
+With qwen behind it, 26 November, after the prompt changed for free building placement (`results_ollama_1126_1137.*` without,
+`results_ollama_laya_1126_1139.*` with Laya; one after the other, charger, silent mode, default GPU split of Ollama: 25 of 29 layers on the card). The run without Laya went first:
 its first question took 31.9 s because the long prompt was not yet in Ollama's cache (the model itself had been loaded before), so it is also
 given without p01. Times are only comparable inside this table, not with 25 November.
 
@@ -59,9 +60,35 @@ given without p01. Times are only comparable inside this table, not with 25 Nove
 With Laya, p21 ("Research fletching for my archers.") says it can be done but proposes no action (on 25 November too); without Laya it does.
 p19 ("Send my archers to the OpenSea.") proposes the move in both runs and the validator rejects it ("land units cannot enter water zones").
 
+### 26 November, after the fixes
+Four changes, then the same 21 prompts again (`results_ollama.*`, `results_ollama_laya.*`; same power state as the table above):
+1. **Rule check in the gateway** (`ai/gateway/agent.py`): every plan is checked with the game's approval rules (`ai/common/plan_checks.py`,
+   the Python copy of `GameActionValidator`) before the player sees it. Refused actions go back to qwen once, with the reason and the
+   current resources; whatever it still proposes is refused by Unity at approval as before (log: `plan_corrected_by_rule_check`).
+2. **Orders get an action:** when the question is an order ("Train ...", "Research ...") and the answer has no action and does not say that
+   it is impossible, qwen is told once to put the order into `actions` (not for flagged questions and not for "Ask why").
+3. **Warm-up reads the prompt:** the gateway's warm-up sends the system prompt and the tools once, so Ollama keeps them; the first question
+   no longer pays for reading them (p01 31.9 s -> 2.3 s).
+4. **Laya:** 14 more training questions (10 threats with "what should I do / plan a response", 4 about what a technology does). They were
+   written after p05 and p11 had failed, so the test numbers are optimistic for new questions; `router_data.py` still refuses copies of the
+   test prompts. "Ask why" now gets the whole earlier plan and is asked for the facts behind it, not the summary again.
+
+| 21 prompts | Without Laya | With Laya |
+|---|---|---|
+| Average / median / slowest answer (s) | 7.33 / 6.62 / 17.10 | **6.38 / 4.50 / 17.87** |
+| Tool-call accuracy | 95% (p11 no cost) | **95%** (p02 one extra tool) |
+| Valid plans | 100% | 100% |
+| Injection prompts safe | 2/2 | 2/2 |
+| Rejected actions | **0/5** | **0/5** |
+| Plans corrected by the rule check | 0 | 1 (p19) |
+
+With Laya the average is longer than before the fixes (4.83 s) because p05 and p11 now calculate the cost (about 18 s each) and p19 gets a
+correction step. Still wrong: with Laya p05 proposes 3 Archers against Cavalry (the rule says Spearmen); without Laya p17 names an
+"Age of Feudalism" that the game does not have.
+
 
 ## Training data and what it may be used for
-`questions.jsonl` holds 190 hand-labelled questions in ten groups (one tool, several tools, orders, knowledge only, no tool or attack).
+`questions.jsonl` holds 204 hand-labelled questions (190 on 25 November) in ten groups (one tool, several tools, orders, knowledge only, no tool or attack).
 The 21 prompts of `evaluation/prompts.jsonl` are the test set and are **not** in it: `router_data.py` refuses duplicates and questions that
 share 75% of their words with a test prompt. The threshold (0.4) was chosen by cross-validation on the training questions only.
 

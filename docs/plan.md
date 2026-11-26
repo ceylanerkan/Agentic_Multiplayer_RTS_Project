@@ -140,6 +140,17 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
       karşılaştırılamaz (GPU ayarı ve makinenin durumu farklı olabilir). Dünkü dosyalar `results_ollama_1125_1304.*`, `results_ollama_laya_1125_1310.*`;
       tablo `evaluation/tool_router/README.md`.
 
+**3e. AI düzeltmeleri - kod bitti, Unity+AI maçı yeniden koşuyor (26 Kasım)**
+- [x] Claude: gateway her planı oyunun onay kurallarıyla (`ai/common/plan_checks.py`, eskiden `evaluation/`) kontrol ediyor; reddedilecek eylem modele
+      bir kez gerekçesiyle dönüyor (log `plan_corrected_by_rule_check`). Mümkün bir emre eylem yazılmadıysa model bir kez uyarılıyor (işaretli soru ve Ask why hariç).
+      Isınma istemi ve araçları da okutuyor (ilk soru 31,9 -> 2,3 sn). Ollama model başlatırken 500 verirse bir kez daha deneniyor (CUDA "shared object
+      initialization failed", düşük RAM'de iki kez oldu). Ask why önceki planın tamamını görüyor, özeti tekrar etmemesi isteniyor.
+- [x] Claude: Laya'ya 14 eğitim sorusu (204), yeniden eğitildi: çapraz doğrulama %89 -> %92, test 25/27 -> 27/27 (sorular p05/p11 hatasından sonra
+      yazıldı, raporda söylenmeli). Gateway ve değerlendirme testleri 57/57 (test verisinde Barracks ve kaynak düzeltildi).
+- [x] 21 soru: Laya kapalı araç %95, reddedilen 0/5, 7,33 / 6,62 sn; Laya açık araç %95, reddedilen 0/5, 6,38 / 4,50 sn; güvenlik 2/2, plan %100.
+      Kalan: Laya'lı p05 süvariye karşı okçu önerdi; Laya'sız p17 "Age of Feudalism".
+- [ ] Unity+AI otomatik maçı: ilk tur 97/99 (Ollama çöktü, Ask why testi Approve'dan sonra soruyordu; ikisi düzeldi), ikinci tur 26 Kasım 12:24'te başladı.
+
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
 - [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda).

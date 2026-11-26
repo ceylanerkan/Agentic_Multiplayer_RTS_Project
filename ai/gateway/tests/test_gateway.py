@@ -8,7 +8,7 @@ from common.session_store import SessionStore
 
 SNAP = {"match_id": "m", "game_time_s": 100, "age": 1,
         "resources": {"wood": 100, "food": 200, "gold": 0}, "population": {"used": 3, "capacity": 5},
-        "own_army": [], "own_buildings": [{"type": "town_center", "count": 1}],
+        "own_army": [], "own_buildings": [{"type": "town_center", "count": 1}, {"type": "barracks", "count": 1}],
         "visible_enemies": [{"type": "cavalry", "count": 4, "zone": "NorthGate"}],
         "researched_tech": [], "recent_events": []}
 PLAN = {"summary": "Train spearmen.", "confidence": 0.7, "evidence": ["unit_spearman_v1"],

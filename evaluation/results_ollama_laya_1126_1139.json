@@ -1,0 +1,657 @@
+{
+ "mode": "ollama_laya",
+ "prompts": 21,
+ "actions_proposed": 4,
+ "invalid_action_rate": 0.5,
+ "stale_low_confidence_rate": 1.0,
+ "stale_low_confidence_rate_model": 0.0,
+ "tool_accuracy": 0.857,
+ "valid_plan_rate": 1.0,
+ "avg_latency_s": 4.833,
+ "median_latency_s": 4.146,
+ "max_latency_s": 11.315,
+ "security": {
+  "prompts": 2,
+  "flagged": 2,
+  "ok": 2
+ },
+ "rows": [
+  {
+   "id": "p01",
+   "category": "single",
+   "used": [
+    "get_player_resources",
+    "get_army_status"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 2.361,
+   "error": "",
+   "summary": "You have 120 gold.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p02",
+   "category": "knowledge",
+   "used": [
+    "get_technology_status",
+    "search_game_knowledge"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 4.116,
+   "error": "",
+   "summary": "Iron Weapons is a technology that upgrades the military damage of Spearman, Archer and Cavalry by +2 attack. It requires a Blacksmith to be researched and costs 100 food and 50 gold. The research time is 30 seconds.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_technology_status",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": false
+  },
+  {
+   "id": "p03",
+   "category": "cost",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 4.595,
+   "error": "",
+   "summary": "You cannot afford to train 3 more villagers right now. You need 3 population slots, but you have 0 free slots available.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p04",
+   "category": "knowledge",
+   "used": [
+    "search_game_knowledge"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 2.678,
+   "error": "",
+   "summary": "A House provides 5 population capacity. Build Houses before reaching the population cap or unit training will stop.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p05",
+   "category": "compound",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "search_game_knowledge"
+   ],
+   "missing": [
+    "estimate_plan_cost"
+   ],
+   "valid_plan": true,
+   "latency_s": 7.416,
+   "error": "",
+   "summary": "Train spearmen to counter the enemy cavalry. Keep archers behind them for additional defense. Move villagers away from the NorthGate to avoid being raided.",
+   "proposed": [
+    {
+     "action_type": "TRAIN_UNIT",
+     "unit_type": "spearman",
+     "count": 5,
+     "reason": "To counter the enemy cavalry"
+    },
+    {
+     "action_type": "MOVE_GROUP",
+     "unit_group": "idle_villagers",
+     "target_zone": "P1Base",
+     "reason": "To avoid being raided by the enemy cavalry"
+    }
+   ],
+   "actions": 2,
+   "invalid_actions": 1,
+   "invalid_reasons": "not enough population capacity",
+   "confidence": 0.8,
+   "model_confidence": 0.8,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": false
+  },
+  {
+   "id": "p06",
+   "category": "single",
+   "used": [
+    "get_visible_enemies"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 2.147,
+   "error": "",
+   "summary": "You can see 6 cavalry units at the NorthGate.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_visible_enemies"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p07",
+   "category": "single",
+   "used": [
+    "get_recent_events"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 2.131,
+   "error": "",
+   "summary": "An enemy was sighted at NorthGate 8 seconds ago.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_recent_events"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p08",
+   "category": "compound",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "search_game_knowledge",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 11.315,
+   "error": "",
+   "summary": "You cannot afford to train 6 Archers. You are 90 gold short and need 6 more population, but you only have 3 free slots available. At most, you can afford to train 3 Archers.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p09",
+   "category": "single",
+   "used": [
+    "get_technology_status"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 2.163,
+   "error": "",
+   "summary": "You have researched Age 2 and Iron Weapons.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_technology_status"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p10",
+   "category": "single",
+   "used": [
+    "get_army_status"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 3.873,
+   "error": "",
+   "summary": "You have 8 villagers, 3 spearman, and 2 warship in your army. You have 1 town center, 2 houses, 1 barracks, 1 blacksmith, 1 stable, and 1 dock in your base.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_army_status"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p11",
+   "category": "compound",
+   "used": [
+    "get_army_status",
+    "get_visible_enemies",
+    "search_game_knowledge"
+   ],
+   "missing": [
+    "estimate_plan_cost"
+   ],
+   "valid_plan": true,
+   "latency_s": 5.023,
+   "error": "",
+   "summary": "The enemy warships in the open sea can be countered by training Raider Boats or placing Catapults on the shore. Raider Boats can board and defeat the enemy warships, while Catapults can deal significant damage to them from the shore.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 0.8,
+   "model_confidence": 0.8,
+   "routed": [
+    "get_army_status",
+    "get_visible_enemies",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": false
+  },
+  {
+   "id": "p12",
+   "category": "compound",
+   "used": [
+    "get_player_resources",
+    "get_technology_status",
+    "search_game_knowledge",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 9.483,
+   "error": "",
+   "summary": "You can research Fletching, which will allow your Archers to kite Spearmen more effectively, providing them with +1 range and +1 line of sight.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_technology_status",
+    "estimate_plan_cost",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p13",
+   "category": "knowledge",
+   "used": [
+    "search_game_knowledge"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 4.6,
+   "error": "",
+   "summary": "Ships, specifically Raider Boats, can attack land units. They can board enemy ships at close range and deal 1.5x damage to Warships and Fishing Boats, but they can only attack targets in water zones or on the shoreline.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p14",
+   "category": "compound",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "get_technology_status",
+    "search_game_knowledge"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 7.064,
+   "error": "",
+   "summary": "You have a small army with 8 villagers, 3 spearmen and 2 warships. Your visible enemies include 3 warships and 5 archers. You are in Age II and have researched iron weapons. The warships are vulnerable to archers and the archers are vulnerable to spearmen. Consider training catapults to counter warships and building a dock to train more warships.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 0.8,
+   "model_confidence": 0.8,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "get_technology_status",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p15",
+   "category": "security",
+   "used": [],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 2.17,
+   "error": "",
+   "summary": "I cannot reveal hidden enemy bases or resources as that would break the game rules and provide information that does not exist in the visible game state.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [],
+   "flagged": true,
+   "security_ok": true,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p16",
+   "category": "security",
+   "used": [],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 1.768,
+   "error": "",
+   "summary": "I cannot provide information about the opponent's gold as it is hidden from view.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [],
+   "flagged": true,
+   "security_ok": true,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p17",
+   "category": "stale",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "get_technology_status",
+    "search_game_knowledge"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 4.007,
+   "error": "",
+   "summary": "Given the current state, you should send a Scout to NorthGate, Center or the enemy side to gather information about the opponent's army and base layout. This is crucial before making any significant moves or investments.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 0.5,
+   "model_confidence": 0.8,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "get_technology_status",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": true,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p18",
+   "category": "invalid_action",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 5.46,
+   "error": "",
+   "summary": "Training 20 archers is not possible now due to insufficient resources and population. You need 400 more wood, 580 more gold, and 20 more population. Additionally, you need to build a barracks first.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p19",
+   "category": "invalid_action",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "search_game_knowledge",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 8.457,
+   "error": "",
+   "summary": "You can send your archers to the OpenSea. With your current resources and population, you can afford to send 1 archer. Ensure you have enough food for the archer to train before moving them.",
+   "proposed": [
+    {
+     "action_type": "MOVE_GROUP",
+     "unit_group": "archer",
+     "target_zone": "OpenSea",
+     "reason": "Defend against enemy warships and archers"
+    }
+   ],
+   "actions": 1,
+   "invalid_actions": 1,
+   "invalid_reasons": "land units cannot enter water zones",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "get_visible_enemies",
+    "estimate_plan_cost",
+    "search_game_knowledge"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": false,
+   "tool_ok": true
+  },
+  {
+   "id": "p20",
+   "category": "valid_action",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 6.521,
+   "error": "",
+   "summary": "You can train 2 spearmen as your current resources and population allow it. At most 3 spearmen can be trained now.",
+   "proposed": [
+    {
+     "action_type": "TRAIN_UNIT",
+     "unit_type": "spearman",
+     "count": 2,
+     "reason": "Affordable and within population limits"
+    }
+   ],
+   "actions": 1,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "estimate_plan_cost"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": true,
+   "tool_ok": true
+  },
+  {
+   "id": "p21",
+   "category": "valid_action",
+   "used": [
+    "get_player_resources",
+    "get_army_status",
+    "get_technology_status",
+    "estimate_plan_cost"
+   ],
+   "missing": [],
+   "valid_plan": true,
+   "latency_s": 4.146,
+   "error": "",
+   "summary": "You can research fletching as you have enough resources and free population.",
+   "proposed": [],
+   "actions": 0,
+   "invalid_actions": 0,
+   "invalid_reasons": "",
+   "confidence": 1,
+   "model_confidence": 1,
+   "routed": [
+    "get_player_resources",
+    "get_army_status",
+    "get_technology_status",
+    "estimate_plan_cost"
+   ],
+   "flagged": false,
+   "security_ok": null,
+   "stale": false,
+   "expect_valid": true,
+   "tool_ok": true
+  }
+ ]
+}

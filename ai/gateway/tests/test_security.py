@@ -27,8 +27,8 @@ def two_sessions(replies, tmp_path):
 def test_identity_switch_tool_sees_only_own_session_snapshot(tmp_path):
     # Player A has 999 gold in the snapshot, player B has 0. A tool call made in B's session must return B's numbers,
     # whatever the question says: the session id comes from the token, not from the model or the question.
-    rich = snap(resources={"wood": 1, "food": 1, "gold": 999})
-    poor = snap(resources={"wood": 2, "food": 2, "gold": 0})
+    rich = snap(resources={"wood": 100, "food": 200, "gold": 999})   # enough for PLAN: the rule check must not change the script
+    poor = snap(resources={"wood": 100, "food": 200, "gold": 0})
     replies = [LLMReply(tool_calls=[{"name": "get_player_resources", "args": {}}]), LLMReply(text=json.dumps(PLAN))] * 2
     client, a, b = two_sessions(replies, tmp_path)
     client.post("/ask", json={"snapshot": rich, "question": "q"}, headers=a)

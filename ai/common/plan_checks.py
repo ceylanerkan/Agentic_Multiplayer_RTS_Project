@@ -1,11 +1,11 @@
-"""Python copy of the gameplay checks in GameActionValidator.cs (Assets/Scripts/Core/Rules), used to measure the
-invalid-action rate of AI plans without Unity. Numbers come from ai/rag/knowledge/*.json, same as in Unity.
+"""Python copy of the gameplay checks in GameActionValidator.cs (Assets/Scripts/Core/Rules). The gateway checks every plan with it
+before the player sees it (agent.py), and the evaluation measures the invalid-action rate of AI plans with it, without Unity. Numbers come from ai/rag/knowledge/*.json, same as in Unity.
 Keep it in sync with the C# class: the tests in evaluation/tests/test_plan_checks.py mirror the C# EditMode tests.
 """
 import json
 from pathlib import Path
 
-KNOW = Path(__file__).resolve().parents[1] / "ai" / "rag" / "knowledge"
+KNOW = Path(__file__).resolve().parents[1] / "rag" / "knowledge"
 GROUPS = {"all_military", "all_ships", "idle_villagers"}  # plus every unit type except villager (schema)
 LAND = {"P1Base", "P2Base", "NorthGate", "SouthField", "EastForest", "WestMine", "Center"}
 WATER = {"P1Harbor", "P2Harbor", "OpenSea"}

@@ -4,8 +4,8 @@ import sys
 from pathlib import Path
 
 E = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(E))
-import plan_checks as pc  # noqa: E402
+sys.path.insert(0, str(E.parent / "ai"))
+from common import plan_checks as pc  # noqa: E402
 
 
 def state(name="early_economy"):
@@ -57,7 +57,7 @@ def test_python_and_csharp_validators_give_the_same_reasons():
     import re
     from pathlib import Path
     root = Path(__file__).resolve().parents[2]
-    py = (root / "evaluation/plan_checks.py").read_text(encoding="utf-8")
+    py = (root / "ai/common/plan_checks.py").read_text(encoding="utf-8")
     cs = (root / "UnityRTS/Assets/Scripts/Core/Rules/GameActionValidator.cs").read_text(encoding="utf-8")
     reasons = re.findall(r'return "([^"]+)"', py)
     assert len(reasons) >= 10

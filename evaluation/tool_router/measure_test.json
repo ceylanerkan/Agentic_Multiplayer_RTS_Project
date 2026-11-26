@@ -1,8 +1,8 @@
 {
- "median_ms": 247,
- "found": 25,
+ "median_ms": 337,
+ "found": 27,
  "needed": 27,
- "extra": 31,
+ "extra": 32,
  "rows": [
   {
    "question": "How much gold do I have?",
@@ -12,13 +12,13 @@
    "group": "single",
    "id": "p01",
    "scores": {
-    "get_player_resources": 0.733,
-    "get_army_status": 0.515,
-    "get_visible_enemies": 0.149,
-    "get_technology_status": 0.144,
-    "get_recent_events": 0.034,
-    "estimate_plan_cost": 0.338,
-    "search_game_knowledge": 0.329
+    "get_player_resources": 0.702,
+    "get_army_status": 0.476,
+    "get_visible_enemies": 0.126,
+    "get_technology_status": 0.156,
+    "get_recent_events": 0.033,
+    "estimate_plan_cost": 0.275,
+    "search_game_knowledge": 0.273
    },
    "chosen": [
     "get_player_resources",
@@ -33,13 +33,13 @@
    "group": "knowledge",
    "id": "p02",
    "scores": {
-    "get_player_resources": 0.292,
-    "get_army_status": 0.239,
-    "get_visible_enemies": 0.162,
-    "get_technology_status": 0.608,
-    "get_recent_events": 0.038,
-    "estimate_plan_cost": 0.292,
-    "search_game_knowledge": 0.861
+    "get_player_resources": 0.282,
+    "get_army_status": 0.232,
+    "get_visible_enemies": 0.149,
+    "get_technology_status": 0.581,
+    "get_recent_events": 0.034,
+    "estimate_plan_cost": 0.28,
+    "search_game_knowledge": 0.871
    },
    "chosen": [
     "get_technology_status",
@@ -54,13 +54,13 @@
    "group": "cost",
    "id": "p03",
    "scores": {
-    "get_player_resources": 0.847,
-    "get_army_status": 0.526,
-    "get_visible_enemies": 0.073,
-    "get_technology_status": 0.029,
-    "get_recent_events": 0.045,
-    "estimate_plan_cost": 0.94,
-    "search_game_knowledge": 0.186
+    "get_player_resources": 0.838,
+    "get_army_status": 0.479,
+    "get_visible_enemies": 0.067,
+    "get_technology_status": 0.027,
+    "get_recent_events": 0.043,
+    "estimate_plan_cost": 0.942,
+    "search_game_knowledge": 0.196
    },
    "chosen": [
     "get_player_resources",
@@ -76,13 +76,13 @@
    "group": "knowledge",
    "id": "p04",
    "scores": {
-    "get_player_resources": 0.247,
-    "get_army_status": 0.305,
-    "get_visible_enemies": 0.129,
-    "get_technology_status": 0.339,
-    "get_recent_events": 0.066,
-    "estimate_plan_cost": 0.208,
-    "search_game_knowledge": 0.86
+    "get_player_resources": 0.243,
+    "get_army_status": 0.288,
+    "get_visible_enemies": 0.11,
+    "get_technology_status": 0.324,
+    "get_recent_events": 0.061,
+    "estimate_plan_cost": 0.196,
+    "search_game_knowledge": 0.846
    },
    "chosen": [
     "search_game_knowledge"
@@ -98,18 +98,19 @@
    "group": "compound",
    "id": "p05",
    "scores": {
-    "get_player_resources": 0.401,
-    "get_army_status": 0.646,
-    "get_visible_enemies": 0.954,
-    "get_technology_status": 0.051,
-    "get_recent_events": 0.197,
-    "estimate_plan_cost": 0.387,
-    "search_game_knowledge": 0.534
+    "get_player_resources": 0.562,
+    "get_army_status": 0.724,
+    "get_visible_enemies": 0.968,
+    "get_technology_status": 0.039,
+    "get_recent_events": 0.184,
+    "estimate_plan_cost": 0.621,
+    "search_game_knowledge": 0.667
    },
    "chosen": [
     "get_player_resources",
     "get_army_status",
     "get_visible_enemies",
+    "estimate_plan_cost",
     "search_game_knowledge"
    ]
   },
@@ -121,13 +122,13 @@
    "group": "single",
    "id": "p06",
    "scores": {
-    "get_player_resources": 0.207,
-    "get_army_status": 0.209,
-    "get_visible_enemies": 0.87,
-    "get_technology_status": 0.102,
-    "get_recent_events": 0.246,
-    "estimate_plan_cost": 0.136,
-    "search_game_knowledge": 0.214
+    "get_player_resources": 0.217,
+    "get_army_status": 0.206,
+    "get_visible_enemies": 0.857,
+    "get_technology_status": 0.096,
+    "get_recent_events": 0.241,
+    "estimate_plan_cost": 0.172,
+    "search_game_knowledge": 0.265
    },
    "chosen": [
     "get_visible_enemies"
@@ -141,13 +142,13 @@
    "group": "single",
    "id": "p07",
    "scores": {
-    "get_player_resources": 0.122,
-    "get_army_status": 0.111,
-    "get_visible_enemies": 0.294,
-    "get_technology_status": 0.261,
-    "get_recent_events": 0.978,
-    "estimate_plan_cost": 0.064,
-    "search_game_knowledge": 0.082
+    "get_player_resources": 0.105,
+    "get_army_status": 0.098,
+    "get_visible_enemies": 0.245,
+    "get_technology_status": 0.276,
+    "get_recent_events": 0.981,
+    "estimate_plan_cost": 0.069,
+    "search_game_knowledge": 0.067
    },
    "chosen": [
     "get_recent_events"
@@ -162,13 +163,13 @@
    "group": "compound",
    "id": "p08",
    "scores": {
-    "get_player_resources": 0.644,
-    "get_army_status": 0.704,
-    "get_visible_enemies": 0.184,
-    "get_technology_status": 0.081,
-    "get_recent_events": 0.02,
-    "estimate_plan_cost": 0.92,
-    "search_game_knowledge": 0.818
+    "get_player_resources": 0.665,
+    "get_army_status": 0.7,
+    "get_visible_enemies": 0.194,
+    "get_technology_status": 0.074,
+    "get_recent_events": 0.018,
+    "estimate_plan_cost": 0.924,
+    "search_game_knowledge": 0.821
    },
    "chosen": [
     "get_player_resources",
@@ -185,13 +186,13 @@
    "group": "single",
    "id": "p09",
    "scores": {
-    "get_player_resources": 0.171,
-    "get_army_status": 0.138,
-    "get_visible_enemies": 0.081,
-    "get_technology_status": 0.901,
-    "get_recent_events": 0.199,
-    "estimate_plan_cost": 0.099,
-    "search_game_knowledge": 0.275
+    "get_player_resources": 0.158,
+    "get_army_status": 0.119,
+    "get_visible_enemies": 0.066,
+    "get_technology_status": 0.9,
+    "get_recent_events": 0.201,
+    "estimate_plan_cost": 0.094,
+    "search_game_knowledge": 0.267
    },
    "chosen": [
     "get_technology_status"
@@ -205,13 +206,13 @@
    "group": "single",
    "id": "p10",
    "scores": {
-    "get_player_resources": 0.331,
-    "get_army_status": 0.703,
-    "get_visible_enemies": 0.349,
-    "get_technology_status": 0.134,
-    "get_recent_events": 0.208,
-    "estimate_plan_cost": 0.142,
-    "search_game_knowledge": 0.228
+    "get_player_resources": 0.334,
+    "get_army_status": 0.695,
+    "get_visible_enemies": 0.34,
+    "get_technology_status": 0.13,
+    "get_recent_events": 0.2,
+    "estimate_plan_cost": 0.173,
+    "search_game_knowledge": 0.232
    },
    "chosen": [
     "get_army_status"
@@ -227,17 +228,19 @@
    "group": "compound",
    "id": "p11",
    "scores": {
-    "get_player_resources": 0.375,
-    "get_army_status": 0.548,
-    "get_visible_enemies": 0.916,
-    "get_technology_status": 0.173,
-    "get_recent_events": 0.161,
-    "estimate_plan_cost": 0.349,
-    "search_game_knowledge": 0.408
+    "get_player_resources": 0.577,
+    "get_army_status": 0.672,
+    "get_visible_enemies": 0.948,
+    "get_technology_status": 0.146,
+    "get_recent_events": 0.141,
+    "estimate_plan_cost": 0.582,
+    "search_game_knowledge": 0.557
    },
    "chosen": [
+    "get_player_resources",
     "get_army_status",
     "get_visible_enemies",
+    "estimate_plan_cost",
     "search_game_knowledge"
    ]
   },
@@ -250,13 +253,13 @@
    "group": "compound",
    "id": "p12",
    "scores": {
-    "get_player_resources": 0.441,
-    "get_army_status": 0.184,
-    "get_visible_enemies": 0.078,
-    "get_technology_status": 0.903,
-    "get_recent_events": 0.074,
-    "estimate_plan_cost": 0.554,
-    "search_game_knowledge": 0.818
+    "get_player_resources": 0.429,
+    "get_army_status": 0.168,
+    "get_visible_enemies": 0.075,
+    "get_technology_status": 0.874,
+    "get_recent_events": 0.063,
+    "estimate_plan_cost": 0.548,
+    "search_game_knowledge": 0.844
    },
    "chosen": [
     "get_player_resources",
@@ -273,13 +276,13 @@
    "group": "knowledge",
    "id": "p13",
    "scores": {
-    "get_player_resources": 0.235,
-    "get_army_status": 0.391,
-    "get_visible_enemies": 0.242,
-    "get_technology_status": 0.148,
-    "get_recent_events": 0.041,
-    "estimate_plan_cost": 0.2,
-    "search_game_knowledge": 0.927
+    "get_player_resources": 0.258,
+    "get_army_status": 0.394,
+    "get_visible_enemies": 0.243,
+    "get_technology_status": 0.14,
+    "get_recent_events": 0.038,
+    "estimate_plan_cost": 0.233,
+    "search_game_knowledge": 0.932
    },
    "chosen": [
     "search_game_knowledge"
@@ -295,13 +298,13 @@
    "group": "compound",
    "id": "p14",
    "scores": {
-    "get_player_resources": 0.47,
-    "get_army_status": 0.555,
-    "get_visible_enemies": 0.444,
-    "get_technology_status": 0.409,
-    "get_recent_events": 0.168,
-    "estimate_plan_cost": 0.199,
-    "search_game_knowledge": 0.485
+    "get_player_resources": 0.498,
+    "get_army_status": 0.566,
+    "get_visible_enemies": 0.427,
+    "get_technology_status": 0.424,
+    "get_recent_events": 0.166,
+    "estimate_plan_cost": 0.246,
+    "search_game_knowledge": 0.513
    },
    "chosen": [
     "get_player_resources",
@@ -317,13 +320,13 @@
    "group": "security",
    "id": "p15",
    "scores": {
-    "get_player_resources": 0.15,
-    "get_army_status": 0.162,
-    "get_visible_enemies": 0.71,
-    "get_technology_status": 0.088,
-    "get_recent_events": 0.083,
-    "estimate_plan_cost": 0.16,
-    "search_game_knowledge": 0.252
+    "get_player_resources": 0.193,
+    "get_army_status": 0.189,
+    "get_visible_enemies": 0.721,
+    "get_technology_status": 0.082,
+    "get_recent_events": 0.077,
+    "estimate_plan_cost": 0.257,
+    "search_game_knowledge": 0.285
    },
    "chosen": [
     "get_visible_enemies"
@@ -335,13 +338,13 @@
    "group": "security",
    "id": "p16",
    "scores": {
-    "get_player_resources": 0.495,
-    "get_army_status": 0.323,
-    "get_visible_enemies": 0.255,
-    "get_technology_status": 0.302,
-    "get_recent_events": 0.037,
-    "estimate_plan_cost": 0.41,
-    "search_game_knowledge": 0.218
+    "get_player_resources": 0.539,
+    "get_army_status": 0.342,
+    "get_visible_enemies": 0.278,
+    "get_technology_status": 0.3,
+    "get_recent_events": 0.034,
+    "estimate_plan_cost": 0.464,
+    "search_game_knowledge": 0.257
    },
    "chosen": [
     "get_player_resources",
@@ -356,13 +359,13 @@
    "group": "stale",
    "id": "p17",
    "scores": {
-    "get_player_resources": 0.615,
-    "get_army_status": 0.466,
-    "get_visible_enemies": 0.425,
-    "get_technology_status": 0.603,
-    "get_recent_events": 0.272,
-    "estimate_plan_cost": 0.257,
-    "search_game_knowledge": 0.416
+    "get_player_resources": 0.661,
+    "get_army_status": 0.491,
+    "get_visible_enemies": 0.406,
+    "get_technology_status": 0.56,
+    "get_recent_events": 0.265,
+    "estimate_plan_cost": 0.308,
+    "search_game_knowledge": 0.457
    },
    "chosen": [
     "get_player_resources",
@@ -380,13 +383,13 @@
    "group": "invalid_action",
    "id": "p18",
    "scores": {
-    "get_player_resources": 0.64,
-    "get_army_status": 0.918,
-    "get_visible_enemies": 0.23,
+    "get_player_resources": 0.626,
+    "get_army_status": 0.906,
+    "get_visible_enemies": 0.213,
     "get_technology_status": 0.087,
-    "get_recent_events": 0.038,
-    "estimate_plan_cost": 0.856,
-    "search_game_knowledge": 0.326
+    "get_recent_events": 0.036,
+    "estimate_plan_cost": 0.839,
+    "search_game_knowledge": 0.31
    },
    "chosen": [
     "get_player_resources",
@@ -402,13 +405,13 @@
    "group": "invalid_action",
    "id": "p19",
    "scores": {
-    "get_player_resources": 0.592,
-    "get_army_status": 0.881,
-    "get_visible_enemies": 0.413,
-    "get_technology_status": 0.085,
-    "get_recent_events": 0.031,
-    "estimate_plan_cost": 0.548,
-    "search_game_knowledge": 0.412
+    "get_player_resources": 0.633,
+    "get_army_status": 0.893,
+    "get_visible_enemies": 0.42,
+    "get_technology_status": 0.074,
+    "get_recent_events": 0.027,
+    "estimate_plan_cost": 0.627,
+    "search_game_knowledge": 0.515
    },
    "chosen": [
     "get_player_resources",
@@ -427,12 +430,12 @@
    "id": "p20",
    "scores": {
     "get_player_resources": 0.526,
-    "get_army_status": 0.86,
-    "get_visible_enemies": 0.183,
-    "get_technology_status": 0.094,
-    "get_recent_events": 0.052,
-    "estimate_plan_cost": 0.662,
-    "search_game_knowledge": 0.295
+    "get_army_status": 0.848,
+    "get_visible_enemies": 0.171,
+    "get_technology_status": 0.089,
+    "get_recent_events": 0.049,
+    "estimate_plan_cost": 0.669,
+    "search_game_knowledge": 0.29
    },
    "chosen": [
     "get_player_resources",
@@ -448,13 +451,13 @@
    "group": "valid_action",
    "id": "p21",
    "scores": {
-    "get_player_resources": 0.641,
-    "get_army_status": 0.532,
-    "get_visible_enemies": 0.155,
-    "get_technology_status": 0.536,
-    "get_recent_events": 0.048,
-    "estimate_plan_cost": 0.501,
-    "search_game_knowledge": 0.27
+    "get_player_resources": 0.632,
+    "get_army_status": 0.521,
+    "get_visible_enemies": 0.15,
+    "get_technology_status": 0.482,
+    "get_recent_events": 0.044,
+    "estimate_plan_cost": 0.52,
+    "search_game_knowledge": 0.319
    },
    "chosen": [
     "get_player_resources",

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import jsonschema
 
+from common import plan_checks
 from gateway.tool_router import NEEDS_MODEL_ARGS, prefetch_args
 
 SCHEMA_DIR = Path(__file__).resolve().parents[1] / "schemas"
@@ -74,6 +75,17 @@ ROUTED_ADVICE = ("These tool results were fetched for the player's question. If 
 REFUSAL = re.compile(r"\b(sorry|I (cannot|can['\u2019]t|won['\u2019]t|will not|am unable|am not able|am not allowed|do not have access"
                      r"|don['\u2019]t have access)|I['\u2019]m (unable|not able|not allowed))\b", re.I)
 
+# The game's own approval rules (plan_checks.py, a copy of GameActionValidator) run on every plan before the player sees it: the model
+# proposed actions that the approval refuses (5 Spearmen with 3 free places, Archers to the sea; evaluation of 26 Nov). It gets one try to fix
+# them; what it still proposes goes to the player, and the game's validator refuses it at approval with the reason.
+CHECK = ("The game would refuse these actions now: {bad}. Now: {now}. Propose only what is possible now (fewer units, a House first, "
+         "or no action) and make `summary` say the same. " + ONE_LINE)
+# A possible order got only an answer (evaluation p21 with Laya: "You can research fletching", nothing to approve).
+ORDER = re.compile(r"^\s*(please\s+)?(train|build|research|make|create|recruit|produce|send|move|attack|upgrade|construct|queue)\b", re.I)
+CANNOT = re.compile(r"\b(cannot|can['’]?t|can not|not possible|not enough|unable|impossible|short of)\b", re.I)
+ORDER_NOTE = ("The player gave an order. If it is possible now, put it into `actions` (the player still approves it) and say so in "
+              "`summary`; if it is not possible, keep `actions` empty and say why. " + ONE_LINE)
+
 SOURCE_ID = re.compile(r"[a-z]+_([a-z0-9_]+)_v\d+")   # tech_iron_weapons_v1 -> iron_weapons
 
 
@@ -104,6 +116,29 @@ def refusal_plan(text):
     return {"summary": summary, "confidence": 0.5, "evidence": [], "actions": []}
 
 
+def own_slot(state):
+    """1 or 2 from where the player's own units stand, None when that is unclear (then the enemy-base rule is left to Unity)."""
+    zones = {u.get("zone") for u in state.get("own_army", [])}
+    return 1 if "P1Base" in zones and "P2Base" not in zones else 2 if "P2Base" in zones and "P1Base" not in zones else None
+
+
+def refused_actions(plan, state):
+    """[(action, reason)] for the actions that the game would refuse now, and a short line about the current state."""
+    slot = own_slot(state)
+    reasons = plan_checks.validate_plan(plan, state, slot=slot or 1)
+    bad = [(a, r) for a, r in zip(plan["actions"], reasons) if r and not (slot is None and r == "cannot build in the enemy base")]
+    r, pop = state["resources"], state["population"]
+    now = (f"wood {r.get('wood', 0)}, food {r.get('food', 0)}, gold {r.get('gold', 0)}, "
+           f"free population {pop['capacity'] - pop['used']}, age {state['age']}")
+    return bad, now
+
+
+def _describe(a):
+    what = a.get("unit_type") or a.get("building_type") or a.get("tech_type") or a.get("unit_group") or ""
+    return " ".join(str(x) for x in (a["action_type"], what, f"x{a['count']}" if "count" in a else "",
+                                     f"to {a['target_zone']}" if "target_zone" in a else "") if x)
+
+
 def validate_plan(plan):
     jsonschema.Draft202012Validator(PLAN_SCHEMA).validate(plan)
 
@@ -118,8 +153,11 @@ def _parse_plan(text):
 
 
 class Agent:
-    def __init__(self, llm, mcp_server, tool_log, max_steps=6, timeout_s=30, router=None):
+    def __init__(self, llm, mcp_server, tool_log, max_steps=6, timeout_s=30, router=None, state=None, orders=False):
         self.llm, self.mcp, self.log = llm, mcp_server, tool_log
+        self.state = state     # callable -> the current snapshot (dict) or None: plans are checked against the game's rules
+        self.orders = orders   # the question may be an order (False for a suspected attack and for "ask why")
+        self.checked = []      # what the rule check refused: [(action, reason)] before the model's correction
         self.max_steps, self.timeout_s = max_steps, timeout_s
         self.router, self.routed = router, []   # optional pre-selection of tools (tool_router.py) and what it chose
 
@@ -177,7 +215,8 @@ class Agent:
         deadline = time.time() + self.timeout_s
         tools, used = self._tool_specs(), []
         history = [{"role": "user", "text": question + extra_context}]
-        repaired = final = reminded = False   # final: the model must answer now, without tools
+        repaired = final = reminded = checked = nudged = False   # final: the model must answer now, without tools
+        self.checked = []
         asked = False                         # the model has called a tool itself
         seen = set()
         self.routed = []
@@ -190,10 +229,11 @@ class Agent:
             if step == self.max_steps - 1 and step > 0 and not final and not repaired:
                 final = True   # last step: an answer from what is known is better than "max steps reached"
                 history.append({"role": "user", "text": "You have enough tool results. " + ONE_LINE})
-            reply = self.llm.step(SYSTEM_PROMPT, history, [] if final or repaired else tools)
+            no_tools = final or repaired or checked or nudged
+            reply = self.llm.step(SYSTEM_PROMPT, history, [] if no_tools else tools)
             step += 1
             if reply.tool_calls:
-                if final or repaired:
+                if no_tools:
                     continue
                 asked = True
                 history.append({"role": "model", "calls": reply.tool_calls, "text": ""})
@@ -216,13 +256,13 @@ class Agent:
                 continue
             refused = REFUSAL.search((reply.text or "")[:160])   # at the start: "You cannot afford it" later on is advice
             named = [t["name"] for t in tools if t["name"] in (reply.text or "")]
-            if named and not used and not refused and not (final or repaired or reminded):   # describes the tools instead of calling them (p14)
+            if named and not used and not refused and not (no_tools or reminded):   # describes the tools instead of calling them (p14)
                 reminded = True
                 history.append({"role": "model", "calls": [], "text": reply.text[:300]})
                 history.append({"role": "user", "text": f"You named {', '.join(named)} but called no tool, so you have no data yet. "
                                                         "Call the tools you need now. Afterwards: " + ONE_LINE})
                 continue
-            if not (final or repaired or reminded) and not (reply.text or "").lstrip().startswith(("{", "`")):
+            if not (no_tools or reminded) and not (reply.text or "").lstrip().startswith(("{", "`")):
                 if not asked and refused:
                     return refusal_plan(reply.text), used
                 reminded = True
@@ -231,8 +271,6 @@ class Agent:
                 continue
             try:
                 plan = _parse_plan(reply.text)
-                plan["evidence"] = evidence(plan, used, history, {t["name"] for t in tools})
-                return plan, used
             except (ValueError, jsonschema.ValidationError) as e:
                 if repaired:
                     raise AgentError(f"invalid plan after repair: {str(e)[:200]}")
@@ -241,4 +279,31 @@ class Agent:
                 history.append({"role": "model", "calls": [], "text": reply.text or ""})
                 history.append({"role": "user", "text": f"Your answer was not a valid RTSActionPlan: {str(e)[:300]}. "
                                                         + ONE_LINE})
+                continue
+            note = self._second_look(plan, question, history, checked, nudged)
+            if note:
+                checked, nudged = checked or note.startswith("The game"), nudged or note.startswith("The player")
+                limit = max(limit, step + 1)
+                history.append({"role": "model", "calls": [], "text": reply.text or ""})
+                history.append({"role": "user", "text": note})
+                continue
+            plan["evidence"] = evidence(plan, used, history, {t["name"] for t in tools})
+            return plan, used
         raise AgentError("max steps reached without a final plan")
+
+    def _second_look(self, plan, question, history, checked, nudged):
+        """One more step when the plan breaks the game's rules (once) or a possible order got no action (once); else None."""
+        state = self.state() if self.state else None
+        if state is None:
+            return None
+        if plan["actions"] and not checked:
+            bad, now = refused_actions(plan, state)
+            if bad:
+                self.checked = bad
+                return CHECK.format(bad="; ".join(f"{_describe(a)}: {r}" for a, r in bad), now=now)
+        if (not plan["actions"] and self.orders and not nudged and not checked and ORDER.match(question)
+                and not CANNOT.search(plan["summary"])
+                and not any(h["role"] == "tool" and h["name"] == "estimate_plan_cost" and isinstance(h["result"], dict)
+                            and str(h["result"].get("verdict", "")).startswith("NOT") for h in history)):
+            return ORDER_NOTE
+        return None
