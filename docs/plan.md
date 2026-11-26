@@ -179,7 +179,7 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 - [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda).
 - [ ] Claude: raporu IEEE A4 Word/PDF yap. `docs/demo-script.md`'yi son hâle göre düzelt (7. senaryo: model artık geçersiz eylem önermiyor; plan al,
       kaynağı harca, sonra Approve -> validator reddi). 9. senaryo için demoda açılacak tek sayfalık metrik tablosu. Slayt yok.
-- [ ] Öğrenci: rapora ad ve numara. (Video yok, öğrencinin kararı.)
+- [x] Öğrenci: rapora ad ve numara (26 Kasım, Claude yazdı). (Video yok, öğrencinin kararı.)
 
 ### 5. Kapanış (29-30 Kasım)
 - [x] Claude (25 Kasım): tam `pytest -q ai evaluation` (88), gizli anahtar taraması (temiz), temiz klonda dizin + testler + mock değerlendirme çalıştı.
