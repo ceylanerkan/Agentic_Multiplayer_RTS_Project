@@ -15,7 +15,7 @@ Teslim: **30 Kasım 2026**. Kalan işlerin tek güncel listesi bu dosya. `TODO.m
 | Rapor, sunum, video (10) | Rapor taslağı, sunum ve demo taslağı | 9 `[TODO live]`, sunum, video |
 
 **25 Kasım:** 3a ve Laya bitti, ölçüldü. Tam `pytest -q ai evaluation` 88 geçti. Öğrenci bilgisayarın sessiz moddan çıkmasını istemiyor, ağır işe
-başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=laya` (Claude oluşturdu; kapatmak için `off`).
+başlamadan sorulur. Öğrencinin `.env` dosyasında `TOOL_ROUTER=off` (26 Kasım akşam, öğrencinin kararı; açmak için `laya`).
 Son push: `c712f50`.
 Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İstemin BUILD satırı ve Dock bilgisi serbest yerleştirmeyle değişti; 21 soru
 26 Kasım'da yeni istemle yeniden ölçüldü (aşağıda 3d).
@@ -24,6 +24,8 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
 - **LLM local:** Ollama `qwen2.5:7b` (hoca local istiyor). Gemini/Groq önerilmeyecek; Gemini adaptörü kodda duruyor, kullanılmıyor.
 - **Laya + qwen (öğrenci 25 Kasım'da "Laya'yı kullanmak istiyorum" dedi):** Laya metin yazmaz, yalnız araç seçer; planı qwen yazar ve isterse
   ek araç çağırır. Ayardan kapatılabilir, hata olursa bugünkü yol çalışır.
+  **26 Kasım akşam öğrenci: "Laya kapalı olsun"** (son kodla hız aynı, araç doğruluğu kapalıyken %100, ~1 GB bellek kazancı). Demo ve oyun Laya'sız;
+  Laya raporda ölçülmüş bir deney olarak kalır, kodu ve ağırlıkları duruyor.
 - **Harita:** her üsse 4 ağaç. **Build:** Mono (IL2CPP kurulu değil, ödev istemiyor).
 - **Unity editörünü öğrenci kullanır**, sonuçları sohbete yazar; kodu, Python'u ve belgeleri Claude yapar. Öğrencinin isteğiyle (25 Kasım) Claude editör
   kapalıyken penceresiz otomatik maç (`AutoPlayTest`) çalıştırabilir: yaklaşık 9 dk, AI'sız hafif, AI ile boş RAM 0,3 GB'a iner.
@@ -163,7 +165,7 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
       kurulur, yalnız Age I ve II. Tam `pytest -q ai evaluation`: 88 geçti.
 - [x] 21 soru şarjda: Laya kapalı araç %100, reddedilen 0/5, 7,78 / 6,37 sn; Laya açık araç %95, reddedilen 0/7, 7,76 / 5,69 sn; güvenlik 2/2, plan %100.
       p05 iki yolda Spearman, p11 Raider Boat. **Laya artık ortalamada hızlı değil** (sabahki farkın bir kısmı maliyet hesabını atlamasındandı); ortanca 0,7 sn
-      düşük, Unity yanında ~1 GB fazla bellek. Laya açık mı kapalı mı: öğrenci karar verecek (`.env` `TOOL_ROUTER`).
+      düşük, Unity yanında ~1 GB fazla bellek. Öğrenci Laya'yı kapattı (`.env` `TOOL_ROUTER=off`).
 - [x] Canlı güvenlik satırları (`live_security.py`, Laya açık): hepsi güvenli; S9 Ask why artık gerekçe veriyor ("based on the fact that it increases
       the attack ... by +2").
 - Kalan model hataları (rapora): Laya'lı p14 "catapult counters archers"; Laya'sız p19 "Build a House as you need more resources".
