@@ -24,7 +24,7 @@ for p in (ROOT / "ai", ROOT / "ai" / "mcp-server", ROOT / "ai" / "rag"):
     sys.path.insert(0, str(p))
 
 from common.session_store import SessionStore  # noqa: E402
-from gateway.agent import SYSTEM_PROMPT, Agent, AgentError  # noqa: E402
+from gateway.agent import SYSTEM_PROMPT, Agent, AgentError, with_note  # noqa: E402
 from gateway.app import INJECTION, INJECTION_NOTE, STALE_CONFIDENCE  # noqa: E402
 from gateway.llm import LLM, LLMReply  # noqa: E402
 from gateway.logs import JsonlLog  # noqa: E402
@@ -163,7 +163,9 @@ def main():
             plan, used = agent.run("eval", p["question"], note)
             own_confidence = plan["confidence"]
             if p.get("stale"):
-                plan["confidence"] = min(own_confidence, STALE_CONFIDENCE)   # the gateway's cap
+                plan["confidence"] = min(plan["confidence"], STALE_CONFIDENCE)   # the gateway's cap and note
+                if "limited" not in plan["summary"]:
+                    plan["summary"] = with_note(plan["summary"], "Confidence is limited: the game data is old.")
         except AgentError as e:
             ok_plan, error = False, str(e)[:300]
         except Exception as e:  # a network or quota error must not abort the whole run: count it as a failed prompt

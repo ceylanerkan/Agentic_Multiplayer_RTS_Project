@@ -19,7 +19,7 @@ for p in (AI, AI / "mcp-server", AI / "rag"):
     sys.path.insert(0, str(p))
 
 from common.session_store import SessionStore  # noqa: E402
-from gateway.agent import SNAPSHOT_SCHEMA, SYSTEM_PROMPT, Agent, AgentError, similar  # noqa: E402
+from gateway.agent import SNAPSHOT_SCHEMA, SYSTEM_PROMPT, Agent, AgentError, similar, with_note  # noqa: E402
 from gateway.llm import agent_timeout_s, make_llm  # noqa: E402
 from gateway.logs import JsonlLog, short_id  # noqa: E402
 from gateway.tool_router import make_router  # noqa: E402
@@ -137,8 +137,10 @@ def create_app(store=None, llm=None, log_dir=None, snapshot_max_age_s=None):
             # Only the exception type goes to the log and the client: the message of an API error may contain request details.
             sec_log.write(session=short_id(token), event="llm_error", detail=type(e).__name__)
             raise HTTPException(502, f"AI service error ({type(e).__name__}). Check the gateway console, the API key and the quota.")
-        if stale:
+        if stale:   # the model does not say it by itself (evaluation): the answer states it
             plan["confidence"] = min(plan["confidence"], STALE_CONFIDENCE)
+            if "limited" not in plan["summary"]:
+                plan["summary"] = with_note(plan["summary"], f"Confidence is limited: the game data is older than {max_age:.0f} s.")
         last_plan[token] = (question, plan)
         return {"plan": plan, "tools_used": used, "needs_approval": bool(plan["actions"])}
 

@@ -52,6 +52,9 @@ def main():
         store.save_snapshot(sid, json.loads((HERE / "fixtures" / "late_game.json").read_text(encoding="utf-8")))
         with StdioMcp(sid, db) as mcp:
             asyncio.run(mcp.call_tool("search_game_knowledge", {"query": "warm up"}))   # not logged: loads the embedding model
+            listed = asyncio.run(mcp.list_tools())   # like MCP Inspector: the tool list with read-only flags and input schemas
+            tools = [(t.name, getattr(t.annotations, "read_only_hint", None), sorted((t.input_schema or {}).get("properties", {})))
+                     for t in listed]
             agent = Agent(None, mcp, JsonlLog(log_path))
             for tool, args, wrong in CALLS:
                 agent._call_tool("mcp_calls", tool, args)
@@ -59,7 +62,10 @@ def main():
                 if (entry["status"] == "error") != bool(wrong):
                     unexpected += 1
                 rows.append((tool, args, wrong, entry))
-    lines = ["| Tool | Input | Case | Status | ms | Refusal |", "|---|---|---|---|---|---|"]
+    lines = [f"Tools listed by the server over MCP stdio: {len(tools)}", "",
+             "| Tool | Read-only | Inputs |", "|---|---|---|"]
+    lines += [f"| {n} | {ro} | {', '.join(a) or '-'} |" for n, ro, a in tools]
+    lines += ["", "| Tool | Input | Case | Status | ms | Refusal |", "|---|---|---|---|---|---|"]
     for tool, args, wrong, e in rows:
         text = json.dumps(args)
         text = text if len(text) <= 70 else text[:67] + "..."

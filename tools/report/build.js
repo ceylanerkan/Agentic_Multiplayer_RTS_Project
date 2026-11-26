@@ -126,7 +126,8 @@ function table(rows) {
       children: r.map((c, j) => new TableCell({
         width: { size: widths[j], type: WidthType.DXA }, borders, verticalAlign: VerticalAlign.CENTER,
         margins: { top: 20, bottom: 20, left: 50, right: 50 },
-        children: [new Paragraph({ alignment: j === 0 || (ri > 0 && c.length > 30) ? AlignmentType.LEFT : AlignmentType.CENTER, spacing: { after: 0 }, keepNext: ri < rows.length - 1,   // a table stays in one piece
+        children: [new Paragraph({ alignment: j === 0 || (ri > 0 && c.length > 30) ? AlignmentType.LEFT : AlignmentType.CENTER, spacing: { after: 0 }, keepNext: (rows.length <= 9 || ri >= rows.length - 4) && ri < rows.length - 1,   // no lone last rows either
+            // a short table stays in one piece; a long one may break (its header repeats)
           children: runs(c, { size, bold: ri === 0 }) })],
       })),
     })),
@@ -212,6 +213,8 @@ const doc = new Document({
   sections: [
     { properties: { page: { size: PAGE, margin: MARGIN } }, children: head },
     { properties: { type: SectionType.CONTINUOUS, page: { size: PAGE, margin: MARGIN }, column: { count: 2, space: GAP, equalWidth: true } }, children: body },
+    // a continuous break at the end makes Word balance the two columns of the last page, as in the IEEE template
+    { properties: { type: SectionType.CONTINUOUS, page: { size: PAGE, margin: MARGIN } }, children: [new Paragraph({ spacing: { after: 0 }, children: [] })] },
   ],
 });
 Packer.toBuffer(doc).then(buf => { fs.writeFileSync(outPath, buf); console.log("wrote", outPath, buf.length, "bytes"); });

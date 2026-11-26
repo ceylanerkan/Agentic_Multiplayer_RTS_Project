@@ -169,6 +169,18 @@ def _describe(a):
                                      f"to {a['target_zone']}" if "target_zone" in a else "") if x)
 
 
+LIMITED_CONFIDENCE = 0.5
+
+
+def with_note(summary, note):
+    """The summary with a short note at the end, within the schema's 400 characters."""
+    room = 400 - len(note) - 1
+    if len(summary) > room:
+        cut = summary[:room]
+        summary = cut[:cut.rfind(". ") + 1] or cut[:cut.rfind(" ")] or cut
+    return (summary + " " + note).strip()
+
+
 def validate_plan(plan):
     jsonschema.Draft202012Validator(PLAN_SCHEMA).validate(plan)
 
@@ -189,6 +201,7 @@ class Agent:
         self.state = state     # callable -> the current snapshot (dict) or None: plans are checked against the game's rules
         self.orders = orders   # the question may be an order (False for a suspected attack and for "ask why")
         self.checked = []      # what the rule check refused: [(action, reason)] before the model's correction
+        self.tool_status = {}  # tool -> status of its last call in this run (a tool that never succeeded limits the confidence)
         self.max_steps, self.timeout_s = max_steps, timeout_s
         self.router, self.routed = router, []   # optional pre-selection of tools (tool_router.py) and what it chose
 
@@ -198,7 +211,7 @@ class Agent:
 
     def _call_tool(self, session, name, args):
         start = time.time()
-        status, validation_error = "ok", None
+        status, validation_error, spec = "ok", None, None
         try:
             # Reject arguments the tool does not declare (e.g. player_id, session_id): they would be ignored silently,
             # but an attempt to pass them should be visible in the log as an error.
@@ -217,6 +230,8 @@ class Agent:
         except Exception as e:  # unknown tool or schema-invalid arguments: report to the model, do not crash
             out, status, validation_error = {"error": f"tool call failed: {str(e)[:200]}"}, "error", str(e)[:200]
         end = time.time()
+        if spec is not None:   # a tool that exists; a made-up tool name is the model's mistake, not missing data
+            self.tool_status[name] = status
         results = next((len(v) for v in out.values() if isinstance(v, list)), 0) if isinstance(out, dict) else 0
         self.log.write(session=session, tool=name, args=args, start=round(start, 3), end=round(end, 3),
                        duration_ms=round((end - start) * 1000), status=status, result_count=results,
@@ -323,6 +338,10 @@ class Agent:
                 history.append({"role": "user", "text": note})
                 continue
             plan["evidence"] = evidence(plan, used, history, {t["name"] for t in tools})
+            failed = [t for t, s in self.tool_status.items() if s == "error"]
+            if failed:   # assignment 7.3: say that the confidence is limited instead of inventing the missing state
+                plan["confidence"] = min(plan["confidence"], LIMITED_CONFIDENCE)
+                plan["summary"] = with_note(plan["summary"], f"Confidence is limited: {', '.join(failed)} failed.")
             return plan, used
         raise AgentError("max steps reached without a final plan")
 
