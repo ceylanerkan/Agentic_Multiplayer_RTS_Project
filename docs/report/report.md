@@ -5,10 +5,10 @@ Author: Erkan Ceylan, 20230808034. Team: one student (single-person team).
 
 ## Abstract
 
-We built a small two-player real-time strategy game in Unity 6 with Photon Fusion 2 in Host Mode. Players gather
+We built a small two-player real-time strategy game in Unity 6 with Photon Fusion 2 [1] in Host Mode. Players gather
 wood, food and gold, build a base, train a counter-based army and fleet, advance one age and win by destroying the
 opponent's Town Center. On top of the game sits an AI Strategic Commander. The player asks a question; Unity sends a
-visibility-filtered snapshot to a Python gateway; an agent with a local LLM (Ollama, `qwen2.5:7b`) decides which of seven read-only MCP
+visibility-filtered snapshot to a Python gateway; an agent with a local LLM (Ollama [3], `qwen2.5:7b` [4]) decides which of seven read-only MCP
 tools to call, retrieves game knowledge with a local RAG index, and returns a schema-validated action plan. Nothing happens until the
 player approves the plan, and an approved plan travels through the same authoritative command path as manual play.
 We describe the design, the multiplayer authority model, the MCP and RAG components, the security boundaries around
@@ -25,7 +25,7 @@ The goal of this project is to show one complete, explainable solution to these 
 multiplayer game:
 
 1. **Multiplayer:** two Unity instances share one match with a single authority (the host).
-2. **Tool use:** the agent chooses tools at run time through the Model Context Protocol (MCP) instead of receiving
+2. **Tool use:** the agent chooses tools at run time through the Model Context Protocol (MCP) [2] instead of receiving
    a fixed prompt with all data.
 3. **Safety:** fog of war is applied before data leaves the game, every plan is checked against the game rules before the
    player sees it, the player approves it, and it is validated again at approval time and on the host.
@@ -196,6 +196,8 @@ Each check costs at most one extra model step. The player still approves every a
 **Tool test client.** Besides the agent, `evaluation/mcp_calls.py` calls all seven tools over the real MCP stdio protocol with
 valid and invalid inputs and logs the results (`evaluation/mcp_calls_table.md`); it takes the place of MCP Inspector screenshots.
 
+The loop interleaves model steps and tool results in the manner of ReAct [8].
+
 **Why MCP.** The tools are the only door through which the model can reach game data. Their number, inputs and
 read-only property are easy to audit, and the same server could be used by any MCP client (MCP Inspector, another
 model). The cost is an extra process in the demo; the in-process mode keeps unit tests fast.
@@ -207,9 +209,10 @@ model). The cost is an extra process in the demo; the in-process mode keeps unit
 `unit_spearman_v1` or `strategy_defend_cavalry_v1`; structured records are rendered as plain text so that both
 retrieval methods can use them.
 
-**Retrieval.** BM25 over title and text (the title is counted twice so that exact names win) is the baseline and runs
+**Retrieval.** BM25 [5] over title and text (the title is counted twice so that exact names win) is the baseline and runs
 without a model download. If `ai/rag/build_index.py` has been run and `sentence-transformers` is installed, the
-score becomes the average of the normalised BM25 score and the cosine similarity of the embeddings (hybrid). The tool
+score becomes the average of the normalised BM25 score and the cosine similarity of `all-MiniLM-L6-v2` sentence embeddings [6]
+(hybrid), as in retrieval-augmented generation [7]. The tool
 returns the top-k chunks with source id, score and text; `top_k` is clamped to 1-5 and the query length is limited.
 
 **Use in answers.** The agent puts retrieved source ids into the plan's `evidence` list, and the panel shows them, so
@@ -230,7 +233,7 @@ when embeddings are not installed. We do not rerank and we do not chunk below re
 
 **Structured output.** The model may only propose four action types: `TRAIN_UNIT`, `BUILD`, `MOVE_GROUP` and
 `RESEARCH`. Each action names unit, building or technology types from closed enumerations, a count of 1-20 and a zone
-from the ten zone names, plus a short reason. The JSON Schema (`action_plan.schema.json`) forbids every other field,
+from the ten zone names, plus a short reason. The JSON Schema [9] (`action_plan.schema.json`) forbids every other field,
 so the model cannot express "reveal the enemy base" or "delete a unit" at all.
 
 **Approval.** `AiCommanderPanel` shows the summary, confidence, evidence (tool names and knowledge ids), the tools
@@ -274,7 +277,7 @@ integrity of the game state and (3) the player's consent.
    refused (it would be paid twice), and a building can only stand on free
    ground in the validated zone (`BuildSite`).
 5. *Bounded behaviour.* Maximum 6 agent steps, 120 s, clamped `top_k`, limited query and question length, 20 events.
-6. *Prompt injection.* Tool results and retrieved text are marked as data and the system prompt says so; suspicious
+6. *Prompt injection* [11]. Tool results and retrieved text are marked as data and the system prompt says so; suspicious
    questions are logged. The real protection is structural: even a fully obedient model cannot reach hidden data,
    because no tool can return it.
 
@@ -366,7 +369,7 @@ The prompt was adjusted while looking at these 21 prompts, so the live numbers a
   ... a House ... 10 archers"); the cost tool now states the number after one more House. Without the tool router p17 once named
   an "Age of Feudalism".
 
-**Tool router experiment.** We also put a small decision model, Laya (an encoder that reads a question with its options and writes
+**Tool router experiment.** We also put a small decision model, Laya [10] (an encoder that reads a question with its options and writes
 no text), in front of the LLM: on the CPU it chooses the tools in 0.3 s, the gateway calls them in advance and qwen writes the
 plan. Laya is unchanged; small logistic classifiers on its reading were fitted on 204 hand-labelled questions that exclude the test
 prompts (92% of the needed tools found in cross-validation, 27 of 27 on the test prompts). Table IV compares both paths back to
@@ -498,3 +501,29 @@ Two lines of `decision-log.jsonl` from the automatic match with the live AI:
 
 **F. Test prompts, schemas and setup.** Prompts: `evaluation/prompts.jsonl`; fixtures: `evaluation/fixtures/`; schemas:
 `ai/schemas/action_plan.schema.json`, `ai/schemas/safe_snapshot.schema.json`; setup: `docs/setup.md`.
+
+## References
+
+[1] Exit Games, "Photon Fusion 2 documentation." [Online]. Available: https://doc.photonengine.com/fusion/current/
+
+[2] "Model Context Protocol specification." [Online]. Available: https://modelcontextprotocol.io/
+
+[3] Ollama, "Ollama: run large language models locally." [Online]. Available: https://ollama.com/
+
+[4] Qwen Team, "Qwen2.5 technical report," arXiv:2412.15115, 2024.
+
+[5] S. Robertson and H. Zaragoza, "The probabilistic relevance framework: BM25 and beyond," *Foundations and Trends in
+Information Retrieval*, vol. 3, no. 4, pp. 333-389, 2009.
+
+[6] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence embeddings using Siamese BERT-networks," in *Proc. EMNLP-IJCNLP*,
+2019, pp. 3982-3992.
+
+[7] P. Lewis et al., "Retrieval-augmented generation for knowledge-intensive NLP tasks," in *Proc. NeurIPS*, 2020.
+
+[8] S. Yao et al., "ReAct: Synergizing reasoning and acting in language models," in *Proc. ICLR*, 2023.
+
+[9] "JSON Schema, draft 2020-12." [Online]. Available: https://json-schema.org/
+
+[10] ConvAI Innovations, "Laya," model card. [Online]. Available: https://huggingface.co/convaiinnovations/laya
+
+[11] OWASP, "OWASP Top 10 for Large Language Model Applications," 2025. [Online]. Available: https://genai.owasp.org/
