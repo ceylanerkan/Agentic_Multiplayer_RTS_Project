@@ -85,7 +85,7 @@ Unity'nin 4 ayar dosyası öğrencinin onayıyla commit'lendi (`ba75c28`). İste
       Sonra (öğrencinin isteği): her şey zemine oturur, duvar büyüdü ve eğimi izler, balıklar kendi yüzer, modelin her yerine tıklanır, üst çubukta köylü "+" düğmesi;
       iki oyunculu maç yine 37/37, duvar bölümü 8/8. **26 Kasım: tam otomatik maç son kodla 93/93 (duvar/kapı dahil), Unity logunda 0 hata.**
       Resimler: `RTS_AUTOPLAY_LOOKS=1` ile `UnityRTS/Logs/autoplay_*.png`.
-- [ ] Raporda: C# test sayısı 56 olacak, duvar/kapı ve yeni arayüz, game-icons.net atfı.
+- [x] Raporda: C# test sayısı 56, duvar/kapı, modeller ve yeni arayüz, game-icons.net atfı (26 Kasım).
 - [x] Görünüş asset ve material'larla değişti (öğrencinin isteği, 25 Kasım).
 - [x] Claude (öğrencinin isteği, 25 Kasım): **serbest yerleştirme**. Her bina düşman üssü dışında karada her boş yere kurulur (`BuildSite`, `BuildPlaces`); Dock
       yalnız kıyıya (kendi üssü veya NorthGate, suya en çok 2,5 m), gemiler Dock'un önündeki suda çıkar. Sabit bina yerleri (`BuildSlot`) sahneden ve koddan
@@ -176,7 +176,8 @@ Kurulu: `C:\Users\erkan\.venvs\laya`, model `convaiinnovations/laya` sabit sür�
 
 ### 4. Teslim dosyaları (27-28 Kasım)
 - [x] Claude: C# test sayısı raporda 54, design brief'te Iron Weapons satırı.
-- [ ] Claude: rapordaki `[TODO live]` yerleri, gerçek hata örnekleri (aşağıda).
+- [x] Claude (26 Kasım): rapordaki `[TODO live]` yerleri dolu; son ölçüm (Tablo II), sonuçların geçmişi (Tablo III), Laya deneyi (Tablo IV),
+      gerçek hatalar ve düzeltmeleri, canlı güvenlik sonuçları, otomatik maçlar (93/93, 99/99, 37/37), ekte log örnekleri.
 - [ ] Claude: raporu IEEE A4 Word/PDF yap. `docs/demo-script.md`'yi son hâle göre düzelt (7. senaryo: model artık geçersiz eylem önermiyor; plan al,
       kaynağı harca, sonra Approve -> validator reddi). 9. senaryo için demoda açılacak tek sayfalık metrik tablosu. Slayt yok.
 - [x] Öğrenci: rapora ad ve numara (26 Kasım, Claude yazdı). (Video yok, öğrencinin kararı.)
